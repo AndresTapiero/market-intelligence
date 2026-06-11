@@ -1,0 +1,11 @@
+# Dependencias
+node_modules/
+
+# Secretos / scripts auto-generados con credenciales locales
+run-weekly.sh
+
+# Archivos del sistema
+.DS_Store
+
+# Logs
+logs/
