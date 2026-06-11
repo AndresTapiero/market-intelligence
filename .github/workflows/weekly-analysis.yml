@@ -1,0 +1,30 @@
+name: Análisis semanal
+
+# Equivale a lo que hace run-weekly.sh localmente (node analyze.js),
+# pero la API key se toma de un secret del repo, no del código.
+on:
+  schedule:
+    # Lunes 12:00 UTC = Lunes 07:00 en Ecuador (UTC-5), igual que el cron local.
+    - cron: "0 12 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run weekly analysis
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node analyze.js
