@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Intelligence · junio de 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root{
+    --bg:#0a0c10;--surface:#111318;--surface2:#181b23;--border:#1e2230;
+    --text:#e8eaf2;--text-muted:#5a6080;--text-dim:#8890aa;
+    --green:#00d4a0;--green-dim:rgba(0,212,160,0.12);
+    --red:#ff4d6a;--red-dim:rgba(255,77,106,0.12);
+    --yellow:#f5c842;--yellow-dim:rgba(245,200,66,0.12);
+    --blue:#4d8fff;--blue-dim:rgba(77,143,255,0.12);
+    --accent:#7c5cfc;--accent-dim:rgba(124,92,252,0.15);
+    --orange:#ff8c00;--orange-dim:rgba(255,140,0,0.12);
+    --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+    --r:10px;--g:12px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);padding:20px;min-height:100vh;padding-top:72px}
+  .mono{font-family:var(--mono)} .pos{color:var(--green)} .neg{color:var(--red)}
+  .text-muted{color:var(--text-muted)} .small{font-size:10px}
+  .label-xs{font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);display:block;margin-bottom:2px}
+  .section-title{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);margin-bottom:10px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+  .mb{margin-bottom:var(--g)}
+
+  /* STICKY HEADER */
+  .sticky-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,12,16,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .sticky-logo{font-size:13px;font-weight:700;letter-spacing:-.3px;white-space:nowrap}
+  .sticky-logo span{color:var(--accent)}
+  .sticky-stats{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .sticky-stat{display:flex;flex-direction:column;align-items:flex-end}
+  .sticky-stat-label{font-size:8px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);font-family:var(--mono)}
+  .sticky-stat-val{font-size:13px;font-weight:700;font-family:var(--mono);line-height:1.2}
+  .sticky-month{font-size:10px;color:var(--text-muted);font-family:var(--mono);white-space:nowrap}
+
+  /* HEADER */
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  .header h1{font-size:18px;font-weight:700;letter-spacing:-.3px}
+  .header-sub{font-size:11px;color:var(--text-muted);font-family:var(--mono);margin-top:3px}
+  .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .week-badge{background:var(--accent-dim);color:var(--accent);font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid rgba(124,92,252,.3)}
+  .analyst-badge{font-size:10px;color:var(--text-muted);font-family:var(--mono)}
+
+  /* TOTALES */
+  .totals-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--g);margin-bottom:var(--g)}
+  .total-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+  .total-card.highlight{border-color:var(--accent);background:var(--accent-dim)}
+  .total-label{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);margin-bottom:6px}
+  .total-value{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-.5px}
+  .total-sub{font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-top:3px}
+  .total-breakdown{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .total-breakdown span{font-size:10px;font-family:var(--mono);color:var(--text-muted)}
+
+  /* SCORE + INSIGHTS */
+  .insights-top{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:var(--g);margin-bottom:var(--g)}
+  .insights-mid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--g);margin-bottom:var(--g)}
+  .insight-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+  .insight-card.alert-orange{border-color:var(--orange);background:var(--orange-dim)}
+  .insight-card.alert-red{border-color:var(--red);background:var(--red-dim)}
+  .insight-card.good{border-color:var(--green);background:var(--green-dim)}
+  .insight-label{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;font-family:var(--mono);color:var(--text-muted)}
+  .insight-value{font-size:18px;font-weight:700;font-family:var(--mono)}
+  .insight-sub{font-size:10px;color:var(--text-muted);font-family:var(--mono);line-height:1.4}
+
+  /* SCORE */
+  .score-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+  .score-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .score-num{font-size:36px;font-weight:700;font-family:var(--mono);line-height:1}
+  .score-denom{font-size:14px;color:var(--text-muted);font-family:var(--mono)}
+  .score-label-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:4px;font-family:var(--mono)}
+  .score-bar-wrap{height:6px;background:var(--surface2);border-radius:3px;margin-bottom:8px}
+  .score-bar{height:6px;border-radius:3px;transition:width .4s}
+  .score-items{display:flex;flex-direction:column;gap:3px}
+  .score-item{font-size:10px;color:var(--text-muted);font-family:var(--mono)}
+
+  /* RATIO BAR */
+  .ratio-bar{display:flex;height:18px;border-radius:4px;overflow:hidden;margin:6px 0}
+  .ratio-crypto{display:flex;align-items:center;justify-content:center;background:#f7931a}
+  .ratio-stocks{display:flex;align-items:center;justify-content:center;background:var(--green)}
+  .ratio-label{font-size:9px;font-weight:700;color:white;white-space:nowrap;padding:0 4px}
+
+  /* ANALISTA */
+  .analyst-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:var(--g)}
+  .analyst-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .analyst-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .analyst-name{font-size:13px;font-weight:600} .analyst-title{font-size:10px;color:var(--text-muted);font-family:var(--mono)}
+  .analyst-opinion{font-size:13px;line-height:1.7;color:var(--text-dim);padding:12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent)}
+
+  /* SEÑALES */
+  .signals-section{margin-bottom:var(--g)}
+  .signals-group{margin-bottom:14px}
+  .signals-group-title{font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .signals-group-title::after{content:"";flex:1;height:1px;background:var(--border)}
+  .assets-grid-stocks{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--g)}
+  .assets-grid-crypto{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--g)}
+  .asset-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;border-top:2px solid var(--accent-asset,var(--border))}
+  .asset-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .asset-name{display:flex;align-items:center;gap:7px}
+  .asset-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--mono);font-size:12px;flex-shrink:0}
+  .asset-ticker{font-size:13px;font-weight:700;font-family:var(--mono)} .asset-label{font-size:9px;color:var(--text-muted)}
+  .signal-badge{font-size:8px;font-weight:700;letter-spacing:.6px;padding:2px 6px;border-radius:3px;font-family:var(--mono)}
+  .signal-buy{background:var(--green-dim);color:var(--green)} .signal-hold{background:var(--yellow-dim);color:var(--yellow)} .signal-wait{background:var(--red-dim);color:var(--red)}
+  .asset-price{font-size:16px;font-weight:700;font-family:var(--mono);letter-spacing:-.3px;margin-bottom:3px}
+  .asset-change{font-size:10px;font-family:var(--mono);margin-bottom:6px}
+  .asset-change.pos{color:var(--green)} .asset-change.neg{color:var(--red)}
+  .port-mini{display:flex;justify-content:space-between;font-size:9px;font-family:var(--mono);padding:4px 6px;background:var(--surface2);border-radius:4px;margin-bottom:6px;color:var(--text-muted);flex-wrap:wrap;gap:2px}
+  .asset-context{font-size:9px;line-height:1.5;color:var(--text-dim);padding:6px 8px;background:var(--surface2);border-radius:5px;border-left:2px solid var(--border)}
+
+  /* P&L */
+  .pnl-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g)}
+  .pnl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+  .pnl-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px}
+  .pnl-title{font-size:13px;font-weight:700}
+  .pnl-total-badge{font-size:11px;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:4px}
+  .pnl-total-badge.pos{background:var(--green-dim);color:var(--green)} .pnl-total-badge.neg{background:var(--red-dim);color:var(--red)}
+  .pnl-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:8px}
+  .pnl-row:last-of-type{border-bottom:none}
+  .pnl-asset{display:flex;align-items:center;gap:7px;min-width:90px}
+  .asset-icon-sm{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--mono);font-size:10px;flex-shrink:0}
+  .pnl-nums{display:flex;gap:10px;flex-wrap:wrap}
+  .pnl-trio{display:flex;flex-direction:column;min-width:52px}
+  .pnl-name{font-size:12px;font-weight:600} .pnl-qty{font-size:9px;color:var(--text-muted);font-family:var(--mono)}
+  .pnl-bar-wrap{height:3px;background:var(--border);border-radius:2px;margin-top:3px;width:100%}
+  .pnl-bar{height:3px;border-radius:2px}
+  .pnl-subtotal{display:flex;justify-content:space-between;padding:10px 0 0;border-top:2px solid var(--border);margin-top:4px;font-size:12px;font-weight:600;flex-wrap:wrap;gap:6px}
+
+  /* COMPOSICIÓN CON SCROLL */
+  .comp-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g)}
+  .comp-scroll{max-height:160px;overflow-y:auto;padding-right:4px}
+  .comp-scroll::-webkit-scrollbar{width:3px} .comp-scroll::-webkit-scrollbar-track{background:var(--surface2)} .comp-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  .comp-row{display:grid;grid-template-columns:56px 1fr 40px 56px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+  .comp-row:last-child{border-bottom:none}
+  .comp-label{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
+  .comp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .comp-bar-wrap{height:5px;background:var(--surface2);border-radius:3px}
+  .comp-bar{height:5px;border-radius:3px}
+  .comp-pct{font-size:10px;text-align:right} .comp-val{font-size:9px;text-align:right;color:var(--text-muted)}
+
+  /* MACRO + DECISIONES */
+  .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g)}
+  .macro-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .macro-item{background:var(--surface2);border-radius:6px;padding:9px 11px}
+  .macro-item-label{font-size:9px;color:var(--text-muted);font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px}
+  .macro-item-value{font-size:16px;font-weight:700;font-family:var(--mono)}
+  .macro-item-sub{font-size:9px;color:var(--text-muted);font-family:var(--mono);margin-top:2px}
+  .macro-narrative{font-size:12px;line-height:1.6;color:var(--text-dim);padding:10px;background:var(--surface2);border-radius:6px}
+  .decision-card{background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:16px 18px}
+  .decision-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .decision-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);flex-shrink:0}
+  .decision-title{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);font-family:var(--mono)}
+  .action-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+  .action-item:last-child{border-bottom:none}
+  .action-num{font-size:10px;font-weight:700;font-family:var(--mono);color:var(--accent);min-width:18px;padding-top:1px}
+  .action-text{font-size:12px;line-height:1.5;color:var(--text-dim)}
+
+  /* DCA */
+  .dca-grid{display:flex;flex-direction:column;gap:9px}
+  .dca-item{display:flex;align-items:center;gap:11px;padding:10px;background:var(--surface2);border-radius:8px}
+  .dca-info{flex:1} .dca-name{font-size:12px;font-weight:600}
+  .dca-amount{font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:2px}
+  .dca-next{font-size:10px;color:var(--text-muted);margin-top:2px}
+  .dca-stats{text-align:right} .dca-stats div{font-size:11px}
+
+  /* CALENDARIO */
+  .cal-grid{display:flex;flex-direction:column;gap:6px}
+  .cal-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+  .cal-row:last-child{border-bottom:none}
+  .cal-fecha{font-size:11px;font-weight:600;min-width:48px}
+  .cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .cal-evento{font-size:12px;color:var(--text-dim)}
+
+  /* HISTORIAL */
+  .history-wrap{overflow-x:auto}
+  .history-table{width:100%;border-collapse:collapse;font-size:11px;min-width:360px}
+  .history-table th{text-align:left;font-size:9px;color:var(--text-muted);font-family:var(--mono);letter-spacing:.8px;text-transform:uppercase;padding:0 8px 8px 0;border-bottom:1px solid var(--border)}
+  .history-table td{padding:8px 8px 8px 0;border-bottom:1px solid var(--border);color:var(--text-dim)}
+  .history-table tr:last-child td{border-bottom:none}
+  .no-history{font-size:12px;color:var(--text-muted);padding:8px 0}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g)}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--g);margin-bottom:var(--g)}
+  .footer{margin-top:18px;text-align:center;font-size:10px;color:var(--text-muted);font-family:var(--mono);padding-top:14px;border-top:1px solid var(--border)}
+
+  /* ── RESPONSIVE ─────────────────────────────────────────────────────────── */
+  @media(max-width:1100px){
+    .assets-grid-crypto{grid-template-columns:repeat(4,1fr)}
+    .assets-grid-stocks{grid-template-columns:repeat(3,1fr)}
+    .insights-top{grid-template-columns:1fr 1fr}
+    .insights-mid{grid-template-columns:1fr 1fr}
+    .three-col{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:768px){
+    body{padding:12px;padding-top:70px}
+    .totals-bar{grid-template-columns:1fr 1fr}
+    .insights-top{grid-template-columns:1fr 1fr}
+    .insights-mid{grid-template-columns:1fr 1fr}
+    .pnl-grid{grid-template-columns:1fr}
+    .comp-pair{grid-template-columns:1fr}
+    .assets-grid-crypto{grid-template-columns:repeat(3,1fr)}
+    .assets-grid-stocks{grid-template-columns:repeat(3,1fr)}
+    .bottom-grid{grid-template-columns:1fr}
+    .two-col{grid-template-columns:1fr}
+    .three-col{grid-template-columns:1fr}
+    .total-value{font-size:17px}
+    .sticky-stats{gap:12px}
+  }
+  @media(max-width:480px){
+    body{padding:10px;padding-top:68px}
+    .totals-bar{grid-template-columns:1fr 1fr}
+    .assets-grid-crypto{grid-template-columns:1fr 1fr}
+    .assets-grid-stocks{grid-template-columns:1fr 1fr}
+    .total-value{font-size:15px}
+    .asset-price{font-size:15px}
+    .header h1{font-size:16px}
+    .pnl-row{flex-direction:column;align-items:flex-start}
+    .pnl-nums{width:100%}
+    .sticky-stat:nth-child(n+3){display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- STICKY HEADER -->
+<div class="sticky-bar">
+  <div class="sticky-logo">Market<span>Intel</span></div>
+  <div class="sticky-stats">
+    <div class="sticky-stat">
+      <div class="sticky-stat-label">Total</div>
+      <div class="sticky-stat-val">$2,584</div>
+    </div>
+    <div class="sticky-stat">
+      <div class="sticky-stat-label">P&L</div>
+      <div class="sticky-stat-val neg">-$1,247</div>
+    </div>
+    <div class="sticky-stat">
+      <div class="sticky-stat-label">BTC</div>
+      <div class="sticky-stat-val">$63,700</div>
+    </div>
+    
+  </div>
+  <div class="sticky-month">junio de 2026</div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>Market Intelligence</h1>
+    <div class="header-sub">Reporte de inversiones · jueves, 11 de junio de 2026, 3:44 p. m.</div>
+  </div>
+  <div class="header-right">
+    <div class="week-badge">junio de 2026</div>
+    <div class="analyst-badge">Analista Senior · 10 años · CFA L2</div>
+  </div>
+</div>
+
+<!-- 1. PORTAFOLIO TOTAL -->
+<div class="section-title">Portafolio Total</div>
+<div class="totals-bar mb">
+  <div class="total-card">
+    <div class="total-label">Capital Invertido</div>
+    <div class="total-value">$3,681</div>
+    <div class="total-sub">costo base USD</div>
+    <div class="total-breakdown">
+      <span>Crypto $3,238</span>
+      <span>Acciones $442</span>
+    </div>
+  </div>
+  <div class="total-card">
+    <div class="total-label">Valor de Mercado</div>
+    <div class="total-value">$2,434</div>
+    <div class="total-sub">activos a precios actuales</div>
+    <div class="total-breakdown">
+      <span>Crypto $1,757</span>
+      <span>Acciones $676</span>
+    </div>
+  </div>
+  <div class="total-card">
+    <div class="total-label">Resultado P&L</div>
+    <div class="total-value neg">-$1,247</div>
+    <div class="total-sub neg">-33.9% sobre capital</div>
+    <div class="total-breakdown">
+      <span class="neg">Crypto -45.7%</span>
+      <span class="pos">Acc. +52.8%</span>
+    </div>
+  </div>
+  <div class="total-card highlight">
+    <div class="total-label">Total Portafolio</div>
+    <div class="total-value">$2,584</div>
+    <div class="total-sub">activos + cash disponible</div>
+    <div class="total-breakdown">
+      <span>Cash $150</span>
+      
+    </div>
+  </div>
+</div>
+
+<!-- 2. SCORE + INSIGHTS -->
+<div class="section-title">Indicadores clave</div>
+
+<!-- Fila 1: Score + BTC Break-even + Ratio -->
+<div class="insights-top mb">
+
+  <!-- SCORE DE SALUD -->
+  <div class="score-card">
+    <div class="section-title" style="margin-bottom:8px">Score de salud del portafolio</div>
+    <div class="score-top">
+      <div><span class="score-num" style="color:var(--green)">7.5</span><span class="score-denom">/10</span></div>
+      <span class="score-label-badge" style="background:var(--green)22;color:var(--green)">Saludable</span>
+    </div>
+    <div class="score-bar-wrap"><div class="score-bar" style="width:75%;background:var(--green)"></div></div>
+    <div class="score-items">
+      <div class="score-item">📊 Balance crypto/acciones 72/28</div>
+      <div class="score-item neg">₿ Crypto P&L -45.7%</div>
+      <div class="score-item pos">📈 Acciones P&L +52.8%</div>
+      <div class="score-item pos">✓ DCA activo · 0 ciclos completados</div>
+      <div class="score-item pos">✓ Cash disponible $150</div>
+    </div>
+    <div class="ratio-bar" style="margin-top:8px">
+      <div class="ratio-crypto" style="width:72%"><span class="ratio-label">Crypto 72%</span></div>
+      <div class="ratio-stocks" style="width:28%"><span class="ratio-label">Acc. 28%</span></div>
+    </div>
+  </div>
+
+  <!-- BTC BREAK-EVEN -->
+  <div class="insight-card alert-orange">
+    <div class="insight-label" style="color:var(--orange)">📍 BTC Break-even</div>
+    <div class="insight-value" style="color:var(--orange)">+29.9%</div>
+         <div class="insight-sub">
+           Costo promedio: <strong>$82,716</strong><br>
+           Precio actual: <strong>$63,700</strong><br>
+           Necesita subir <strong>29.9%</strong> para break-even
+         </div>
+  </div>
+
+  <!-- RETORNO ANUALIZADO -->
+  <div class="insight-card ">
+    <div class="insight-label">📅 Retorno anualizado est.</div>
+    <div class="insight-value text-muted">—</div>
+         <div class="insight-sub">Disponible desde el segundo reporte mensual</div>
+  </div>
+</div>
+
+<!-- Fila 2: Mejor/Peor por categoría (4 cards) -->
+<div class="insights-mid mb">
+
+  <!-- MEJOR ACCIÓN -->
+  <div class="insight-card good">
+    <div class="insight-label">🏆 Mejor acción</div>
+    <div class="insight-value pos">NVDA</div>
+    <div class="insight-value" style="font-size:14px;color:var(--green)">+4.8% esta semana</div>
+    <div class="insight-sub">NVIDIA<br>Valor: $228<br>P&L acum: <strong class="pos">+69.5%</strong></div>
+  </div>
+
+  <!-- PEOR ACCIÓN -->
+  <div class="insight-card alert-red">
+    <div class="insight-label" style="color:var(--red)">⚠️ Peor acción</div>
+    <div class="insight-value neg">TSLA</div>
+    <div class="insight-value" style="font-size:14px;color:var(--red)">+1.9% esta semana</div>
+    <div class="insight-sub">Tesla<br>Valor: $36<br>P&L acum: <strong class="pos">+30.0%</strong></div>
+  </div>
+
+  <!-- MEJOR CRYPTO -->
+  <div class="insight-card good">
+    <div class="insight-label">🏆 Mejor crypto</div>
+    <div class="insight-value pos">BTC</div>
+    <div class="insight-value" style="font-size:14px;color:var(--green)">+5.2% esta semana</div>
+    <div class="insight-sub">Bitcoin<br>Valor: $786<br>P&L acum: <strong class="neg">-23.0%</strong></div>
+  </div>
+
+  <!-- PEOR CRYPTO -->
+  <div class="insight-card alert-red">
+    <div class="insight-label" style="color:var(--red)">⚠️ Peor crypto</div>
+    <div class="insight-value neg">TAO</div>
+    <div class="insight-value" style="font-size:14px;color:var(--red)">-3.2% esta semana</div>
+    <div class="insight-sub">Bittensor<br>Valor: $155<br>P&L acum: <strong class="neg">-53.0%</strong></div>
+  </div>
+</div>
+
+<!-- 3. ANALISTA -->
+<div class="analyst-card">
+  <div class="analyst-header">
+    <div class="analyst-avatar">📊</div>
+    <div>
+      <div class="analyst-name">Analista Senior de Portafolio</div>
+      <div class="analyst-title">10 años · Renta Variable & Activos Digitales · CFA Level II</div>
+    </div>
+  </div>
+  <div class="analyst-opinion">Test dry run. Portafolio validado correctamente.</div>
+</div>
+
+<!-- 4. SEÑALES — ACCIONES PRIMERO -->
+<div class="signals-section">
+  <div class="signals-group">
+    <div class="signals-group-title">📈 Señales Acciones</div>
+    <div class="assets-grid-stocks">
+      <div class="asset-card" style="--accent-asset:#00d4a0">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#00d4a022;color:#00d4a0">V</div>
+            <div><div class="asset-ticker">VOO</div><div class="asset-label">VOO</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$558</div>
+        <div class="asset-change pos">+2.1% esta semana</div>
+        <div class="port-mini">
+          <span>$249</span>
+          <span class="pos">+33.3% P&L</span>
+        </div>
+        <div class="asset-context">Test VOO context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#4d8fff">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#4d8fff22;color:#4d8fff">Q</div>
+            <div><div class="asset-ticker">QQQ</div><div class="asset-label">QQQ</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$498</div>
+        <div class="asset-change pos">+3.4% esta semana</div>
+        <div class="port-mini">
+          <span>$148</span>
+          <span class="pos">+78.1% P&L</span>
+        </div>
+        <div class="asset-context">Test QQQ context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#76b900">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#76b90022;color:#76b900">N</div>
+            <div><div class="asset-ticker">NVDA</div><div class="asset-label">NVIDIA</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$138</div>
+        <div class="asset-change pos">+4.8% esta semana</div>
+        <div class="port-mini">
+          <span>$228</span>
+          <span class="pos">+69.5% P&L</span>
+        </div>
+        <div class="asset-context">Test NVDA context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#8250ff">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#8250ff22;color:#8250ff">N</div>
+            <div><div class="asset-ticker">NU</div><div class="asset-label">Nubank</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$11.91</div>
+        <div class="asset-change pos">+2.3% esta semana</div>
+        <div class="port-mini">
+          <span>$12</span>
+          <span class="pos">+46.1% P&L</span>
+        </div>
+        <div class="asset-context">Test NU context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#e31937">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#e3193722;color:#e31937">T</div>
+            <div><div class="asset-ticker">TSLA</div><div class="asset-label">Tesla</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$282</div>
+        <div class="asset-change pos">+1.9% esta semana</div>
+        <div class="port-mini">
+          <span>$36</span>
+          <span class="pos">+30.0% P&L</span>
+        </div>
+        <div class="asset-context">Test TSLA context</div>
+      </div></div>
+  </div>
+  <div class="signals-group">
+    <div class="signals-group-title">🔶 Señales Crypto</div>
+    <div class="assets-grid-crypto">
+      <div class="asset-card" style="--accent-asset:#f7931a">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#f7931a22;color:#f7931a">₿</div>
+            <div><div class="asset-ticker">BTC</div><div class="asset-label">Bitcoin</div></div>
+          </div>
+          <span class="signal-badge signal-buy">COMPRAR</span>
+        </div>
+        <div class="asset-price">$63,700</div>
+        <div class="asset-change pos">+5.2% esta semana</div>
+        <div class="port-mini">
+          <span>$786</span>
+          <span class="neg">-23.0% P&L</span>
+        </div>
+        <div class="asset-context">Test BTC context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#627eea">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#627eea22;color:#627eea">Ξ</div>
+            <div><div class="asset-ticker">ETH</div><div class="asset-label">Ethereum</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$1,679</div>
+        <div class="asset-change neg">-1.8% esta semana</div>
+        <div class="port-mini">
+          <span>$290</span>
+          <span class="neg">-47.5% P&L</span>
+        </div>
+        <div class="asset-context">Test ETH context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#9945ff">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#9945ff22;color:#9945ff">◎</div>
+            <div><div class="asset-ticker">SOL</div><div class="asset-label">Solana</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$66.80</div>
+        <div class="asset-change pos">+2.1% esta semana</div>
+        <div class="port-mini">
+          <span>$278</span>
+          <span class="neg">-36.1% P&L</span>
+        </div>
+        <div class="asset-context">Test SOL context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#38bdf8">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#38bdf822;color:#38bdf8">τ</div>
+            <div><div class="asset-ticker">TAO</div><div class="asset-label">Bittensor</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$211</div>
+        <div class="asset-change neg">-3.2% esta semana</div>
+        <div class="port-mini">
+          <span>$155</span>
+          <span class="neg">-53.0% P&L</span>
+        </div>
+        <div class="asset-context">Test TAO context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#ff007a">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#ff007a22;color:#ff007a">U</div>
+            <div><div class="asset-ticker">UNI</div><div class="asset-label">Uniswap</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$2.51</div>
+        <div class="asset-change pos">+1.4% esta semana</div>
+        <div class="port-mini">
+          <span>$77</span>
+          <span class="neg">-72.6% P&L</span>
+        </div>
+        <div class="asset-context">Test UNI context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#f3ba2f">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#f3ba2f22;color:#f3ba2f">B</div>
+            <div><div class="asset-ticker">BNB</div><div class="asset-label">BNB</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$604</div>
+        <div class="asset-change pos">+0.8% esta semana</div>
+        <div class="port-mini">
+          <span>$64</span>
+          <span class="neg">-55.1% P&L</span>
+        </div>
+        <div class="asset-context">Test BNB context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#6fbcf0">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#6fbcf022;color:#6fbcf0">S</div>
+            <div><div class="asset-ticker">SUI</div><div class="asset-label">SUI</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$0.756</div>
+        <div class="asset-change pos">+3.5% esta semana</div>
+        <div class="port-mini">
+          <span>$46</span>
+          <span class="neg">-50.3% P&L</span>
+        </div>
+        <div class="asset-context">Test SUI context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#e84142">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#e8414222;color:#e84142">s</div>
+            <div><div class="asset-ticker">SEI</div><div class="asset-label">SEI</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$0.0495</div>
+        <div class="asset-change neg">-2.1% esta semana</div>
+        <div class="port-mini">
+          <span>$23</span>
+          <span class="neg">-91.3% P&L</span>
+        </div>
+        <div class="asset-context">Test SEI context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#00d4ff">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#00d4ff22;color:#00d4ff">E</div>
+            <div><div class="asset-ticker">ENA</div><div class="asset-label">Ethena</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$0.0762</div>
+        <div class="asset-change pos">+1.2% esta semana</div>
+        <div class="port-mini">
+          <span>$19</span>
+          <span class="neg">-72.6% P&L</span>
+        </div>
+        <div class="asset-context">Test ENA context</div>
+      </div>
+      <div class="asset-card" style="--accent-asset:#e84142">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:#e8414222;color:#e84142">A</div>
+            <div><div class="asset-ticker">AVAX</div><div class="asset-label">Avalanche</div></div>
+          </div>
+          <span class="signal-badge signal-hold">MANTENER</span>
+        </div>
+        <div class="asset-price">$6.59</div>
+        <div class="asset-change neg">-1.5% esta semana</div>
+        <div class="port-mini">
+          <span>$16</span>
+          <span class="neg">-64.8% P&L</span>
+        </div>
+        <div class="asset-context">Test AVAX context</div>
+      </div></div>
+  </div>
+</div>
+
+<!-- 5. P&L DETALLADO (debajo de señales) -->
+<div class="section-title">Rendimiento detallado</div>
+<div class="pnl-grid mb">
+  <div class="pnl-card">
+    <div class="pnl-header">
+      <div class="pnl-title">Acciones · 5 activos</div>
+      <div class="pnl-total-badge pos">+$233 (+52.8%)</div>
+    </div>
+    
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm voo" style="background:#00d4a022;color:#00d4a0">V</div>
+          <div><div class="pnl-name">VOO</div><div class="pnl-qty">posicion</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$187</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$249</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono pos">+$62</span>
+            <span class="mono pos small">+33.3%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:33.3%;background:var(--green)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm qqq" style="background:#4d8fff22;color:#4d8fff">Q</div>
+          <div><div class="pnl-name">QQQ</div><div class="pnl-qty">posicion</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$83</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$148</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono pos">+$65</span>
+            <span class="mono pos small">+78.1%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:78.1%;background:var(--green)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm nvda" style="background:#76b90022;color:#76b900">N</div>
+          <div><div class="pnl-name">NVIDIA</div><div class="pnl-qty">posicion</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$135</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$228</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono pos">+$93</span>
+            <span class="mono pos small">+69.5%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:69.5%;background:var(--green)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm nu" style="background:#8250ff22;color:#8250ff">N</div>
+          <div><div class="pnl-name">Nubank</div><div class="pnl-qty">posicion</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$8</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$12</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono pos">+$4.09</span>
+            <span class="mono pos small">+46.1%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:46.1%;background:var(--green)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm tsla" style="background:#e3193722;color:#e31937">T</div>
+          <div><div class="pnl-name">Tesla</div><div class="pnl-qty">posicion</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$28</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$36</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono pos">+$8.47</span>
+            <span class="mono pos small">+30.0%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:30%;background:var(--green)"></div></div>
+          </div>
+        </div>
+      </div>
+    <div class="pnl-subtotal">
+      <span class="text-muted">Total</span>
+      <span class="mono">$442</span>
+      <span class="mono">$676</span>
+      <span class="mono pos">+$233</span>
+    </div>
+  </div>
+  <div class="pnl-card">
+    <div class="pnl-header">
+      <div class="pnl-title">Crypto · 10 activos</div>
+      <div class="pnl-total-badge neg">-$1,481 (-45.7%)</div>
+    </div>
+    
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm btc" style="background:#f7931a22;color:#f7931a">₿</div>
+          <div><div class="pnl-name">Bitcoin</div><div class="pnl-qty">0.01235 BTC</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$1,021</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$786</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$234</span>
+            <span class="mono neg small">-23.0%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:23%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm eth" style="background:#627eea22;color:#627eea">Ξ</div>
+          <div><div class="pnl-name">Ethereum</div><div class="pnl-qty">0.1733 ETH</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$554</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$290</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$263</span>
+            <span class="mono neg small">-47.5%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:47.5%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm sol" style="background:#9945ff22;color:#9945ff">◎</div>
+          <div><div class="pnl-name">Solana</div><div class="pnl-qty">4.165 SOL</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$435</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$278</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$157</span>
+            <span class="mono neg small">-36.1%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:36.1%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm tao" style="background:#38bdf822;color:#38bdf8">τ</div>
+          <div><div class="pnl-name">Bittensor</div><div class="pnl-qty">0.7367 TAO</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$331</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$155</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$175</span>
+            <span class="mono neg small">-53.0%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:53%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm uni" style="background:#ff007a22;color:#ff007a">U</div>
+          <div><div class="pnl-name">Uniswap</div><div class="pnl-qty">30.68 UNI</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$281</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$77</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$204</span>
+            <span class="mono neg small">-72.6%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:72.6%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm bnb" style="background:#f3ba2f22;color:#f3ba2f">B</div>
+          <div><div class="pnl-name">BNB</div><div class="pnl-qty">0.1075 BNB</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$144</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$64</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$79</span>
+            <span class="mono neg small">-55.1%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:55.1%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm sui" style="background:#6fbcf022;color:#6fbcf0">S</div>
+          <div><div class="pnl-name">SUI</div><div class="pnl-qty">60.85 SUI</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$92</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$46</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$46</span>
+            <span class="mono neg small">-50.3%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:50.3%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm sei" style="background:#e8414222;color:#e84142">s</div>
+          <div><div class="pnl-name">SEI</div><div class="pnl-qty">464.78 SEI</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$263</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$23</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$240</span>
+            <span class="mono neg small">-91.3%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:91.3%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm ena" style="background:#00d4ff22;color:#00d4ff">E</div>
+          <div><div class="pnl-name">Ethena</div><div class="pnl-qty">249.59 ENA</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$69</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$19</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$50</span>
+            <span class="mono neg small">-72.6%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:72.6%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pnl-row">
+        <div class="pnl-asset">
+          <div class="asset-icon-sm avax" style="background:#e8414222;color:#e84142">A</div>
+          <div><div class="pnl-name">Avalanche</div><div class="pnl-qty">2.428 AVAX</div></div>
+        </div>
+        <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono">$45</span></div>
+          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono">$16</span></div>
+          <div class="pnl-trio">
+            <span class="label-xs">P&L</span>
+            <span class="mono neg">-$29</span>
+            <span class="mono neg small">-64.8%</span>
+            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:64.8%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+    <div class="pnl-subtotal">
+      <span class="text-muted">Total</span>
+      <span class="mono">$3,238</span>
+      <span class="mono">$1,757</span>
+      <span class="mono neg">-$1,481</span>
+    </div>
+  </div>
+</div>
+
+<!-- 6. COMPOSICIÓN CON SCROLL -->
+<div class="section-title">Composición del portafolio</div>
+<div class="comp-pair">
+  <div class="card">
+    <div class="section-title">Acciones · $676</div>
+    <div class="comp-scroll"><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#00d4a0"></span><span class="mono">VOO</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:36.9%;background:#00d4a0"></div></div>
+          <div class="comp-pct mono">36.9%</div>
+          <div class="comp-val mono">$249</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#76b900"></span><span class="mono">NVDA</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:33.8%;background:#76b900"></div></div>
+          <div class="comp-pct mono">33.8%</div>
+          <div class="comp-val mono">$228</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#4d8fff"></span><span class="mono">QQQ</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:21.9%;background:#4d8fff"></div></div>
+          <div class="comp-pct mono">21.9%</div>
+          <div class="comp-val mono">$148</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#e31937"></span><span class="mono">TSLA</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:5.4%;background:#e31937"></div></div>
+          <div class="comp-pct mono">5.4%</div>
+          <div class="comp-val mono">$36</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#8250ff"></span><span class="mono">NU</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:1.9%;background:#8250ff"></div></div>
+          <div class="comp-pct mono">1.9%</div>
+          <div class="comp-val mono">$12</div>
+        </div></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Crypto · $1,757</div>
+    <div class="comp-scroll"><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#f7931a"></span><span class="mono">BTC</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:44.8%;background:#f7931a"></div></div>
+          <div class="comp-pct mono">44.8%</div>
+          <div class="comp-val mono">$786</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#627eea"></span><span class="mono">ETH</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:16.6%;background:#627eea"></div></div>
+          <div class="comp-pct mono">16.6%</div>
+          <div class="comp-val mono">$290</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#9945ff"></span><span class="mono">SOL</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:15.8%;background:#9945ff"></div></div>
+          <div class="comp-pct mono">15.8%</div>
+          <div class="comp-val mono">$278</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#38bdf8"></span><span class="mono">TAO</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:8.8%;background:#38bdf8"></div></div>
+          <div class="comp-pct mono">8.8%</div>
+          <div class="comp-val mono">$155</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#ff007a"></span><span class="mono">UNI</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:4.4%;background:#ff007a"></div></div>
+          <div class="comp-pct mono">4.4%</div>
+          <div class="comp-val mono">$77</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#f3ba2f"></span><span class="mono">BNB</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:3.7%;background:#f3ba2f"></div></div>
+          <div class="comp-pct mono">3.7%</div>
+          <div class="comp-val mono">$64</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#6fbcf0"></span><span class="mono">SUI</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:2.6%;background:#6fbcf0"></div></div>
+          <div class="comp-pct mono">2.6%</div>
+          <div class="comp-val mono">$46</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#e84142"></span><span class="mono">SEI</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:1.3%;background:#e84142"></div></div>
+          <div class="comp-pct mono">1.3%</div>
+          <div class="comp-val mono">$23</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#00d4ff"></span><span class="mono">ENA</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:1.1%;background:#00d4ff"></div></div>
+          <div class="comp-pct mono">1.1%</div>
+          <div class="comp-val mono">$19</div>
+        </div><div class="comp-row">
+          <div class="comp-label"><span class="comp-dot" style="background:#e84142"></span><span class="mono">AVAX</span></div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#e84142"></div></div>
+          <div class="comp-pct mono">0.9%</div>
+          <div class="comp-val mono">$16</div>
+        </div></div>
+  </div>
+</div>
+
+<!-- 7. MACRO + DECISIONES -->
+<div class="bottom-grid">
+  <div class="card">
+    <div class="section-title">Contexto Macroeconómico</div>
+    <div class="macro-grid">
+      <div class="macro-item"><div class="macro-item-label">USD/COP</div><div class="macro-item-value">$4,180 COP</div><div class="macro-item-sub">tasa ARQ</div></div>
+      <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value">4.25%</div><div class="macro-item-sub">política monetaria</div></div>
+      <div class="macro-item"><div class="macro-item-label">BTC Dom.</div><div class="macro-item-value">61.3%</div><div class="macro-item-sub">dominancia crypto</div></div>
+      <div class="macro-item"><div class="macro-item-label">Fear & Greed</div><div class="macro-item-value">72</div><div class="macro-item-sub">Codicia</div></div>
+    </div>
+    <div class="macro-narrative">Test macro narrative.</div>
+  </div>
+  <div class="decision-card">
+    <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones este mes</div></div>
+    <div class="action-item"><span class="action-num">01</span><span class="action-text">Test accion 1</span></div><div class="action-item"><span class="action-num">02</span><span class="action-text">Test accion 2</span></div><div class="action-item"><span class="action-num">03</span><span class="action-text">Test accion 3</span></div><div class="action-item"><span class="action-num">04</span><span class="action-text">Test accion 4</span></div>
+  </div>
+</div>
+
+<!-- 8. DCA + CALENDARIO + HISTORIAL -->
+<div class="three-col">
+  <div class="card">
+    <div class="section-title">DCA Tracker</div>
+    
+    <div class="dca-grid">
+      <div class="dca-item">
+        <div class="asset-icon-sm" style="background:#f7931a22;color:#f7931a">₿</div>
+        <div class="dca-info">
+          <div class="dca-name">DCA Bitcoin</div>
+          <div class="dca-amount mono">$50 USD / mes</div>
+          <div class="dca-next">Próximo: julio 1, 2026</div>
+        </div>
+        <div class="dca-stats">
+          <div class="mono pos">+0 ciclos</div>
+          <div class="mono text-muted">$0 acum.</div>
+        </div>
+      </div>
+      <div class="dca-item">
+        <div class="asset-icon-sm" style="background:#00d4a022;color:#00d4a0">📈</div>
+        <div class="dca-info">
+          <div class="dca-name">DCA Acciones (VOO/QQQ)</div>
+          <div class="dca-amount mono">$50 USD / mes</div>
+          <div class="dca-next">Próximo: junio 30, 2026</div>
+        </div>
+        <div class="dca-stats">
+          <div class="mono pos">+0 ciclos</div>
+          <div class="mono text-muted">$0 acum.</div>
+        </div>
+      </div>
+      
+      <div class="dca-item">
+        <div class="asset-icon-sm" style="background:rgba(90,96,128,0.15);color:var(--text-muted);font-size:13px">$</div>
+        <div class="dca-info">
+          <div class="dca-name">Cash disponible (Hapi)</div>
+          <div class="dca-amount mono">$150 USD</div>
+          <div class="dca-next">Listo para próximo DCA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title">Próximos eventos</div>
+    <div class="cal-grid">
+      <div class="cal-row">
+      <div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div>
+      <div class="cal-dot" style="background:var(--blue)"></div>
+      <div class="cal-evento">Decisión FED — tasas de interés</div>
+    </div><div class="cal-row">
+      <div class="cal-fecha mono" style="color:var(--yellow)">Jun 25</div>
+      <div class="cal-dot" style="background:var(--yellow)"></div>
+      <div class="cal-evento">Earnings NVDA Q2 (estimado)</div>
+    </div><div class="cal-row">
+      <div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div>
+      <div class="cal-dot" style="background:var(--accent)"></div>
+      <div class="cal-evento">DCA Acciones — VOO/QQQ $50</div>
+    </div><div class="cal-row">
+      <div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div>
+      <div class="cal-dot" style="background:var(--accent)"></div>
+      <div class="cal-evento">DCA Bitcoin $50</div>
+    </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title">Evolución mensual</div>
+    <div class="no-history">
+        <div style="font-size:11px;color:var(--text-muted);text-align:center;padding:16px 0">
+          Punto de partida establecido · junio de 2026<br>
+          <span style="font-family:var(--mono);color:var(--accent)">Crypto $1,757 · Acciones $676 · Total $2,584</span>
+        </div>
+      </div>
+  </div>
+</div>
+
+<div class="footer">
+  Market Intelligence v6 · Analista Senior 10 años · Solo informativo, no es asesoría financiera regulada · jueves, 11 de junio de 2026, 3:44 p. m.
+</div>
+</body>
+</html>
