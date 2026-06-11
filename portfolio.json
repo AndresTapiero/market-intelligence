@@ -1,0 +1,31 @@
+{
+  "_comment": "Actualizar cantidades tras cada DCA. Los valores actuales los calcula analyze.js con precios en tiempo real.",
+  "_updated": "2026-06-11",
+  "crypto": {
+    "btc":  { "qty": 0.01235, "costAvg": 82716 },
+    "eth":  { "qty": 0.1733,  "costAvg": 3200  },
+    "sol":  { "qty": 4.165,   "costAvg": 104.6 },
+    "tao":  { "qty": 0.7367,  "costAvg": 449.4 },
+    "uni":  { "qty": 30.68,   "costAvg": 9.16  },
+    "bnb":  { "qty": 0.1075,  "costAvg": 1344  },
+    "sui":  { "qty": 60.85,   "costAvg": 1.52  },
+    "sei":  { "qty": 464.78,  "costAvg": 0.566 },
+    "ena":  { "qty": 249.59,  "costAvg": 0.278 },
+    "avax": { "qty": 2.428,   "costAvg": 18.74 }
+  },
+  "stocks": {
+    "voo":  { "shares": 0.4477, "costAvg": 418.5 },
+    "qqq":  { "shares": 0.2981, "costAvg": 279.6 },
+    "nvda": { "shares": 1.6588, "costAvg": 81.4  },
+    "nu":   { "shares": 1.087,  "costAvg": 8.15  },
+    "tsla": { "shares": 0.1302, "costAvg": 217.0 }
+  },
+  "cash": {
+    "hapi": 150.74
+  },
+  "dca": {
+    "btc":    "julio 1, 2026",
+    "stocks": "junio 30, 2026",
+    "amount": 50
+  }
+}
