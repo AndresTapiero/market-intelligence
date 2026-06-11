@@ -1,0 +1,15 @@
+{
+  "name": "market-intelligence",
+  "version": "1.0.0",
+  "description": "Análisis semanal de portafolio con IA — Andrés Tapiero",
+  "type": "module",
+  "main": "analyze.js",
+  "scripts": {
+    "start": "node analyze.js",
+    "setup": "bash setup-cron.sh",
+    "logs": "tail -f logs/cron.log"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  }
+}
