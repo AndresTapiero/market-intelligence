@@ -4,8 +4,8 @@ name: Análisis semanal
 # pero la API key se toma de un secret del repo, no del código.
 on:
   schedule:
-    # Lunes 12:00 UTC = Lunes 07:00 en Ecuador (UTC-5), igual que el cron local.
-    - cron: "0 12 * * 1"
+    # Día 26 de cada mes, 12:00 UTC = 07:00 en Colombia (UTC-5).
+    - cron: '0 12 26 * *'
   workflow_dispatch: {}
 
 # analyze.js hace git push del reporte al final; necesita escritura en el repo.
