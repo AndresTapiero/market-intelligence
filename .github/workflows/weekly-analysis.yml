@@ -8,6 +8,10 @@ on:
     - cron: "0 12 * * 1"
   workflow_dispatch: {}
 
+# analyze.js hace git push del reporte al final; necesita escritura en el repo.
+permissions:
+  contents: write
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
