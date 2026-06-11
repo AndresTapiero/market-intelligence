@@ -11,10 +11,13 @@ import Anthropic from "@anthropic-ai/sdk";
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { exec as execCb } from "child_process";
+import { promisify } from "util";
 import { generateHTML } from "./generate-report.js";
 import { saveHistory, loadHistory } from "./history.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const exec = promisify(execCb);
 
 // ─── PORTAFOLIO DE ANDRÉS (actualizar cuando cambie) ──────────────────────────
 const PORTFOLIO = {
@@ -86,17 +89,14 @@ Valores de signal: solo BUY, HOLD o WAIT.
 
 // ─── SANITIZAR & PARSEAR JSON ─────────────────────────────────────────────────
 function sanitizeAndParse(raw) {
-  // Quitar fences de markdown
   let text = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
 
-  // Reemplazar comillas tipograficas
   text = text
     .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
     .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
     .replace(/\u2013|\u2014/g, "-")
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 
-  // Encontrar el bloque JSON completo
   const start = text.indexOf("{");
   if (start === -1) throw new Error("No se encontro JSON en la respuesta");
 
@@ -106,21 +106,37 @@ function sanitizeAndParse(raw) {
     if (text[i] === "{") depth++;
     else if (text[i] === "}") {
       depth--;
-      if (depth === 0) {
-        end = i;
-        break;
-      }
+      if (depth === 0) { end = i; break; }
     }
   }
 
   if (end === -1) throw new Error("JSON incompleto — verifica max_tokens");
 
-  return JSON.parse(text.slice(start, end + 1));
+  try {
+    return JSON.parse(text.slice(start, end + 1));
+  } catch (e) {
+    console.error("JSON problematico (primeros 400 chars):", text.slice(start, start + 400));
+    throw e;
+  }
+}
+
+// ─── GIT PUSH ─────────────────────────────────────────────────────────────────
+async function gitPush(weekLabel) {
+  try {
+    await exec(
+      `git add reports/ latest-report.html history.json && git commit -m "report: ${weekLabel}" && git push`,
+      { cwd: __dirname }
+    );
+    console.log("📤 Reporte subido a GitHub exitosamente");
+    console.log(`🌐 Ver en: https://andrestapiero.github.io/market-intelligence/latest-report.html`);
+  } catch (err) {
+    console.log("⚠️  Git push fallo:", err.message);
+  }
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 async function main() {
-  console.log("\n🔍 Market Intelligence — Iniciando análisis semanal...");
+  console.log("\n🔍 Market Intelligence — Iniciando analisis semanal...");
   console.log(`📅 ${new Date().toLocaleString("es-CO")}\n`);
 
   const client = new Anthropic();
@@ -128,13 +144,12 @@ async function main() {
   console.log("🌐 Consultando mercado en tiempo real...");
 
   const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-5",
     max_tokens: 2000,
     tools: [{ type: "web_search_20250305", name: "web_search" }],
     messages: [{ role: "user", content: buildPrompt() }],
   });
 
-  // Extraer bloque de texto final (después del tool use)
   const textBlocks = response.content
     .filter((b) => b.type === "text")
     .map((b) => b.text);
@@ -142,13 +157,12 @@ async function main() {
   const rawText = textBlocks.join("");
 
   if (!rawText.trim()) {
-    throw new Error("Respuesta vacía del modelo");
+    throw new Error("Respuesta vacia del modelo");
   }
 
-  console.log("🧠 Procesando análisis...");
+  console.log("🧠 Procesando analisis...");
   const data = sanitizeAndParse(rawText);
 
-  // Guardar en historial
   const historyEntry = {
     timestamp: new Date().toISOString(),
     week: getWeekLabel(),
@@ -158,11 +172,11 @@ async function main() {
   saveHistory(historyEntry);
   const history = loadHistory();
 
-  // Generar reporte HTML
   const reportsDir = join(__dirname, "reports");
   if (!existsSync(reportsDir)) mkdirSync(reportsDir, { recursive: true });
 
-  const filename = `report-${getWeekLabel()}.html`;
+  const weekLabel = getWeekLabel();
+  const filename = `report-${weekLabel}.html`;
   const filepath = join(reportsDir, filename);
   const latestPath = join(__dirname, "latest-report.html");
 
@@ -170,16 +184,17 @@ async function main() {
   writeFileSync(filepath, html, "utf8");
   writeFileSync(latestPath, html, "utf8");
 
-  console.log(`\n✅ Análisis completado exitosamente`);
+  console.log(`\n✅ Analisis completado exitosamente`);
   console.log(`📊 Reporte guardado: reports/${filename}`);
-  console.log(`🔗 Acceso rápido: latest-report.html\n`);
+  console.log(`🔗 Acceso rapido: latest-report.html\n`);
 
-  // Resumen en terminal
   printSummary(data);
 
-  // Abrir en browser automáticamente
-  const { exec } = await import("child_process");
-  exec(`open "${latestPath}" 2>/dev/null || xdg-open "${latestPath}" 2>/dev/null`);
+  // Push a GitHub
+  await gitPush(weekLabel);
+
+  // Abrir en browser
+  execCb(`open "${latestPath}" 2>/dev/null || xdg-open "${latestPath}" 2>/dev/null`);
 
   return data;
 }
@@ -197,7 +212,7 @@ function printSummary(d) {
   const assets = ["btc", "eth", "voo", "qqq", "nvda", "nu"];
 
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("  SEÑALES DE LA SEMANA");
+  console.log("  SENALES DE LA SEMANA");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
   for (const a of assets) {
