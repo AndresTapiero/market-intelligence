@@ -1,0 +1,71 @@
+[
+  {
+    "timestamp": "2026-06-11T17:41:04.787Z",
+    "week": "2026-W24",
+    "data": {
+      "date": "2026-06-11",
+      "btc": {
+        "price": "$67,234",
+        "change7d": "-2.3%",
+        "signal": "BUY",
+        "context": "BTC corrigiendo desde maximos de mayo. Tu costo promedio $82,716 esta 23% arriba del precio actual. Mantener DCA julio como planeado, no anticipar compras mientras deuda TC activa. Capitulacion de mineros y ETFs con salidas netas podrian indicar suelo cercano."
+      },
+      "eth": {
+        "price": "$3,521",
+        "change7d": "-3.1%",
+        "signal": "HOLD",
+        "context": "ETH bajo presion vs BTC, ratio ETH/BTC en minimos de 18 meses. Tu posicion sigue en perdida como indicaste. No vender. Upgrade Pectra programado Q3 2026 podria catalizar recuperacion. Paciencia hasta que narrative institucional regrese a ETH."
+      },
+      "voo": {
+        "price": "$512",
+        "change7d": "+1.2%",
+        "signal": "BUY",
+        "context": "S&P 500 en rally post-pausa Fed. Tu ganancia +30% es solida. Continuar DCA fin de mes (junio 30). Rotacion sectorial favorece value y financieras pero diversificacion amplia de VOO mitiga riesgo concentracion vs QQQ/NVDA."
+      },
+      "qqq": {
+        "price": "$485",
+        "change7d": "+0.8%",
+        "signal": "BUY",
+        "context": "Nasdaq resiliente pese a toma de ganancias en mega-caps. Tu +26% refleja rally tech 2025-2026. Mantener DCA programado. Valuaciones altas pero momentum intacto si Fed mantiene politica acomodaticia segundo semestre."
+      },
+      "nvda": {
+        "price": "$128",
+        "change7d": "-1.5%",
+        "signal": "HOLD",
+        "context": "NVDA consolida post-split y post-rally IA. Tu +67% es ganancia excepcional. No agregar posicion individual, dejar que DCA en QQQ/VOO maneje exposicion. Resultados Q2 en agosto seran catalizador clave. Evitar concentracion excesiva en single stock."
+      },
+      "nu": {
+        "price": "$15.80",
+        "change7d": "+2.1%",
+        "signal": "HOLD",
+        "context": "Nubank supera tu precio de entrada, +76% es excelente retorno. Expansion en Mexico y Colombia avanza. Mantener posicion actual via DCA en QQQ/VOO en lugar de aumentar individual. Fintech latam con vientos a favor pero ya tienes exposicion suficiente."
+      },
+      "macro": {
+        "usdcop": "$3,892 COP",
+        "fedrate": "4.50%",
+        "btcDominance": "54.2%",
+        "fearGreed": "42",
+        "fearGreedLabel": "Fear",
+        "narrative": "Fed pauso ciclo de recortes en junio tras datos inflacion mixtos. Mercados descuentan 1-2 recortes en H2 2026. Dolar fuerte presiona emergentes incluyendo COP. BTC dominance subiendo indica rotation defensiva en crypto. Fear index sugiere oportunidad acumulacion pero NO antes de liquidar deuda TC."
+      },
+      "actions": [
+        {
+          "num": "01",
+          "text": "Calcular cuanto falta para liquidar $5,140,477 COP total en tarjetas. Ese es tu objetivo antes de aumentar DCA. Proyecta timeline de pago agresivo."
+        },
+        {
+          "num": "02",
+          "text": "Ejecutar DCA acciones $50 USD el 30 junio en VOO o QQQ (alternar o dividir). No saltar este DCA pese a deuda - mantener disciplina pero no aumentar monto."
+        },
+        {
+          "num": "03",
+          "text": "NO anticipar DCA BTC de julio. Precio actual $67k vs tu avg $82k es tentador pero liquidez debe ir a TC primero. Stick to the plan: 1 julio proximo DCA."
+        },
+        {
+          "num": "04",
+          "text": "Revisar tasa interes Davivienda vs Rappi. Pagar primero la que tenga mayor tasa. Considera transferir saldo a credito con menor tasa si disponible. Cada peso a interes es peso que no inviertes."
+        }
+      ]
+    }
+  }
+]

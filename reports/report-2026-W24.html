@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Intelligence · Semana 2026-W24</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root {
+    --bg:#0a0c10;--surface:#111318;--surface2:#181b23;--border:#1e2230;
+    --text:#e8eaf2;--text-muted:#5a6080;--text-dim:#8890aa;
+    --green:#00d4a0;--green-dim:rgba(0,212,160,0.12);
+    --red:#ff4d6a;--red-dim:rgba(255,77,106,0.12);
+    --yellow:#f5c842;--yellow-dim:rgba(245,200,66,0.12);
+    --blue:#4d8fff;--accent:#7c5cfc;--accent-dim:rgba(124,92,252,0.15);
+    --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);padding:28px;min-height:100vh}
+
+  /* HEADER */
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+  .header h1{font-size:20px;font-weight:700;letter-spacing:-0.3px}
+  .header-sub{font-size:12px;color:var(--text-muted);font-family:var(--mono);margin-top:4px}
+  .week-badge{background:var(--accent-dim);color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1px solid rgba(124,92,252,0.3)}
+
+  /* ASSETS GRID */
+  .assets-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+  .asset-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+  .asset-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .asset-name{display:flex;align-items:center;gap:10px}
+  .asset-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:var(--mono)}
+  .asset-icon.btc{background:rgba(247,147,26,0.15);color:#f7931a}
+  .asset-icon.eth{background:rgba(98,126,234,0.15);color:#627eea}
+  .asset-icon.voo{background:var(--green-dim);color:var(--green)}
+  .asset-icon.qqq{background:rgba(77,143,255,0.12);color:var(--blue)}
+  .asset-icon.nvda{background:rgba(118,185,0,0.12);color:#76b900}
+  .asset-icon.nu{background:rgba(130,80,255,0.12);color:#8250ff}
+  .asset-ticker{font-size:15px;font-weight:700;font-family:var(--mono)}
+  .asset-label{font-size:11px;color:var(--text-muted)}
+  .signal-badge{font-size:10px;font-weight:700;letter-spacing:0.8px;padding:3px 9px;border-radius:4px;font-family:var(--mono)}
+  .signal-buy{background:var(--green-dim);color:var(--green)}
+  .signal-hold{background:var(--yellow-dim);color:var(--yellow)}
+  .signal-wait{background:var(--red-dim);color:var(--red)}
+  .asset-price{font-size:22px;font-weight:700;font-family:var(--mono);letter-spacing:-0.5px;margin-bottom:4px}
+  .asset-change{font-size:12px;font-family:var(--mono);margin-bottom:10px}
+  .asset-change.pos{color:var(--green)} .asset-change.neg{color:var(--red)}
+  .port-mini{display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono);padding:6px 10px;background:var(--surface2);border-radius:5px;margin-bottom:10px;color:var(--text-muted)}
+  .port-green{color:var(--green)} .port-red{color:var(--red)}
+  .asset-context{font-size:12px;line-height:1.6;color:var(--text-dim);padding:10px 12px;background:var(--surface2);border-radius:6px;border-left:2px solid var(--border)}
+
+  /* BOTTOM GRID */
+  .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+  .card-label{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;font-family:var(--mono)}
+
+  /* MACRO */
+  .macro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .macro-item{background:var(--surface2);border-radius:6px;padding:10px 12px}
+  .macro-item-label{font-size:10px;color:var(--text-muted);font-family:var(--mono);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px}
+  .macro-item-value{font-size:18px;font-weight:700;font-family:var(--mono)}
+  .macro-item-sub{font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-top:2px}
+  .macro-narrative{font-size:12px;line-height:1.65;color:var(--text-dim);padding:12px;background:var(--surface2);border-radius:6px}
+
+  /* DECISIONES */
+  .decision-card{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:18px 20px}
+  .decision-header{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+  .decision-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .decision-title{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);font-family:var(--mono)}
+  .action-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+  .action-item:last-child{border-bottom:none}
+  .action-num{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--accent);min-width:20px;padding-top:1px}
+  .action-text{font-size:13px;line-height:1.5;color:var(--text-dim)}
+
+  /* HISTORIAL */
+  .history-table{width:100%;border-collapse:collapse;font-size:12px}
+  .history-table th{text-align:left;font-size:10px;color:var(--text-muted);font-family:var(--mono);letter-spacing:0.8px;text-transform:uppercase;padding:0 8px 10px 0;border-bottom:1px solid var(--border)}
+  .history-table td{padding:9px 8px 9px 0;border-bottom:1px solid var(--border);color:var(--text-dim)}
+  .history-table tr:last-child td{border-bottom:none}
+  .mono{font-family:var(--mono)}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+  .signal-badge-sm{font-size:9px;font-weight:700;letter-spacing:0.6px;padding:2px 7px;border-radius:3px;font-family:var(--mono)}
+  .no-history{font-size:12px;color:var(--text-muted);padding:20px 0;text-align:center}
+
+  /* FOOTER */
+  .footer{margin-top:20px;text-align:center;font-size:11px;color:var(--text-muted);font-family:var(--mono);padding-top:16px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Market Intelligence</h1>
+    <div class="header-sub">Análisis semanal de portafolio · jueves, 11 de junio de 2026, 12:41 p. m.</div>
+  </div>
+  <div class="week-badge">2026-W24</div>
+</div>
+
+<div class="assets-grid">
+  
+        <div class="asset-card">
+          <div class="asset-header">
+            <div class="asset-name">
+              <div class="asset-icon btc">₿</div>
+              <div>
+                <div class="asset-ticker">BTC</div>
+                <div class="asset-label">Bitcoin</div>
+              </div>
+            </div>
+            <span class="signal-badge signal-buy">COMPRAR</span>
+          </div>
+          <div class="asset-price">$67,234</div>
+          <div class="asset-change neg">-2.3% esta semana</div>
+          <div class="port-mini">
+              <span>Holding: 0.01303 BTC = $876</span>
+              <span class="port-red">-18.7% vs costo</span>
+            </div>
+          <div class="asset-context">BTC corrigiendo desde maximos de mayo. Tu costo promedio $82,716 esta 23% arriba del precio actual. Mantener DCA julio como planeado, no anticipar compras mientras deuda TC activa. Capitulacion de mineros y ETFs con salidas netas podrian indicar suelo cercano.</div>
+        </div>
+        <div class="asset-card">
+          <div class="asset-header">
+            <div class="asset-name">
+              <div class="asset-icon eth">Ξ</div>
+              <div>
+                <div class="asset-ticker">ETH</div>
+                <div class="asset-label">Ethereum</div>
+              </div>
+            </div>
+            <span class="signal-badge signal-hold">MANTENER</span>
+          </div>
+          <div class="asset-price">$3,521</div>
+          <div class="asset-change neg">-3.1% esta semana</div>
+          
+          <div class="asset-context">ETH bajo presion vs BTC, ratio ETH/BTC en minimos de 18 meses. Tu posicion sigue en perdida como indicaste. No vender. Upgrade Pectra programado Q3 2026 podria catalizar recuperacion. Paciencia hasta que narrative institucional regrese a ETH.</div>
+        </div>
+        <div class="asset-card">
+          <div class="asset-header">
+            <div class="asset-name">
+              <div class="asset-icon voo">V</div>
+              <div>
+                <div class="asset-ticker">VOO</div>
+                <div class="asset-label">VOO</div>
+              </div>
+            </div>
+            <span class="signal-badge signal-buy">COMPRAR</span>
+          </div>
+          <div class="asset-price">$512</div>
+          <div class="asset-change pos">+1.2% esta semana</div>
+          <div class="port-mini">
+            <span>Holding: $244.79</span>
+            <span class="port-green">+30% vs costo</span>
+          </div>
+          <div class="asset-context">S&P 500 en rally post-pausa Fed. Tu ganancia +30% es solida. Continuar DCA fin de mes (junio 30). Rotacion sectorial favorece value y financieras pero diversificacion amplia de VOO mitiga riesgo concentracion vs QQQ/NVDA.</div>
+        </div>
+        <div class="asset-card">
+          <div class="asset-header">
+            <div class="asset-name">
+              <div class="asset-icon qqq">Q</div>
+              <div>
+                <div class="asset-ticker">QQQ</div>
+                <div class="asset-label">QQQ</div>
+              </div>
+            </div>
+            <span class="signal-badge signal-buy">COMPRAR</span>
+          </div>
+          <div class="asset-price">$485</div>
+          <div class="asset-change pos">+0.8% esta semana</div>
+          <div class="port-mini">
+            <span>Holding: $105.28</span>
+            <span class="port-green">+26% vs costo</span>
+          </div>
+          <div class="asset-context">Nasdaq resiliente pese a toma de ganancias en mega-caps. Tu +26% refleja rally tech 2025-2026. Mantener DCA programado. Valuaciones altas pero momentum intacto si Fed mantiene politica acomodaticia segundo semestre.</div>
+        </div>
+        <div class="asset-card">
+          <div class="asset-header">
+            <div class="asset-name">
+              <div class="asset-icon nvda">N</div>
+              <div>
+                <div class="asset-ticker">NVDA</div>
+                <div class="asset-label">NVIDIA</div>
+              </div>
+            </div>
+            <span class="signal-badge signal-hold">MANTENER</span>
+          </div>
+          <div class="asset-price">$128</div>
+          <div class="asset-change neg">-1.5% esta semana</div>
+          <div class="port-mini">
+            <span>Holding: $219.99</span>
+            <span class="port-green">+67% vs costo</span>
+          </div>
+          <div class="asset-context">NVDA consolida post-split y post-rally IA. Tu +67% es ganancia excepcional. No agregar posicion individual, dejar que DCA en QQQ/VOO maneje exposicion. Resultados Q2 en agosto seran catalizador clave. Evitar concentracion excesiva en single stock.</div>
+        </div>
+        <div class="asset-card">
+          <div class="asset-header">
+            <div class="asset-name">
+              <div class="asset-icon nu">N</div>
+              <div>
+                <div class="asset-ticker">NU</div>
+                <div class="asset-label">Nubank</div>
+              </div>
+            </div>
+            <span class="signal-badge signal-hold">MANTENER</span>
+          </div>
+          <div class="asset-price">$15.80</div>
+          <div class="asset-change pos">+2.1% esta semana</div>
+          <div class="port-mini">
+            <span>Holding: $14.42</span>
+            <span class="port-green">+76% vs costo</span>
+          </div>
+          <div class="asset-context">Nubank supera tu precio de entrada, +76% es excelente retorno. Expansion en Mexico y Colombia avanza. Mantener posicion actual via DCA en QQQ/VOO en lugar de aumentar individual. Fintech latam con vientos a favor pero ya tienes exposicion suficiente.</div>
+        </div>
+</div>
+
+<div class="bottom-grid">
+  <div class="card">
+    <div class="card-label">Contexto Macroeconómico</div>
+    <div class="macro-grid">
+      <div class="macro-item">
+        <div class="macro-item-label">USD/COP</div>
+        <div class="macro-item-value">$3,892 COP</div>
+        <div class="macro-item-sub">tasa ARQ estimada</div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-item-label">FED Rate</div>
+        <div class="macro-item-value">4.50%</div>
+        <div class="macro-item-sub">política monetaria</div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-item-label">BTC Dominance</div>
+        <div class="macro-item-value">54.2%</div>
+        <div class="macro-item-sub">mercado crypto</div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-item-label">Fear & Greed</div>
+        <div class="macro-item-value">42</div>
+        <div class="macro-item-sub">Fear</div>
+      </div>
+    </div>
+    <div class="macro-narrative">Fed pauso ciclo de recortes en junio tras datos inflacion mixtos. Mercados descuentan 1-2 recortes en H2 2026. Dolar fuerte presiona emergentes incluyendo COP. BTC dominance subiendo indica rotation defensiva en crypto. Fear index sugiere oportunidad acumulacion pero NO antes de liquidar deuda TC.</div>
+  </div>
+
+  <div class="decision-card">
+    <div class="decision-header">
+      <div class="decision-dot"></div>
+      <div class="decision-title">Acciones para esta semana</div>
+    </div>
+    <div class="action-item">
+        <span class="action-num">01</span>
+        <span class="action-text">Calcular cuanto falta para liquidar $5,140,477 COP total en tarjetas. Ese es tu objetivo antes de aumentar DCA. Proyecta timeline de pago agresivo.</span>
+      </div><div class="action-item">
+        <span class="action-num">02</span>
+        <span class="action-text">Ejecutar DCA acciones $50 USD el 30 junio en VOO o QQQ (alternar o dividir). No saltar este DCA pese a deuda - mantener disciplina pero no aumentar monto.</span>
+      </div><div class="action-item">
+        <span class="action-num">03</span>
+        <span class="action-text">NO anticipar DCA BTC de julio. Precio actual $67k vs tu avg $82k es tentador pero liquidez debe ir a TC primero. Stick to the plan: 1 julio proximo DCA.</span>
+      </div><div class="action-item">
+        <span class="action-num">04</span>
+        <span class="action-text">Revisar tasa interes Davivienda vs Rappi. Pagar primero la que tenga mayor tasa. Considera transferir saldo a credito con menor tasa si disponible. Cada peso a interes es peso que no inviertes.</span>
+      </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-label">Historial de señales — últimas 8 semanas</div>
+  <p class='no-history'>Solo hay datos de esta semana. El historial se construirá semana a semana.</p>
+</div>
+
+<div class="footer">
+  Generado automáticamente por Market Intelligence · Solo informativo, no es asesoría financiera · jueves, 11 de junio de 2026, 12:41 p. m.
+</div>
+
+</body>
+</html>
