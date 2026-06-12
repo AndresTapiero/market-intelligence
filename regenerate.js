@@ -10,6 +10,7 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { exec } from "child_process";
 import { generateHTML } from "./generate-report.js";
+import { detectAndLogDCA } from "./dca-log.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -71,6 +72,7 @@ async function main() {
 
   const raw = loadPortfolio();
   const portfolio = buildPortfolio(raw, analysisData);
+  portfolio.dcaLog = detectAndLogDCA(raw);
 
   // Calcular totales para log
   const totalCrypto = Object.values(portfolio.crypto).reduce((s,a) => s+(a.currentVal||0), 0);

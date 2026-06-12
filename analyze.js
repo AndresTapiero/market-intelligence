@@ -13,6 +13,7 @@ import { exec as execCb } from "child_process";
 import { promisify } from "util";
 import { generateHTML } from "./generate-report.js";
 import { saveHistory, loadHistory } from "./history.js";
+import { detectAndLogDCA, loadDcaLog } from "./dca-log.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const exec = promisify(execCb);
@@ -184,6 +185,10 @@ async function main() {
 
   // 4. Calcular valores actuales con precios reales
   const PORTFOLIO = buildPortfolioForReport(rawPortfolio, analysisData);
+
+  // 4b. Detectar y registrar compras DCA automaticamente
+  const dcaLog = detectAndLogDCA(rawPortfolio);
+  PORTFOLIO.dcaLog = dcaLog;
 
   // Log valores calculados
   const totalCrypto = Object.values(PORTFOLIO.crypto).reduce((s,a) => s + (a.currentVal||0), 0);
