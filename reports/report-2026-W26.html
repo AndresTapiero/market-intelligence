@@ -42,6 +42,9 @@
   .sticky-stat-val{font-size:14px;font-weight:700;font-family:var(--mono);line-height:1.1}
   .pdf-btn{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
   .pdf-btn:hover{background:var(--accent);color:white}
+  .header-actions{display:flex;gap:8px;align-items:center}
+  .refresh-btn{background:var(--green-dim);color:var(--green);border:1px solid var(--green);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .refresh-btn:hover{background:var(--green);color:white}
 
   /* HEADER */
   .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border-subtle);flex-wrap:wrap;gap:12px}
@@ -59,6 +62,7 @@
   .total-value{font-size:28px;font-weight:800;font-family:var(--mono);letter-spacing:-1px;line-height:1}
   .total-card.highlight .total-value{font-size:32px}
   .total-sub{font-size:11px;color:var(--text-muted);font-family:var(--mono);margin-top:6px}
+  .total-sub-cop{font-size:10px;color:var(--accent);font-family:var(--mono);margin-top:3px;opacity:0.85}
   .total-breakdown{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
   .total-breakdown span{font-size:10px;font-family:var(--mono);color:var(--text-muted)}
 
@@ -93,6 +97,14 @@
   .analyst-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
   .analyst-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
   .analyst-name{font-size:14px;font-weight:700} .analyst-title{font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-top:1px}
+  .risk-badge{display:inline-block;margin-top:7px;font-size:10px;font-weight:700;font-family:var(--mono);color:var(--accent);background:var(--accent-dim);padding:3px 10px;border-radius:5px;border:1px solid rgba(139,109,255,.3)}
+
+  /* OPORTUNIDADES */
+  .opp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g)}
+  .opp-card{background:var(--surface);border:1px solid var(--border-subtle);border-left:3px solid var(--green);border-radius:var(--r-sm);padding:14px 16px}
+  .opp-asset{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--green);margin-bottom:6px}
+  .opp-reason{font-size:12px;color:var(--text-dim);line-height:1.55;margin-bottom:8px}
+  .opp-risk{font-size:10px;color:var(--orange);font-family:var(--mono)}
   .analyst-opinion{font-size:14px;line-height:1.75;color:var(--text-dim);padding:16px 18px;background:var(--surface2);border-radius:var(--r-sm);border-left:3px solid var(--accent)}
 
   /* GRÁFICO */
@@ -102,6 +114,7 @@
   .chart-growth{font-size:12px;font-family:var(--mono);margin-top:3px}
   .chart-svg{width:100%;height:auto;display:block;margin-top:8px;overflow:visible}
   .chart-x-label{font-size:9px;fill:var(--text-muted);font-family:var(--mono)}
+  .chart-val-label{font-size:11px;font-weight:700;fill:var(--accent);font-family:var(--mono)}
   .chart-single{text-align:center;padding:24px 0}
   .chart-single-val{font-size:34px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
   .chart-single-label{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-top:6px}
@@ -128,6 +141,12 @@
   .asset-delta{font-size:10px;font-family:var(--mono);margin-bottom:8px;display:flex;align-items:center;gap:5px}
   .asset-delta-label{color:var(--text-muted);font-size:9px}
   .asset-context{font-size:10px;line-height:1.55;color:var(--text-dim);padding:8px 10px;background:var(--surface2);border-radius:6px;border-left:2px solid var(--border)}
+  .price-compare{display:flex;align-items:center;gap:7px;padding:6px 9px;background:var(--surface2);border-radius:6px;margin-bottom:7px}
+  .pc-item{display:flex;flex-direction:column}
+  .pc-label{font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
+  .pc-item .mono{font-size:11px;font-weight:600}
+  .pc-arrow{color:var(--text-muted);font-size:11px}
+  .pc-gain{font-size:10px;font-weight:700;font-family:var(--mono);margin-left:auto}
 
   /* P&L */
   .pnl-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
@@ -150,6 +169,8 @@
   /* COMPOSICIÓN */
   .comp-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
   .comp-scroll{max-height:175px;overflow-y:auto;padding-right:6px}
+  .pnl-scroll{max-height:320px;overflow-y:auto;padding-right:6px}
+  .pnl-scroll::-webkit-scrollbar{width:4px} .pnl-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:2px} .pnl-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
   .comp-scroll::-webkit-scrollbar{width:4px} .comp-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:2px} .comp-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
   .comp-row{display:grid;grid-template-columns:62px 1fr 44px 62px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border-subtle)}
   .comp-row:last-child{border-bottom:none}
@@ -209,6 +230,36 @@
 
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
   .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
+  /* CONVERSOR USD/COP */
+  .cop-widget{display:flex;flex-direction:column;gap:16px}
+  .cop-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
+  .cop-current-rate{font-size:13px;font-weight:600;color:var(--text)}
+  .cop-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+  .cop-reset{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:10px;font-family:var(--sans);cursor:pointer;white-space:nowrap}
+  .cop-reset:hover{background:var(--border)}
+  .cop-slider{width:100%;height:6px;border-radius:3px;background:var(--surface2);outline:none;-webkit-appearance:none;cursor:pointer}
+  .cop-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 0 4px var(--accent-dim)}
+  .cop-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:none;box-shadow:0 0 0 4px var(--accent-dim)}
+  .cop-rate-display{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .cop-rate-label{font-size:11px;color:var(--text-muted)}
+  .cop-rate-value{font-size:22px;font-weight:800;color:var(--accent)}
+  .cop-rate-diff{font-size:11px;font-family:var(--mono)}
+  .cop-results{display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border-radius:var(--r-sm);flex-wrap:wrap}
+  .cop-result-item{flex:1;min-width:140px}
+  .cop-result-item.highlight .cop-result-value{color:var(--green);font-size:24px}
+  .cop-result-label{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px}
+  .cop-result-value{font-size:20px;font-weight:800}
+  .cop-result-arrow{font-size:18px;color:var(--text-muted)}
+  .cop-breakdown{display:flex;gap:16px;flex-wrap:wrap;padding-top:4px}
+  .cop-breakdown-item{display:flex;gap:6px;font-size:11px;color:var(--text-muted)}
+  .cop-breakdown-item .mono{color:var(--text-dim);font-weight:600}
+
+  /* INFO ICON + TOAST */
+  .info-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--surface2);color:var(--text-muted);font-size:10px;margin-left:5px;cursor:help;vertical-align:middle;transition:all .15s}
+  .info-icon:hover{background:var(--accent);color:white}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--accent);border-radius:var(--r-sm);padding:12px 18px;font-size:12px;color:var(--text);max-width:320px;text-align:left;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:200;opacity:0;pointer-events:none;transition:all .25s ease}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
   .footer{margin-top:24px;text-align:center;font-size:10px;color:var(--text-muted);font-family:var(--mono);padding-top:18px;border-top:1px solid var(--border-subtle)}
 
   /* RESPONSIVE */
@@ -257,13 +308,16 @@
     <div class="sticky-stat"><div class="sticky-stat-label">BTC</div><div class="sticky-stat-val num">$67,234</div></div>
     
   </div>
-  <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
+  <div class="header-actions">
+    <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Actualizar datos</a>
+    <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
+  </div>
 </div>
 
 <div class="header" id="report-content">
   <div>
     <h1>Market Intelligence</h1>
-    <div class="header-sub">Reporte de inversiones · viernes, 26 de junio de 2026, 3:05 p. m.</div>
+    <div class="header-sub">Reporte de inversiones · viernes, 26 de junio de 2026, 5:44 p. m.</div>
   </div>
   <div class="header-right">
     <div class="week-badge">junio de 2026</div>
@@ -278,18 +332,21 @@
     <div class="total-label">Capital Invertido</div>
     <div class="total-value num">$3,653</div>
     <div class="total-sub">costo base USD</div>
+    <div class="total-sub-cop">≈ $14.219.299 COP</div>
     <div class="total-breakdown"><span>Crypto $3,238</span><span>Acc. $414</span></div>
   </div>
   <div class="total-card">
     <div class="total-label">Valor de Mercado</div>
     <div class="total-value num">$2,043</div>
     <div class="total-sub">a precios actuales</div>
+    <div class="total-sub-cop">≈ $7.954.586 COP</div>
     <div class="total-breakdown"><span>Crypto $1,440</span><span>Acc. $603</span></div>
   </div>
   <div class="total-card">
-    <div class="total-label">Resultado P&L</div>
+    <div class="total-label">Resultado P&L<span class="info-icon" onclick="showToast(this, 'P&L (Profit and Loss): la diferencia entre lo que invertiste y el valor actual de tu posicion.')" title="P&L (Profit and Loss): la diferencia entre lo que invertiste y el valor actual de tu posicion.">ⓘ</span></div>
     <div class="total-value num neg">-$1,609</div>
     <div class="total-sub neg">-44.1% sobre capital</div>
+    <div class="total-sub-cop neg">≈ -$6.264.713 COP</div>
     <div class="total-breakdown"><span class="neg">Crypto -55.5%</span><span class="pos">Acc. +45.5%</span></div>
   </div>
   <div class="total-card highlight">
@@ -300,7 +357,75 @@
   </div>
 </div>
 
-<!-- 2. GRÁFICO -->
+
+<!-- 1b. CONVERSOR INTERACTIVO USD/COP -->
+<div class="section-title">Simulador de conversión a pesos</div>
+<div class="card mb">
+  <div class="cop-widget">
+    <div class="cop-header">
+      <div>
+        <div class="cop-current-rate">TRM actual: <span class="mono num" id="copBaseRate">$0</span> COP</div>
+        <div class="cop-sub">Desliza para simular distintos escenarios de tasa de cambio</div>
+      </div>
+      <button class="cop-reset" onclick="resetCopRate()">↺ Restablecer</button>
+    </div>
+    <input type="range" id="copSlider" class="cop-slider" min="2800" max="4500" step="1" value="3433">
+    <div class="cop-rate-display">
+      <span class="cop-rate-label">Tasa simulada:</span>
+      <span class="mono num cop-rate-value" id="copRateValue">$3,433.71</span>
+      <span class="cop-rate-diff" id="copRateDiff"></span>
+    </div>
+    <div class="cop-results">
+      <div class="cop-result-item">
+        <div class="cop-result-label">Total Portafolio (USD)</div>
+        <div class="mono num cop-result-value" id="copUsdVal">$0</div>
+      </div>
+      <div class="cop-result-arrow">→</div>
+      <div class="cop-result-item highlight">
+        <div class="cop-result-label">Equivalente en COP</div>
+        <div class="mono num cop-result-value" id="copValue">$0</div>
+      </div>
+    </div>
+    <div class="cop-breakdown">
+      <div class="cop-breakdown-item"><span>Crypto</span><span class="mono num" id="copCrypto">$0</span></div>
+      <div class="cop-breakdown-item"><span>Acciones</span><span class="mono num" id="copStocks">$0</span></div>
+      <div class="cop-breakdown-item"><span>Cash</span><span class="mono num" id="copCash">$0</span></div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- 2. ANALISTA -->
+<div class="analyst-card">
+  <div class="analyst-header">
+    <div class="analyst-avatar">📊</div>
+    <div><div class="analyst-name">Analista Senior de Portafolio</div><div class="analyst-title">10 años · Renta Variable & Activos Digitales · CFA Level II</div></div>
+  </div>
+  <div class="analyst-opinion">Analisis no disponible.</div>
+</div>
+
+
+<!-- 2b. NUEVAS OPORTUNIDADES -->
+<div class="section-title">Oportunidades de inversión sugeridas</div>
+<div class="opp-grid mb">
+  <div class="no-history" style="padding:10px 0">Sin nuevas oportunidades sugeridas este mes.</div>
+</div>
+
+
+<!-- 3. MACRO ECONÓMICO -->
+<div class="section-title">Contexto Macroeconómico</div>
+<div class="card mb">
+  <div class="macro-grid">
+    <div class="macro-item"><div class="macro-item-label">USD/COP<span class="info-icon" onclick="showToast(this, 'TRM: Tasa Representativa del Mercado, el valor oficial del dolar en pesos colombianos publicado por el Banco de la Republica.')" title="TRM: Tasa Representativa del Mercado, el valor oficial del dolar en pesos colombianos publicado por el Banco de la Republica.">ⓘ</span></div><div class="macro-item-value num">$3,892 COP</div><div class="macro-item-sub">tasa ARQ</div></div>
+    <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value num">4.50%</div><div class="macro-item-sub">política</div></div>
+    <div class="macro-item"><div class="macro-item-label">BTC Dom.<span class="info-icon" onclick="showToast(this, 'Dominancia BTC: el porcentaje del valor total del mercado crypto que representa Bitcoin.')" title="Dominancia BTC: el porcentaje del valor total del mercado crypto que representa Bitcoin.">ⓘ</span></div><div class="macro-item-value num">54.2%</div><div class="macro-item-sub">dominancia</div></div>
+    <div class="macro-item"><div class="macro-item-label">Fear & Greed<span class="info-icon" onclick="showToast(this, 'Fear & Greed Index: mide el sentimiento del mercado crypto del 0 (miedo extremo) al 100 (codicia extrema).')" title="Fear & Greed Index: mide el sentimiento del mercado crypto del 0 (miedo extremo) al 100 (codicia extrema).">ⓘ</span></div><div class="macro-item-value num">42</div><div class="macro-item-sub">Fear</div></div>
+  </div>
+  <div class="macro-narrative">Fed pauso ciclo de recortes en junio tras datos inflacion mixtos. Mercados descuentan 1-2 recortes en H2 2026. Dolar fuerte presiona emergentes incluyendo COP. BTC dominance subiendo indica rotation defensiva en crypto. Fear index sugiere oportunidad acumulacion pero NO antes de liquidar deuda TC.</div>
+</div>
+
+<!-- 4. GRÁFICO -->
 <div class="section-title">Evolución del portafolio</div>
 <div class="chart-card mb">
   
@@ -310,26 +435,29 @@
         <div class="chart-growth pos">+7.4% desde inicio del seguimiento</div>
       </div>
     </div>
-    <svg viewBox="0 0 600 160" class="chart-svg" preserveAspectRatio="xMidYMid meet">
+    <svg viewBox="0 0 600 200" class="chart-svg" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
           <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
         </linearGradient>
       </defs>
-      <path d="M30.0,101.8 L570.0,60.2 L570.0,130 L30.0,130 Z" fill="url(#areaGrad)"/>
-      <path d="M30.0,101.8 L570.0,60.2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="30.0" cy="101.8" r="3" fill="var(--accent)"/>
-       <text x="30.0" y="146" text-anchor="middle" class="chart-x-label">jun.</text><circle cx="570.0" cy="60.2" r="3" fill="var(--accent)"/>
-       <text x="570.0" y="146" text-anchor="middle" class="chart-x-label">Hoy</text>
+      <path d="M36.0,128.0 L564.0,74.7 L564.0,164 L36.0,164 Z" fill="url(#areaGrad)"/>
+      <path d="M36.0,128.0 L564.0,74.7" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="36.0" cy="128.0" r="3.5" fill="var(--accent)"/>
+       <text x="36.0" y="118.0" text-anchor="middle" class="chart-val-label">$2.0k</text>
+       <text x="36.0" y="182" text-anchor="middle" class="chart-x-label">jun de 26</text><circle cx="564.0" cy="74.7" r="3.5" fill="var(--accent)"/>
+       <text x="564.0" y="64.7" text-anchor="middle" class="chart-val-label">$2.2k</text>
+       <text x="564.0" y="182" text-anchor="middle" class="chart-x-label">Hoy</text>
     </svg>
 </div>
 
-<!-- 3. INDICADORES -->
+
+<!-- 5. INDICADORES -->
 <div class="section-title">Indicadores clave</div>
 <div class="insights-top mb">
   <div class="score-card">
-    <div class="section-title" style="margin-bottom:10px">Score de salud</div>
+    <div class="section-title" style="margin-bottom:10px">Score de salud<span class="info-icon" onclick="showToast(this, 'Score de salud: medida del 1 al 10 que evalua diversificacion, rendimiento y disciplina de tu portafolio.')" title="Score de salud: medida del 1 al 10 que evalua diversificacion, rendimiento y disciplina de tu portafolio.">ⓘ</span></div>
     <div class="score-top">
       <div><span class="score-num" style="color:var(--green)">8.5</span><span class="score-denom">/10</span></div>
       <span class="score-label-badge" style="background:var(--green)22;color:var(--green)">Saludable</span>
@@ -347,12 +475,12 @@
     </div>
   </div>
   <div class="insight-card alert-orange">
-    <div class="insight-label">📍 BTC Break-even</div>
+    <div class="insight-label">📍 BTC Break-even<span class="info-icon" onclick="showToast(this, 'Break-even: el precio al que tu posicion vuelve a estar en cero, ni ganancia ni perdida.')" title="Break-even: el precio al que tu posicion vuelve a estar en cero, ni ganancia ni perdida.">ⓘ</span></div>
     <div class="insight-value" style="color:var(--orange)">+23.0%</div>
          <div class="insight-sub">Costo avg: <strong>$82,716</strong><br>Precio: <strong>$67,234</strong><br>Falta 23.0% para break-even</div>
   </div>
   <div class="insight-card ">
-    <div class="insight-label">📅 Retorno anualizado</div>
+    <div class="insight-label">📅 Retorno anualizado<span class="info-icon" onclick="showToast(this, 'Retorno anualizado: proyecta el rendimiento actual como si se mantuviera durante un año completo.')" title="Retorno anualizado: proyecta el rendimiento actual como si se mantuviera durante un año completo.">ⓘ</span></div>
     <div class="insight-value text-muted">—</div><div class="insight-sub">Disponible desde el 2do reporte</div>
   </div>
 </div>
@@ -384,16 +512,8 @@
   </div>
 </div>
 
-<!-- 4. ANALISTA -->
-<div class="analyst-card">
-  <div class="analyst-header">
-    <div class="analyst-avatar">📊</div>
-    <div><div class="analyst-name">Analista Senior de Portafolio</div><div class="analyst-title">10 años · Renta Variable & Activos Digitales · CFA Level II</div></div>
-  </div>
-  <div class="analyst-opinion">Analisis no disponible.</div>
-</div>
 
-<!-- 5. SEÑALES -->
+<!-- 6. SEÑALES -->
 <div class="section-title">Señales de mercado</div>
 <div class="signals-group">
   <div class="signals-group-title">📈 Acciones</div>
@@ -408,6 +528,12 @@
         </div>
         <div class="asset-price num">$512</div>
         <div class="asset-change num pos">+1.2% <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$418</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$512</span></div>
+          <span class="pc-gain pos">+22.3%</span>
+        </div>
         <div class="port-mini">
           <span class="num">$229</span>
           <span class="num pos">+22.3%</span>
@@ -425,6 +551,12 @@
         </div>
         <div class="asset-price num">$485</div>
         <div class="asset-change num pos">+0.8% <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$279</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$485</span></div>
+          <span class="pc-gain pos">+73.5%</span>
+        </div>
         <div class="port-mini">
           <span class="num">$144</span>
           <span class="num pos">+73.5%</span>
@@ -442,6 +574,12 @@
         </div>
         <div class="asset-price num">$128</div>
         <div class="asset-change num neg">-1.5% <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$81.40</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$128</span></div>
+          <span class="pc-gain pos">+57.2%</span>
+        </div>
         <div class="port-mini">
           <span class="num">$212</span>
           <span class="num pos">+57.2%</span>
@@ -459,6 +597,12 @@
         </div>
         <div class="asset-price num">$15.80</div>
         <div class="asset-change num pos">+2.1% <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$8.15</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$15.80</span></div>
+          <span class="pc-gain pos">+93.9%</span>
+        </div>
         <div class="port-mini">
           <span class="num">$17</span>
           <span class="num pos">+93.9%</span>
@@ -476,6 +620,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$217</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num pos">+0.0%</span>
@@ -497,6 +647,12 @@
         </div>
         <div class="asset-price num">$67,234</div>
         <div class="asset-change num neg">-2.3% <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$82,716</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$67,234</span></div>
+          <span class="pc-gain neg">-18.7%</span>
+        </div>
         <div class="port-mini">
           <span class="num">$830</span>
           <span class="num neg">-18.7%</span>
@@ -514,6 +670,12 @@
         </div>
         <div class="asset-price num">$3,521</div>
         <div class="asset-change num neg">-3.1% <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$3,200</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$3,521</span></div>
+          <span class="pc-gain pos">+10.0%</span>
+        </div>
         <div class="port-mini">
           <span class="num">$610</span>
           <span class="num pos">+10.0%</span>
@@ -531,6 +693,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$104</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num neg">-100.0%</span>
@@ -548,6 +716,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$449</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num neg">-100.0%</span>
@@ -565,6 +739,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$9.16</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num neg">-100.0%</span>
@@ -582,6 +762,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$1,344</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num neg">-100.0%</span>
@@ -599,6 +785,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$1.52</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num neg">-100.0%</span>
@@ -616,6 +808,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$0.5660</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num neg">-100.0%</span>
@@ -633,6 +831,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$0.2780</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num neg">-100.0%</span>
@@ -650,6 +854,12 @@
         </div>
         <div class="asset-price num">—</div>
         <div class="asset-change num neg">— <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$18.74</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0000</span></div>
+          
+        </div>
         <div class="port-mini">
           <span class="num">$0.00</span>
           <span class="num neg">-100.0%</span>
@@ -659,21 +869,24 @@
       </div></div>
 </div>
 
-<!-- 6. P&L -->
+
+<!-- 7. P&L -->
 <div class="section-title">Rendimiento detallado</div>
 <div class="pnl-grid mb">
   <div class="pnl-card">
     <div class="pnl-header"><div class="pnl-title">Acciones · 5</div><div class="pnl-total-badge pos">+$188 (+45.5%)</div></div>
-    
+    <div class="pnl-scroll">
       <div class="pnl-row">
         <div class="pnl-asset">
           <div class="asset-icon-sm" style="background:#00d4a022;color:#00d4a0">V</div>
-          <div><div class="pnl-name">VOO</div><div class="pnl-qty">posicion</div></div>
+          <div><div class="pnl-name">VOO</div><div class="pnl-qty">0.4477 VOO</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$418</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$512</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$187</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$229</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num pos">+$41</span>
@@ -685,12 +898,14 @@
       <div class="pnl-row">
         <div class="pnl-asset">
           <div class="asset-icon-sm" style="background:#4d8fff22;color:#4d8fff">Q</div>
-          <div><div class="pnl-name">QQQ</div><div class="pnl-qty">posicion</div></div>
+          <div><div class="pnl-name">QQQ</div><div class="pnl-qty">0.2981 QQQ</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$279</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$485</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$83</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$144</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num pos">+$61</span>
@@ -702,12 +917,14 @@
       <div class="pnl-row">
         <div class="pnl-asset">
           <div class="asset-icon-sm" style="background:#76b90022;color:#76b900">N</div>
-          <div><div class="pnl-name">NVIDIA</div><div class="pnl-qty">posicion</div></div>
+          <div><div class="pnl-name">NVIDIA</div><div class="pnl-qty">1.6588 NVDA</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$81.40</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$128</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$135</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$212</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num pos">+$77</span>
@@ -719,12 +936,14 @@
       <div class="pnl-row">
         <div class="pnl-asset">
           <div class="asset-icon-sm" style="background:#8250ff22;color:#8250ff">N</div>
-          <div><div class="pnl-name">Nubank</div><div class="pnl-qty">posicion</div></div>
+          <div><div class="pnl-name">Nubank</div><div class="pnl-qty">1.087 NU</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$8.15</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$15.80</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$8</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$17</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num pos">+$8.31</span>
@@ -736,12 +955,14 @@
       <div class="pnl-row">
         <div class="pnl-asset">
           <div class="asset-icon-sm" style="background:#e3193722;color:#e31937">T</div>
-          <div><div class="pnl-name">Tesla</div><div class="pnl-qty">posicion</div></div>
+          <div><div class="pnl-name">Tesla</div><div class="pnl-qty">0.1302 TSLA</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$217</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$0.00</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num pos">+$0.00</span>
@@ -749,21 +970,23 @@
             <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:0%;background:var(--green)"></div></div>
           </div>
         </div>
-      </div>
+      </div></div>
     <div class="pnl-subtotal"><span class="text-muted">Total</span><span class="mono num">$414</span><span class="mono num">$603</span><span class="mono num pos">+$188</span></div>
   </div>
   <div class="pnl-card">
     <div class="pnl-header"><div class="pnl-title">Crypto · 10</div><div class="pnl-total-badge neg">-$1,798 (-55.5%)</div></div>
-    
+    <div class="pnl-scroll">
       <div class="pnl-row">
         <div class="pnl-asset">
           <div class="asset-icon-sm" style="background:#f7931a22;color:#f7931a">₿</div>
           <div><div class="pnl-name">Bitcoin</div><div class="pnl-qty">0.01235 BTC</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$82,716</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$67,234</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$1,021</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$830</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$191</span>
@@ -778,9 +1001,11 @@
           <div><div class="pnl-name">Ethereum</div><div class="pnl-qty">0.1733 ETH</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$3,200</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$3,521</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$554</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$610</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num pos">+$55</span>
@@ -795,9 +1020,11 @@
           <div><div class="pnl-name">Solana</div><div class="pnl-qty">4.165 SOL</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$104</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$435</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$435</span>
@@ -812,9 +1039,11 @@
           <div><div class="pnl-name">Bittensor</div><div class="pnl-qty">0.7367 TAO</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$449</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$331</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$331</span>
@@ -829,9 +1058,11 @@
           <div><div class="pnl-name">Uniswap</div><div class="pnl-qty">30.68 UNI</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$9.16</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$281</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$281</span>
@@ -846,9 +1077,11 @@
           <div><div class="pnl-name">BNB</div><div class="pnl-qty">0.1075 BNB</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$1,344</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$144</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$144</span>
@@ -863,9 +1096,11 @@
           <div><div class="pnl-name">SUI</div><div class="pnl-qty">60.85 SUI</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$1.52</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$92</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$92</span>
@@ -880,9 +1115,11 @@
           <div><div class="pnl-name">SEI</div><div class="pnl-qty">464.78 SEI</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$0.5660</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$263</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$263</span>
@@ -897,9 +1134,11 @@
           <div><div class="pnl-name">Ethena</div><div class="pnl-qty">249.59 ENA</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$0.2780</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$69</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$69</span>
@@ -914,9 +1153,11 @@
           <div><div class="pnl-name">Avalanche</div><div class="pnl-qty">2.428 AVAX</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$18.74</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0000</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$45</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$0.00</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span><span class="mono num text-muted">—</span></div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="mono num text-muted">—</span></div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num neg">-$45</span>
@@ -924,12 +1165,13 @@
             <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:100%;background:var(--red)"></div></div>
           </div>
         </div>
-      </div>
+      </div></div>
     <div class="pnl-subtotal"><span class="text-muted">Total</span><span class="mono num">$3,238</span><span class="mono num">$1,440</span><span class="mono num neg">-$1,798</span></div>
   </div>
 </div>
 
-<!-- 7. COMPOSICIÓN -->
+
+<!-- 8. COMPOSICIÓN -->
 <div class="section-title">Composición del portafolio</div>
 <div class="comp-pair">
   <div class="card"><div class="section-title">Acciones · $603</div><div class="comp-scroll"><div class="comp-row">
@@ -966,27 +1208,17 @@
       </div></div></div>
 </div>
 
-<!-- 8. MACRO + DECISIONES -->
-<div class="bottom-grid">
-  <div class="card">
-    <div class="section-title">Contexto Macroeconómico</div>
-    <div class="macro-grid">
-      <div class="macro-item"><div class="macro-item-label">USD/COP</div><div class="macro-item-value num">$3,892 COP</div><div class="macro-item-sub">tasa ARQ</div></div>
-      <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value num">4.50%</div><div class="macro-item-sub">política</div></div>
-      <div class="macro-item"><div class="macro-item-label">BTC Dom.</div><div class="macro-item-value num">54.2%</div><div class="macro-item-sub">dominancia</div></div>
-      <div class="macro-item"><div class="macro-item-label">Fear & Greed</div><div class="macro-item-value num">42</div><div class="macro-item-sub">Fear</div></div>
-    </div>
-    <div class="macro-narrative">Fed pauso ciclo de recortes en junio tras datos inflacion mixtos. Mercados descuentan 1-2 recortes en H2 2026. Dolar fuerte presiona emergentes incluyendo COP. BTC dominance subiendo indica rotation defensiva en crypto. Fear index sugiere oportunidad acumulacion pero NO antes de liquidar deuda TC.</div>
-  </div>
-  <div class="decision-card">
-    <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones este mes</div></div>
-    <div class="action-item"><span class="action-num">01</span><span class="action-text">Calcular cuanto falta para liquidar $5,140,477 COP total en tarjetas. Ese es tu objetivo antes de aumentar DCA. Proyecta timeline de pago agresivo.</span></div><div class="action-item"><span class="action-num">02</span><span class="action-text">Ejecutar DCA acciones $50 USD el 30 junio en VOO o QQQ (alternar o dividir). No saltar este DCA pese a deuda - mantener disciplina pero no aumentar monto.</span></div><div class="action-item"><span class="action-num">03</span><span class="action-text">NO anticipar DCA BTC de julio. Precio actual $67k vs tu avg $82k es tentador pero liquidez debe ir a TC primero. Stick to the plan: 1 julio proximo DCA.</span></div><div class="action-item"><span class="action-num">04</span><span class="action-text">Revisar tasa interes Davivienda vs Rappi. Pagar primero la que tenga mayor tasa. Considera transferir saldo a credito con menor tasa si disponible. Cada peso a interes es peso que no inviertes.</span></div>
-  </div>
+
+<!-- 9. DECISIONES DEL MES -->
+<div class="section-title">Decisiones para este mes</div>
+<div class="decision-card mb">
+  <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
+  <div class="action-item"><span class="action-num">01</span><span class="action-text">Calcular cuanto falta para liquidar $5,140,477 COP total en tarjetas. Ese es tu objetivo antes de aumentar DCA. Proyecta timeline de pago agresivo.</span></div><div class="action-item"><span class="action-num">02</span><span class="action-text">Ejecutar DCA acciones $50 USD el 30 junio en VOO o QQQ (alternar o dividir). No saltar este DCA pese a deuda - mantener disciplina pero no aumentar monto.</span></div><div class="action-item"><span class="action-num">03</span><span class="action-text">NO anticipar DCA BTC de julio. Precio actual $67k vs tu avg $82k es tentador pero liquidez debe ir a TC primero. Stick to the plan: 1 julio proximo DCA.</span></div><div class="action-item"><span class="action-num">04</span><span class="action-text">Revisar tasa interes Davivienda vs Rappi. Pagar primero la que tenga mayor tasa. Considera transferir saldo a credito con menor tasa si disponible. Cada peso a interes es peso que no inviertes.</span></div>
 </div>
 
-<!-- 9. DCA + BITÁCORA + CALENDARIO -->
+<!-- 10. DCA + BITÁCORA + CALENDARIO -->
 <div class="three-col">
-  <div class="card"><div class="section-title">DCA Tracker</div>
+  <div class="card"><div class="section-title">DCA Tracker<span class="info-icon" onclick="showToast(this, 'DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.')" title="DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.">ⓘ</span></div>
     <div class="dca-grid">
       <div class="dca-item">
         <div class="asset-icon-sm" style="background:#f7931a22;color:#f7931a">₿</div>
@@ -1007,9 +1239,76 @@
   <div class="card"><div class="section-title">Próximos eventos</div><div class="cal-grid"><div class="cal-row"><div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div><div class="cal-dot" style="background:var(--blue)"></div><div class="cal-evento">Decisión FED — tasas de interés</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--yellow)">Jun 25</div><div class="cal-dot" style="background:var(--yellow)"></div><div class="cal-evento">Earnings NVDA Q2 (estimado)</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Acciones — VOO/QQQ $50</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div></div></div>
 </div>
 
-<div class="footer">Market Intelligence v7 · Analista Senior 10 años · Solo informativo, no es asesoría financiera regulada · viernes, 26 de junio de 2026, 3:05 p. m.</div>
+<div class="footer">Market Intelligence v7 · Analista Senior 10 años · Solo informativo, no es asesoría financiera regulada · viernes, 26 de junio de 2026, 5:44 p. m.</div>
 
 <script>
+// ─── CONVERSOR INTERACTIVO USD/COP ─────────────────────────────────────────
+const COP_DATA = {
+  baseRate: 3892,
+  totalUsd: 2194.57,
+  cryptoUsd: 1440.5300000000002,
+  stocksUsd: 603.3,
+  cashUsd: 150.74
+};
+
+function fmtCOP(n) {
+  return Math.round(n).toLocaleString('es-CO');
+}
+
+function updateCopWidget(rate) {
+  document.getElementById('copRateValue').textContent = '$' + Number(rate).toLocaleString('es-CO', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const diff = ((rate - COP_DATA.baseRate) / COP_DATA.baseRate * 100);
+  const diffEl = document.getElementById('copRateDiff');
+  if (Math.abs(diff) < 0.05) {
+    diffEl.textContent = '(tasa actual)';
+    diffEl.className = 'cop-rate-diff text-muted';
+  } else {
+    diffEl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '% vs TRM real';
+    diffEl.className = 'cop-rate-diff ' + (diff >= 0 ? 'pos' : 'neg');
+  }
+
+  document.getElementById('copUsdVal').textContent = '$' + Math.round(COP_DATA.totalUsd).toLocaleString('en-US');
+  document.getElementById('copValue').textContent = '$' + fmtCOP(COP_DATA.totalUsd * rate) + ' COP';
+  document.getElementById('copCrypto').textContent = '$' + fmtCOP(COP_DATA.cryptoUsd * rate) + ' COP';
+  document.getElementById('copStocks').textContent = '$' + fmtCOP(COP_DATA.stocksUsd * rate) + ' COP';
+  document.getElementById('copCash').textContent = '$' + fmtCOP(COP_DATA.cashUsd * rate) + ' COP';
+}
+
+function resetCopRate() {
+  const slider = document.getElementById('copSlider');
+  slider.value = COP_DATA.baseRate;
+  updateCopWidget(COP_DATA.baseRate);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const slider = document.getElementById('copSlider');
+  const baseRateEl = document.getElementById('copBaseRate');
+  if (slider) {
+    slider.value = COP_DATA.baseRate;
+    slider.min = Math.max(2000, Math.round(COP_DATA.baseRate * 0.7));
+    slider.max = Math.round(COP_DATA.baseRate * 1.3);
+    baseRateEl.textContent = '$' + Number(COP_DATA.baseRate).toLocaleString('es-CO', {minimumFractionDigits:2});
+    updateCopWidget(COP_DATA.baseRate);
+    slider.addEventListener('input', (e) => updateCopWidget(e.target.value));
+  }
+});
+
+let toastTimeout;
+function showToast(el, text) {
+  let toast = document.getElementById('infoToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'infoToast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = text;
+  toast.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
 function exportPDF() {
   const btn = document.querySelector('.pdf-btn');
   btn.textContent = '⏳ Generando...';

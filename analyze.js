@@ -69,49 +69,54 @@ function buildPortfolioForReport(raw, analysisData) {
   };
 }
 
-// ─── PROMPT ───────────────────────────────────────────────────────────────────
+// ─── PROMPT OPTIMIZADO ────────────────────────────────────────────────────────
+// Activos accionables (BTC, VOO, QQQ, NVDA): analisis completo con contexto.
+// Altcoins en HOLD permanente: solo precio y cambio, sin narrativa (ahorra tokens).
 function buildPrompt(raw) {
   const today = new Date().toLocaleDateString("es-CO", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
-  // Construir lista de posiciones desde portfolio.json
-  const cryptoLines = Object.entries(raw.crypto || {}).map(([key, c]) =>
-    `- ${key.toUpperCase()}: ${c.qty} unidades, costo promedio $${c.costAvg} USD`
-  ).join("\n");
+  // Activos que SI reciben analisis narrativo completo
+  const ACCIONABLES = ["btc", "voo", "qqq", "nvda"];
+  // El resto solo trae precio + cambio + senal corta
 
-  const stockLines = Object.entries(raw.stocks || {}).map(([key, s]) =>
-    `- ${key.toUpperCase()}: ${s.shares} acciones, costo promedio $${s.costAvg} USD`
-  ).join("\n");
+  const cryptoKeys = Object.keys(raw.crypto || {});
+  const stockKeys  = Object.keys(raw.stocks || {});
+  const allKeys    = [...cryptoKeys, ...stockKeys];
 
-  const cryptoKeys = Object.keys(raw.crypto || {}).join(", ").toUpperCase();
-  const stockKeys  = Object.keys(raw.stocks || {}).join(", ").toUpperCase();
+  const tickersList = allKeys.join(", ").toUpperCase();
+
+  // Construir template JSON: accionables con context, resto sin context
+  function assetTemplate(key) {
+    if (ACCIONABLES.includes(key)) {
+      return `"${key}":{"price":"$X","change7d":"+X.X%","signal":"BUY","context":"2 oraciones de analisis ASCII"}`;
+    }
+    return `"${key}":{"price":"$X","change7d":"+X.X%","signal":"HOLD"}`;
+  }
+
+  const assetsTemplate = allKeys.map(assetTemplate).join(",");
 
   return `Eres el analista financiero personal de Andres Tapiero. Hoy es ${today}.
 
-Busca en la web los precios actuales de mercado para: ${cryptoKeys}, ${stockKeys}.
+Busca en la web los precios actuales de: ${tickersList}.
+Busca tambien la TRM oficial de Colombia (USD/COP) de HOY especificamente -- no estimes ni redondees, usa el valor oficial publicado por Banco de la Republica o fuentes financieras colombianas confiables.
+Haz maximo 7 busquedas (agrupa varios tickers por busqueda cuando sea posible).
 
-POSICIONES ACTUALES (cantidades reales):
-CRYPTO:
-${cryptoLines}
+CONTEXTO:
+- Portafolio diversificado crypto + acciones USA. Estrategia DCA mensual de $${raw.dca?.amount || 50} en BTC y $${raw.dca?.amount || 50} en acciones (VOO/QQQ).
+- Reglas: no comprar altcoins, no vender con perdida, prioridad eliminar deuda TC.
+- Las altcoins (ETH, SOL, TAO, UNI, BNB, SUI, SEI, ENA, AVAX) estan en HOLD permanente: solo necesito su precio actual, sin analisis.
+- Analisis narrativo SOLO para: BTC, VOO, QQQ, NVDA (los activos accionables).
+- Perfil de riesgo de Andres: moderado-agresivo (acepta volatilidad crypto pero prioriza disciplina DCA y eliminar deuda antes de nuevas posiciones).
 
-ACCIONES:
-${stockLines}
+Tambien sugiere 2-3 OPORTUNIDADES NUEVAS de inversion (acciones, BTC adicional, o ETFs) basadas en el comportamiento actual del mercado y el perfil de riesgo de Andres. No sugieras altcoins nuevas. Cada sugerencia debe tener: el activo, por que tiene sentido ahora, y el riesgo principal.
 
-Cash disponible en Hapi: $${raw.cash?.hapi || 0} USD
+FORMATO: Responde UNICAMENTE JSON valido. Sin texto extra, sin backticks, sin markdown.
+Solo ASCII en los textos. Signals: BUY, HOLD o WAIT.
+El campo usdcop debe ser la TRM oficial real de HOY, con el valor numerico exacto (ej: "$3,433.71 COP"), no una estimacion.
 
-REGLAS DE INVERSION:
-- No comprar altcoins — todo capital fresco a BTC y acciones (VOO/QQQ)
-- No vender crypto con perdida
-- DCA sistematico: $${raw.dca?.amount || 50} USD BTC el ${raw.dca?.btc || "inicio de mes"}, $${raw.dca?.amount || 50} USD acciones el ${raw.dca?.stocks || "fin de mes"}
-- Prioridad: eliminar deuda TC antes de incrementar DCA
-
-INSTRUCCIONES CRITICAS DE FORMATO:
-Responde UNICAMENTE con JSON valido. Sin texto extra. Sin backticks. Sin markdown.
-Solo caracteres ASCII en valores de texto. Signals: solo BUY, HOLD o WAIT.
-Incluye precio actual de CADA activo listado arriba.
-
-{"date":"fecha","analystOpinion":"opinion experta 3-4 oraciones ASCII","btc":{"price":"$X,XXX","change7d":"+X.X%","signal":"BUY","context":"texto ASCII"},"eth":{"price":"$X,XXX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"sol":{"price":"$XXX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"tao":{"price":"$XXX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"uni":{"price":"$X.XX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"bnb":{"price":"$XXX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"sui":{"price":"$X.XX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"sei":{"price":"$X.XX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"ena":{"price":"$X.XX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"avax":{"price":"$X.XX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"voo":{"price":"$XXX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"qqq":{"price":"$XXX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"nvda":{"price":"$XXX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"nu":{"price":"$XX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"tsla":{"price":"$XXX","change7d":"+X.X%","signal":"HOLD","context":"texto ASCII"},"macro":{"usdcop":"$X,XXX COP","fedrate":"X.XX%","btcDominance":"XX%","fearGreed":"XX","fearGreedLabel":"etiqueta ASCII","narrative":"contexto macro ASCII"},"actions":[{"num":"01","text":"accion concreta"},{"num":"02","text":"accion concreta"},{"num":"03","text":"accion concreta"},{"num":"04","text":"accion concreta"}]}`;
+{"date":"fecha","analystOpinion":"opinion experta del portafolio completo en 3-4 oraciones ASCII, mencionando que funciona, que arrastra, y la recomendacion del mes","riskProfile":"Moderado-Agresivo",${assetsTemplate},"macro":{"usdcop":"$X,XXX.XX COP","fedrate":"X%","btcDominance":"XX%","fearGreed":"XX","fearGreedLabel":"etiqueta","narrative":"2 oraciones macro ASCII"},"newOpportunities":[{"asset":"ticker","reason":"por que tiene sentido ahora en 1-2 oraciones ASCII","risk":"riesgo principal en 1 oracion ASCII"},{"asset":"ticker","reason":"texto ASCII","risk":"texto ASCII"}],"actions":[{"num":"01","text":"accion concreta"},{"num":"02","text":"accion concreta"},{"num":"03","text":"accion concreta"}]}`;
 }
 
 // ─── SANITIZAR & PARSEAR JSON ─────────────────────────────────────────────────
@@ -211,7 +216,7 @@ async function main() {
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-5",
-    max_tokens: 4000,
+    max_tokens: 2500,
     tools: [{ type: "web_search_20250305", name: "web_search" }],
     messages: [{ role: "user", content: buildPrompt(rawPortfolio) }],
   });
@@ -236,7 +241,23 @@ async function main() {
   console.log(`  💰 Crypto: $${totalCrypto.toFixed(0)} · Acciones: $${totalStocks.toFixed(0)}`);
 
   // 5. Guardar historial
-  const historyEntry = { timestamp: new Date().toISOString(), week: getWeekLabel(), data: analysisData };
+  // Calcular totales REALES de este momento para guardar snapshot del portafolio
+  const totalCryptoSnapshot = Object.values(PORTFOLIO.crypto).reduce((s,a) => s + (a.currentVal||0), 0);
+  const totalStocksSnapshot = Object.values(PORTFOLIO.stocks).filter(s => s.val != null).reduce((s,a) => s + (a.val||0), 0);
+  const cashSnapshot = PORTFOLIO.stocks.cash?.val || 0;
+  const totalSnapshot = totalCryptoSnapshot + totalStocksSnapshot + cashSnapshot;
+
+  const historyEntry = {
+    timestamp: new Date().toISOString(),
+    week: getWeekLabel(),
+    data: analysisData,
+    portfolioSnapshot: {
+      totalCrypto: +totalCryptoSnapshot.toFixed(2),
+      totalStocks: +totalStocksSnapshot.toFixed(2),
+      cash: +cashSnapshot.toFixed(2),
+      total: +totalSnapshot.toFixed(2),
+    }
+  };
   saveHistory(historyEntry);
   const history = loadHistory();
 

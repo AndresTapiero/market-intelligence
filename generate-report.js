@@ -59,7 +59,10 @@ export function generateHTML(data, history, portfolio) {
     const inv = (c.qty||0) * (c.costAvg||0);
     const prevVal = getPrevValue(key, true);
     const monthDelta = prevVal !== null ? cur - prevVal : null;
-    return { key, ...cryptoMeta[key], ic:key, qty:`${c.qty||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta };
+    const buyPrice = c.costAvg || 0;
+    const marketPrice = parseFloat((d[key]?.price||"0").replace(/[$,]/g,"")) || 0;
+    const priceGain = buyPrice > 0 && marketPrice > 0 ? ((marketPrice-buyPrice)/buyPrice*100).toFixed(1) : null;
+    return { key, ...cryptoMeta[key], ic:key, qty:`${c.qty||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta, buyPrice, marketPrice, priceGain };
   });
 
   const stockAssets = Object.keys(stockMeta).map(key => {
@@ -68,7 +71,10 @@ export function generateHTML(data, history, portfolio) {
     const inv = cur / (1 + (s.gainPct||0)/100);
     const prevVal = getPrevValue(key, false);
     const monthDelta = prevVal !== null ? cur - prevVal : null;
-    return { key, ...stockMeta[key], ic:key, qty:"posicion", invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta };
+    const buyPrice = s.costAvg || 0;
+    const marketPrice = parseFloat((d[key]?.price||"0").replace(/[$,]/g,"")) || 0;
+    const priceGain = buyPrice > 0 && marketPrice > 0 ? ((marketPrice-buyPrice)/buyPrice*100).toFixed(1) : null;
+    return { key, ...stockMeta[key], ic:key, qty:`${s.shares||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta, buyPrice, marketPrice, priceGain };
   });
 
   const cashVal = portfolio.stocks.cash?.val || 0;
@@ -89,6 +95,8 @@ export function generateHTML(data, history, portfolio) {
   const totalPnL      = totalCryptoVal + totalStocksVal - totalInvested;
   const totalPnLPct   = pnlPct(totalCryptoVal+totalStocksVal, totalInvested);
 
+  const copRate = parseFloat((d.macro?.usdcop||"3433.71").replace(/[$, COP]/g,"")) || 3433.71;
+  function fmtCOPval(usd){ return Math.round(usd*copRate).toLocaleString("es-CO"); }
   const cryptoRatio = ((totalCryptoVal/(totalCryptoVal+totalStocksVal))*100).toFixed(0);
   const stocksRatio = (100 - parseFloat(cryptoRatio)).toFixed(0);
 
@@ -151,17 +159,37 @@ export function generateHTML(data, history, portfolio) {
   }
 
   // ─── P&L ROWS ─────────────────────────────────────────────────────────────────
+  function infoIcon(term) {
+    const defs = {
+      "pnl": "P&L (Profit and Loss): la diferencia entre lo que invertiste y el valor actual de tu posicion.",
+      "dca": "DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.",
+      "breakeven": "Break-even: el precio al que tu posicion vuelve a estar en cero, ni ganancia ni perdida.",
+      "feargreed": "Fear & Greed Index: mide el sentimiento del mercado crypto del 0 (miedo extremo) al 100 (codicia extrema).",
+      "trm": "TRM: Tasa Representativa del Mercado, el valor oficial del dolar en pesos colombianos publicado por el Banco de la Republica.",
+      "dominance": "Dominancia BTC: el porcentaje del valor total del mercado crypto que representa Bitcoin.",
+      "annualized": "Retorno anualizado: proyecta el rendimiento actual como si se mantuviera durante un año completo.",
+      "score": "Score de salud: medida del 1 al 10 que evalua diversificacion, rendimiento y disciplina de tu portafolio.",
+      "riskprofile": "Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno."
+    };
+    const text = (defs[term] || "").replace(/"/g, "&quot;");
+    return `<span class="info-icon" onclick="showToast(this, '${text}')" title="${text}">ⓘ</span>`;
+  }
+
+  function fmtPrice(n){ return n < 1 ? n.toFixed(4) : (n < 100 ? n.toFixed(2) : fmt(n)); }
+
   function pnlRows(arr) {
-    return arr.map(r => `
+    const rows = arr.map(r => `
       <div class="pnl-row">
         <div class="pnl-asset">
           <div class="asset-icon-sm" style="background:${r.color}22;color:${r.color}">${r.icon}</div>
           <div><div class="pnl-name">${r.label}</div><div class="pnl-qty">${r.qty}</div></div>
         </div>
         <div class="pnl-nums">
+          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$${fmtPrice(r.buyPrice)}</span></div>
+          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$${fmtPrice(r.marketPrice)}</span></div>
           <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$${fmt(r.invested)}</span></div>
           <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$${fmt(r.current)}</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes ant.</span>${r.monthDelta !== null ? deltaIndicator(r.monthDelta) : '<span class="mono num text-muted">—</span>'}</div>
+          <div class="pnl-trio"><span class="label-xs">vs mes</span>${r.monthDelta !== null ? deltaIndicator(r.monthDelta) : '<span class="mono num text-muted">—</span>'}</div>
           <div class="pnl-trio">
             <span class="label-xs">P&L</span>
             <span class="mono num ${cls(r.pnlV)}">${sign(r.pnlV)}$${fmtD(r.pnlV)}</span>
@@ -170,6 +198,9 @@ export function generateHTML(data, history, portfolio) {
           </div>
         </div>
       </div>`).join("");
+    // Scroll si hay mas de 5 activos para no alargar el reporte
+    // Siempre scroll, asi Acciones y Crypto se ven visualmente identicos
+    return `<div class="pnl-scroll">${rows}</div>`;
   }
 
   // ─── COMPOSICIÓN SCROLL ───────────────────────────────────────────────────────
@@ -203,6 +234,12 @@ export function generateHTML(data, history, portfolio) {
         </div>
         <div class="asset-price num">${asset.price||"—"}</div>
         <div class="asset-change num ${isPos?"pos":"neg"}">${asset.change7d||"—"} <span class="asset-change-label">semana</span></div>
+        <div class="price-compare">
+          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$${a.buyPrice < 1 ? a.buyPrice.toFixed(4) : (a.buyPrice < 100 ? a.buyPrice.toFixed(2) : fmt(a.buyPrice))}</span></div>
+          <span class="pc-arrow">→</span>
+          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$${a.marketPrice < 1 ? a.marketPrice.toFixed(4) : (a.marketPrice < 100 ? a.marketPrice.toFixed(2) : fmt(a.marketPrice))}</span></div>
+          ${a.priceGain !== null ? `<span class="pc-gain ${cls(a.priceGain)}">${pct(a.priceGain)}</span>` : ""}
+        </div>
         <div class="port-mini">
           <span class="num">$${fmt(a.current)}</span>
           <span class="num ${cls(a.pnlV)}">${pct(a.pnlP)}</span>
@@ -256,14 +293,19 @@ export function generateHTML(data, history, portfolio) {
     if (!history || history.length < 1) {
       return `<div class="no-history" style="padding:30px 0">El gráfico de evolución se construirá mes a mes.</div>`;
     }
-    // Construir puntos: cada mes con su valor total estimado
+    // Construir puntos: usar snapshot REAL guardado si existe, sino estimar con precio BTC
     const points = history.slice(-12).map(h => {
+      const label = h.timestamp
+        ? new Date(h.timestamp).toLocaleDateString("es-CO",{month:"short",year:"2-digit"})
+        : h.week;
+      // Snapshot real (nuevo formato) — preferido
+      if (h.portfolioSnapshot?.total) {
+        return { label, val: Math.round(h.portfolioSnapshot.total) };
+      }
+      // Fallback para historial antiguo sin snapshot: estimar solo con BTC
       const bP = parseFloat((h.data?.btc?.price||"0").replace(/[$,]/g,"")) || 0;
       const btcQty = portfolio.crypto.btc?.qty || 0;
       const estTotal = bP > 0 ? (bP * btcQty + totalStocksVal + totalCryptoVal - (portfolio.crypto.btc?.currentVal||0)) : totalVal;
-      const label = h.timestamp
-        ? new Date(h.timestamp).toLocaleDateString("es-CO",{month:"short"})
-        : h.week;
       return { label, val: Math.round(estTotal) };
     });
     // Añadir punto actual
@@ -277,7 +319,7 @@ export function generateHTML(data, history, portfolio) {
       </div>`;
     }
 
-    const W = 600, H = 160, pad = 30;
+    const W = 600, H = 200, pad = 36;
     const vals = points.map(p => p.val);
     const minV = Math.min(...vals) * 0.95;
     const maxV = Math.max(...vals) * 1.05;
@@ -293,10 +335,12 @@ export function generateHTML(data, history, portfolio) {
     const linePath = coords.map((c,i) => `${i===0?"M":"L"}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
     const areaPath = linePath + ` L${coords[coords.length-1].x.toFixed(1)},${H-pad} L${coords[0].x.toFixed(1)},${H-pad} Z`;
 
-    const dots = coords.map(c =>
-      `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3" fill="var(--accent)"/>
-       <text x="${c.x.toFixed(1)}" y="${(H-pad+16)}" text-anchor="middle" class="chart-x-label">${c.label}</text>`
-    ).join("");
+    const dots = coords.map(c => {
+      const valLabel = c.val >= 1000 ? "$" + (c.val/1000).toFixed(1) + "k" : "$" + c.val;
+      return `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3.5" fill="var(--accent)"/>
+       <text x="${c.x.toFixed(1)}" y="${(c.y-10).toFixed(1)}" text-anchor="middle" class="chart-val-label">${valLabel}</text>
+       <text x="${c.x.toFixed(1)}" y="${(H-pad+18)}" text-anchor="middle" class="chart-x-label">${c.label}</text>`;
+    }).join("");
 
     const lastVal = coords[coords.length-1];
     const firstVal = coords[0];
@@ -324,7 +368,9 @@ export function generateHTML(data, history, portfolio) {
 
   // ─── HISTORIAL TABLA ──────────────────────────────────────────────────────────
   function monthlyEvolution() {
-    if (!history||history.length<1) return `<div class="no-history">Historial en construcción.</div>`;
+    if (!history||history.length<1) {
+      return `<div class="no-history">Punto de partida: ${getMonthLabel()} · Total $${fmt(totalVal)}. La comparación mes a mes empezará en el próximo reporte.</div>`;
+    }
     const byMonth = {};
     history.forEach(h => {
       const label = h.timestamp ? new Date(h.timestamp).toLocaleDateString("es-CO",{month:"short",year:"numeric"}) : h.week;
@@ -332,13 +378,73 @@ export function generateHTML(data, history, portfolio) {
       byMonth[label].push(h);
     });
     const months = Object.keys(byMonth).slice(-6);
-    const rows = months.map(month => {
+
+    // Calcular el valor total estimado del portafolio en cada mes historico
+    // usando el precio BTC de ese mes (proxy) + valor actual de acciones (no varia retroactivamente)
+    let prevTotalEst = null;
+    const rows = months.map((month, idx) => {
       const last = byMonth[month][byMonth[month].length-1];
+      let totalEstThatMonth;
+      if (last.portfolioSnapshot?.total) {
+        totalEstThatMonth = last.portfolioSnapshot.total;
+      } else {
+        const bP = parseFloat((last.data?.btc?.price||"0").replace(/[$,]/g,"")) || 0;
+        const btcQty = portfolio.crypto.btc?.qty || 0;
+        const cryptoEstThatMonth = bP > 0 ? bP*btcQty + (totalCryptoVal - (portfolio.crypto.btc?.currentVal||0)) : totalCryptoVal;
+        totalEstThatMonth = cryptoEstThatMonth + totalStocksVal;
+      }
+
+      let deltaStr = "—", deltaCls = "";
+      if (prevTotalEst !== null && prevTotalEst > 0) {
+        const d2 = ((totalEstThatMonth - prevTotalEst)/prevTotalEst*100).toFixed(1);
+        deltaStr = (d2>=0?"+":"")+d2+"%";
+        deltaCls = d2>=0?"pos":"neg";
+      }
+      prevTotalEst = totalEstThatMonth;
+
       const chg = last.data?.btc?.change7d||"—";
       const isP = chg.startsWith("+");
-      return `<tr><td class="mono">${month}</td><td class="mono num">${last.data?.btc?.price||"—"}</td><td class="mono num ${isP?"pos":"neg"}">${chg}</td><td class="mono num">${last.data?.macro?.fearGreed||"—"}</td></tr>`;
+      return `<tr>
+        <td class="mono">${month}</td>
+        <td class="mono num">$${fmt(totalEstThatMonth)}</td>
+        <td class="mono num ${deltaCls}">${deltaStr}</td>
+        <td class="mono num">${last.data?.btc?.price||"—"}</td>
+        <td class="mono num ${isP?"pos":"neg"}">${chg}</td>
+        <td class="mono num">${last.data?.macro?.fearGreed||"—"}</td>
+      </tr>`;
     }).join("");
-    return `<div class="history-wrap"><table class="history-table"><thead><tr><th>Mes</th><th>BTC</th><th>BTC 7d</th><th>F&G</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+
+    // Fila actual (hoy)
+    let todayDelta = "—", todayCls = "";
+    if (prevTotalEst !== null && prevTotalEst > 0) {
+      const d3 = ((totalVal - prevTotalEst)/prevTotalEst*100).toFixed(1);
+      todayDelta = (d3>=0?"+":"")+d3+"%";
+      todayCls = d3>=0?"pos":"neg";
+    }
+    const todayRow = `<tr style="font-weight:700">
+      <td class="mono">Hoy</td>
+      <td class="mono num">$${fmt(totalVal)}</td>
+      <td class="mono num ${todayCls}">${todayDelta}</td>
+      <td class="mono num">${d.btc?.price||"—"}</td>
+      <td class="mono num ${(d.btc?.change7d||"").startsWith("+")?"pos":"neg"}">${d.btc?.change7d||"—"}</td>
+      <td class="mono num">${d.macro?.fearGreed||"—"}</td>
+    </tr>`;
+
+    return `<div class="history-wrap"><table class="history-table">
+      <thead><tr><th>Mes</th><th>Total Portafolio</th><th>vs mes ant.</th><th>BTC</th><th>BTC 7d</th><th>F&G</th></tr></thead>
+      <tbody>${rows}${todayRow}</tbody>
+    </table></div>`;
+  }
+
+  function newOpportunities() {
+    const opps = d.newOpportunities || [];
+    if (opps.length === 0) return `<div class="no-history" style="padding:10px 0">Sin nuevas oportunidades sugeridas este mes.</div>`;
+    return opps.map(o => `
+      <div class="opp-card">
+        <div class="opp-asset">${o.asset}</div>
+        <div class="opp-reason">${o.reason}</div>
+        <div class="opp-risk">⚠ ${o.risk}</div>
+      </div>`).join("");
   }
 
   function actionItems() {
@@ -403,6 +509,9 @@ export function generateHTML(data, history, portfolio) {
   .sticky-stat-val{font-size:14px;font-weight:700;font-family:var(--mono);line-height:1.1}
   .pdf-btn{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
   .pdf-btn:hover{background:var(--accent);color:white}
+  .header-actions{display:flex;gap:8px;align-items:center}
+  .refresh-btn{background:var(--green-dim);color:var(--green);border:1px solid var(--green);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .refresh-btn:hover{background:var(--green);color:white}
 
   /* HEADER */
   .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border-subtle);flex-wrap:wrap;gap:12px}
@@ -420,6 +529,7 @@ export function generateHTML(data, history, portfolio) {
   .total-value{font-size:28px;font-weight:800;font-family:var(--mono);letter-spacing:-1px;line-height:1}
   .total-card.highlight .total-value{font-size:32px}
   .total-sub{font-size:11px;color:var(--text-muted);font-family:var(--mono);margin-top:6px}
+  .total-sub-cop{font-size:10px;color:var(--accent);font-family:var(--mono);margin-top:3px;opacity:0.85}
   .total-breakdown{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
   .total-breakdown span{font-size:10px;font-family:var(--mono);color:var(--text-muted)}
 
@@ -454,6 +564,14 @@ export function generateHTML(data, history, portfolio) {
   .analyst-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
   .analyst-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
   .analyst-name{font-size:14px;font-weight:700} .analyst-title{font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-top:1px}
+  .risk-badge{display:inline-block;margin-top:7px;font-size:10px;font-weight:700;font-family:var(--mono);color:var(--accent);background:var(--accent-dim);padding:3px 10px;border-radius:5px;border:1px solid rgba(139,109,255,.3)}
+
+  /* OPORTUNIDADES */
+  .opp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g)}
+  .opp-card{background:var(--surface);border:1px solid var(--border-subtle);border-left:3px solid var(--green);border-radius:var(--r-sm);padding:14px 16px}
+  .opp-asset{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--green);margin-bottom:6px}
+  .opp-reason{font-size:12px;color:var(--text-dim);line-height:1.55;margin-bottom:8px}
+  .opp-risk{font-size:10px;color:var(--orange);font-family:var(--mono)}
   .analyst-opinion{font-size:14px;line-height:1.75;color:var(--text-dim);padding:16px 18px;background:var(--surface2);border-radius:var(--r-sm);border-left:3px solid var(--accent)}
 
   /* GRÁFICO */
@@ -463,6 +581,7 @@ export function generateHTML(data, history, portfolio) {
   .chart-growth{font-size:12px;font-family:var(--mono);margin-top:3px}
   .chart-svg{width:100%;height:auto;display:block;margin-top:8px;overflow:visible}
   .chart-x-label{font-size:9px;fill:var(--text-muted);font-family:var(--mono)}
+  .chart-val-label{font-size:11px;font-weight:700;fill:var(--accent);font-family:var(--mono)}
   .chart-single{text-align:center;padding:24px 0}
   .chart-single-val{font-size:34px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
   .chart-single-label{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-top:6px}
@@ -489,6 +608,12 @@ export function generateHTML(data, history, portfolio) {
   .asset-delta{font-size:10px;font-family:var(--mono);margin-bottom:8px;display:flex;align-items:center;gap:5px}
   .asset-delta-label{color:var(--text-muted);font-size:9px}
   .asset-context{font-size:10px;line-height:1.55;color:var(--text-dim);padding:8px 10px;background:var(--surface2);border-radius:6px;border-left:2px solid var(--border)}
+  .price-compare{display:flex;align-items:center;gap:7px;padding:6px 9px;background:var(--surface2);border-radius:6px;margin-bottom:7px}
+  .pc-item{display:flex;flex-direction:column}
+  .pc-label{font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
+  .pc-item .mono{font-size:11px;font-weight:600}
+  .pc-arrow{color:var(--text-muted);font-size:11px}
+  .pc-gain{font-size:10px;font-weight:700;font-family:var(--mono);margin-left:auto}
 
   /* P&L */
   .pnl-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
@@ -511,6 +636,8 @@ export function generateHTML(data, history, portfolio) {
   /* COMPOSICIÓN */
   .comp-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
   .comp-scroll{max-height:175px;overflow-y:auto;padding-right:6px}
+  .pnl-scroll{max-height:320px;overflow-y:auto;padding-right:6px}
+  .pnl-scroll::-webkit-scrollbar{width:4px} .pnl-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:2px} .pnl-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
   .comp-scroll::-webkit-scrollbar{width:4px} .comp-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:2px} .comp-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
   .comp-row{display:grid;grid-template-columns:62px 1fr 44px 62px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border-subtle)}
   .comp-row:last-child{border-bottom:none}
@@ -570,6 +697,36 @@ export function generateHTML(data, history, portfolio) {
 
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
   .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
+  /* CONVERSOR USD/COP */
+  .cop-widget{display:flex;flex-direction:column;gap:16px}
+  .cop-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
+  .cop-current-rate{font-size:13px;font-weight:600;color:var(--text)}
+  .cop-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+  .cop-reset{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:10px;font-family:var(--sans);cursor:pointer;white-space:nowrap}
+  .cop-reset:hover{background:var(--border)}
+  .cop-slider{width:100%;height:6px;border-radius:3px;background:var(--surface2);outline:none;-webkit-appearance:none;cursor:pointer}
+  .cop-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 0 4px var(--accent-dim)}
+  .cop-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:none;box-shadow:0 0 0 4px var(--accent-dim)}
+  .cop-rate-display{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .cop-rate-label{font-size:11px;color:var(--text-muted)}
+  .cop-rate-value{font-size:22px;font-weight:800;color:var(--accent)}
+  .cop-rate-diff{font-size:11px;font-family:var(--mono)}
+  .cop-results{display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border-radius:var(--r-sm);flex-wrap:wrap}
+  .cop-result-item{flex:1;min-width:140px}
+  .cop-result-item.highlight .cop-result-value{color:var(--green);font-size:24px}
+  .cop-result-label{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px}
+  .cop-result-value{font-size:20px;font-weight:800}
+  .cop-result-arrow{font-size:18px;color:var(--text-muted)}
+  .cop-breakdown{display:flex;gap:16px;flex-wrap:wrap;padding-top:4px}
+  .cop-breakdown-item{display:flex;gap:6px;font-size:11px;color:var(--text-muted)}
+  .cop-breakdown-item .mono{color:var(--text-dim);font-weight:600}
+
+  /* INFO ICON + TOAST */
+  .info-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--surface2);color:var(--text-muted);font-size:10px;margin-left:5px;cursor:help;vertical-align:middle;transition:all .15s}
+  .info-icon:hover{background:var(--accent);color:white}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--accent);border-radius:var(--r-sm);padding:12px 18px;font-size:12px;color:var(--text);max-width:320px;text-align:left;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:200;opacity:0;pointer-events:none;transition:all .25s ease}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
   .footer{margin-top:24px;text-align:center;font-size:10px;color:var(--text-muted);font-family:var(--mono);padding-top:18px;border-top:1px solid var(--border-subtle)}
 
   /* RESPONSIVE */
@@ -618,7 +775,10 @@ export function generateHTML(data, history, portfolio) {
     <div class="sticky-stat"><div class="sticky-stat-label">BTC</div><div class="sticky-stat-val num">${d.btc?.price||"—"}</div></div>
     ${monthChange ? `<div class="sticky-stat"><div class="sticky-stat-label">vs mes</div><div class="sticky-stat-val num ${cls(monthChange)}">${pct(monthChange)}</div></div>` : ""}
   </div>
-  <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
+  <div class="header-actions">
+    <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Actualizar datos</a>
+    <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
+  </div>
 </div>
 
 <div class="header" id="report-content">
@@ -639,18 +799,21 @@ export function generateHTML(data, history, portfolio) {
     <div class="total-label">Capital Invertido</div>
     <div class="total-value num">$${fmt(totalInvested)}</div>
     <div class="total-sub">costo base USD</div>
+    <div class="total-sub-cop">≈ $${fmtCOPval(totalInvested)} COP</div>
     <div class="total-breakdown"><span>Crypto $${fmt(totalCryptoInvested)}</span><span>Acc. $${fmt(totalStocksInvested)}</span></div>
   </div>
   <div class="total-card">
     <div class="total-label">Valor de Mercado</div>
     <div class="total-value num">$${fmt(totalCryptoVal+totalStocksVal)}</div>
     <div class="total-sub">a precios actuales</div>
+    <div class="total-sub-cop">≈ $${fmtCOPval(totalCryptoVal+totalStocksVal)} COP</div>
     <div class="total-breakdown"><span>Crypto $${fmt(totalCryptoVal)}</span><span>Acc. $${fmt(totalStocksVal)}</span></div>
   </div>
   <div class="total-card">
-    <div class="total-label">Resultado P&L</div>
+    <div class="total-label">Resultado P&L${infoIcon("pnl")}</div>
     <div class="total-value num ${cls(totalPnL)}">${sign(totalPnL)}$${fmt(totalPnL)}</div>
     <div class="total-sub ${cls(totalPnL)}">${pct(totalPnLPct)} sobre capital</div>
+    <div class="total-sub-cop ${cls(totalPnL)}">≈ ${sign(totalPnL)}$${fmtCOPval(Math.abs(totalPnL))} COP</div>
     <div class="total-breakdown"><span class="${cls(totalCryptoPnL)}">Crypto ${pct(totalCryptoPnLPct)}</span><span class="${cls(totalStocksPnL)}">Acc. ${pct(totalStocksPnLPct)}</span></div>
   </div>
   <div class="total-card highlight">
@@ -661,17 +824,86 @@ export function generateHTML(data, history, portfolio) {
   </div>
 </div>
 
-<!-- 2. GRÁFICO -->
+
+<!-- 1b. CONVERSOR INTERACTIVO USD/COP -->
+<div class="section-title">Simulador de conversión a pesos</div>
+<div class="card mb">
+  <div class="cop-widget">
+    <div class="cop-header">
+      <div>
+        <div class="cop-current-rate">TRM actual: <span class="mono num" id="copBaseRate">$0</span> COP</div>
+        <div class="cop-sub">Desliza para simular distintos escenarios de tasa de cambio</div>
+      </div>
+      <button class="cop-reset" onclick="resetCopRate()">↺ Restablecer</button>
+    </div>
+    <input type="range" id="copSlider" class="cop-slider" min="2800" max="4500" step="1" value="3433">
+    <div class="cop-rate-display">
+      <span class="cop-rate-label">Tasa simulada:</span>
+      <span class="mono num cop-rate-value" id="copRateValue">$3,433.71</span>
+      <span class="cop-rate-diff" id="copRateDiff"></span>
+    </div>
+    <div class="cop-results">
+      <div class="cop-result-item">
+        <div class="cop-result-label">Total Portafolio (USD)</div>
+        <div class="mono num cop-result-value" id="copUsdVal">$0</div>
+      </div>
+      <div class="cop-result-arrow">→</div>
+      <div class="cop-result-item highlight">
+        <div class="cop-result-label">Equivalente en COP</div>
+        <div class="mono num cop-result-value" id="copValue">$0</div>
+      </div>
+    </div>
+    <div class="cop-breakdown">
+      <div class="cop-breakdown-item"><span>Crypto</span><span class="mono num" id="copCrypto">$0</span></div>
+      <div class="cop-breakdown-item"><span>Acciones</span><span class="mono num" id="copStocks">$0</span></div>
+      <div class="cop-breakdown-item"><span>Cash</span><span class="mono num" id="copCash">$0</span></div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- 2. ANALISTA -->
+<div class="analyst-card">
+  <div class="analyst-header">
+    <div class="analyst-avatar">📊</div>
+    <div><div class="analyst-name">Analista Senior de Portafolio</div><div class="analyst-title">10 años · Renta Variable & Activos Digitales · CFA Level II</div>${d.riskProfile ? `<div class="risk-badge">Perfil de riesgo: ${d.riskProfile}${infoIcon("riskprofile")}</div>` : ""}</div>
+  </div>
+  <div class="analyst-opinion">${d.analystOpinion||"Analisis no disponible."}</div>
+</div>
+
+
+<!-- 2b. NUEVAS OPORTUNIDADES -->
+<div class="section-title">Oportunidades de inversión sugeridas</div>
+<div class="opp-grid mb">
+  ${newOpportunities()}
+</div>
+
+
+<!-- 3. MACRO ECONÓMICO -->
+<div class="section-title">Contexto Macroeconómico</div>
+<div class="card mb">
+  <div class="macro-grid">
+    <div class="macro-item"><div class="macro-item-label">USD/COP${infoIcon("trm")}</div><div class="macro-item-value num">${d.macro?.usdcop||"—"}</div><div class="macro-item-sub">tasa ARQ</div></div>
+    <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value num">${d.macro?.fedrate||"—"}</div><div class="macro-item-sub">política</div></div>
+    <div class="macro-item"><div class="macro-item-label">BTC Dom.${infoIcon("dominance")}</div><div class="macro-item-value num">${d.macro?.btcDominance||"—"}</div><div class="macro-item-sub">dominancia</div></div>
+    <div class="macro-item"><div class="macro-item-label">Fear & Greed${infoIcon("feargreed")}</div><div class="macro-item-value num">${d.macro?.fearGreed||"—"}</div><div class="macro-item-sub">${d.macro?.fearGreedLabel||"sentimiento"}</div></div>
+  </div>
+  <div class="macro-narrative">${d.macro?.narrative||""}</div>
+</div>
+
+<!-- 4. GRÁFICO -->
 <div class="section-title">Evolución del portafolio</div>
 <div class="chart-card mb">
   ${portfolioChart()}
 </div>
 
-<!-- 3. INDICADORES -->
+
+<!-- 5. INDICADORES -->
 <div class="section-title">Indicadores clave</div>
 <div class="insights-top mb">
   <div class="score-card">
-    <div class="section-title" style="margin-bottom:10px">Score de salud</div>
+    <div class="section-title" style="margin-bottom:10px">Score de salud${infoIcon("score")}</div>
     <div class="score-top">
       <div><span class="score-num" style="color:${scoreColor}">${score}</span><span class="score-denom">/10</span></div>
       <span class="score-label-badge" style="background:${scoreColor}22;color:${scoreColor}">${scoreLabel}</span>
@@ -689,14 +921,14 @@ export function generateHTML(data, history, portfolio) {
     </div>
   </div>
   <div class="insight-card ${btcBreakEven && parseFloat(btcBreakEven) > 0 ? "alert-orange" : "good"}">
-    <div class="insight-label">📍 BTC Break-even</div>
+    <div class="insight-label">📍 BTC Break-even${infoIcon("breakeven")}</div>
     ${btcBreakEven
       ? `<div class="insight-value" style="${parseFloat(btcBreakEven) > 0 ? "color:var(--orange)" : "color:var(--green)"}">${parseFloat(btcBreakEven) > 0 ? "+" : "✓ "}${btcBreakEven}%</div>
          <div class="insight-sub">Costo avg: <strong>$${fmt(btcCostAvg)}</strong><br>Precio: <strong>$${fmt(btcPrice)}</strong><br>${parseFloat(btcBreakEven) > 0 ? `Falta ${btcBreakEven}% para break-even` : "Posicion rentable"}</div>`
       : `<div class="insight-value text-muted">—</div><div class="insight-sub">Precio no disponible</div>`}
   </div>
   <div class="insight-card ${annualizedReturn && parseFloat(annualizedReturn) > 0 ? "good" : ""}">
-    <div class="insight-label">📅 Retorno anualizado</div>
+    <div class="insight-label">📅 Retorno anualizado${infoIcon("annualized")}</div>
     ${annualizedReturn
       ? `<div class="insight-value ${cls(annualizedReturn)}">${pct(annualizedReturn)}</div><div class="insight-sub">Proyección sobre ${history?.length||0} reportes de historial real</div>`
       : `<div class="insight-value text-muted">—</div><div class="insight-sub">Disponible desde el 2do reporte</div>`}
@@ -730,16 +962,8 @@ export function generateHTML(data, history, portfolio) {
   </div>
 </div>
 
-<!-- 4. ANALISTA -->
-<div class="analyst-card">
-  <div class="analyst-header">
-    <div class="analyst-avatar">📊</div>
-    <div><div class="analyst-name">Analista Senior de Portafolio</div><div class="analyst-title">10 años · Renta Variable & Activos Digitales · CFA Level II</div></div>
-  </div>
-  <div class="analyst-opinion">${d.analystOpinion||"Analisis no disponible."}</div>
-</div>
 
-<!-- 5. SEÑALES -->
+<!-- 6. SEÑALES -->
 <div class="section-title">Señales de mercado</div>
 <div class="signals-group">
   <div class="signals-group-title">📈 Acciones</div>
@@ -750,7 +974,8 @@ export function generateHTML(data, history, portfolio) {
   ${assetCardGroup(cryptoAssets, "assets-grid-crypto")}
 </div>
 
-<!-- 6. P&L -->
+
+<!-- 7. P&L -->
 <div class="section-title">Rendimiento detallado</div>
 <div class="pnl-grid mb">
   <div class="pnl-card">
@@ -765,34 +990,25 @@ export function generateHTML(data, history, portfolio) {
   </div>
 </div>
 
-<!-- 7. COMPOSICIÓN -->
+
+<!-- 8. COMPOSICIÓN -->
 <div class="section-title">Composición del portafolio</div>
 <div class="comp-pair">
   <div class="card"><div class="section-title">Acciones · $${fmt(totalStocksVal)}</div>${compBarsScroll(stockAssets, totalStocksVal)}</div>
   <div class="card"><div class="section-title">Crypto · $${fmt(totalCryptoVal)}</div>${compBarsScroll(cryptoAssets, totalCryptoVal)}</div>
 </div>
 
-<!-- 8. MACRO + DECISIONES -->
-<div class="bottom-grid">
-  <div class="card">
-    <div class="section-title">Contexto Macroeconómico</div>
-    <div class="macro-grid">
-      <div class="macro-item"><div class="macro-item-label">USD/COP</div><div class="macro-item-value num">${d.macro?.usdcop||"—"}</div><div class="macro-item-sub">tasa ARQ</div></div>
-      <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value num">${d.macro?.fedrate||"—"}</div><div class="macro-item-sub">política</div></div>
-      <div class="macro-item"><div class="macro-item-label">BTC Dom.</div><div class="macro-item-value num">${d.macro?.btcDominance||"—"}</div><div class="macro-item-sub">dominancia</div></div>
-      <div class="macro-item"><div class="macro-item-label">Fear & Greed</div><div class="macro-item-value num">${d.macro?.fearGreed||"—"}</div><div class="macro-item-sub">${d.macro?.fearGreedLabel||"sentimiento"}</div></div>
-    </div>
-    <div class="macro-narrative">${d.macro?.narrative||""}</div>
-  </div>
-  <div class="decision-card">
-    <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones este mes</div></div>
-    ${actionItems()}
-  </div>
+
+<!-- 9. DECISIONES DEL MES -->
+<div class="section-title">Decisiones para este mes</div>
+<div class="decision-card mb">
+  <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
+  ${actionItems()}
 </div>
 
-<!-- 9. DCA + BITÁCORA + CALENDARIO -->
+<!-- 10. DCA + BITÁCORA + CALENDARIO -->
 <div class="three-col">
-  <div class="card"><div class="section-title">DCA Tracker</div>${dcaTracker()}</div>
+  <div class="card"><div class="section-title">DCA Tracker${infoIcon("dca")}</div>${dcaTracker()}</div>
   <div class="card"><div class="section-title">Bitácora de compras</div>${dcaLog()}</div>
   <div class="card"><div class="section-title">Próximos eventos</div><div class="cal-grid">${calendario.map(calRow).join("")}</div></div>
 </div>
@@ -800,6 +1016,73 @@ export function generateHTML(data, history, portfolio) {
 <div class="footer">Market Intelligence v7 · Analista Senior 10 años · Solo informativo, no es asesoría financiera regulada · ${now}</div>
 
 <script>
+// ─── CONVERSOR INTERACTIVO USD/COP ─────────────────────────────────────────
+const COP_DATA = {
+  baseRate: ${parseFloat((d.macro?.usdcop||"3433.71").replace(/[$, COP]/g,"")) || 3433.71},
+  totalUsd: ${totalVal},
+  cryptoUsd: ${totalCryptoVal},
+  stocksUsd: ${totalStocksVal},
+  cashUsd: ${cashVal}
+};
+
+function fmtCOP(n) {
+  return Math.round(n).toLocaleString('es-CO');
+}
+
+function updateCopWidget(rate) {
+  document.getElementById('copRateValue').textContent = '$' + Number(rate).toLocaleString('es-CO', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const diff = ((rate - COP_DATA.baseRate) / COP_DATA.baseRate * 100);
+  const diffEl = document.getElementById('copRateDiff');
+  if (Math.abs(diff) < 0.05) {
+    diffEl.textContent = '(tasa actual)';
+    diffEl.className = 'cop-rate-diff text-muted';
+  } else {
+    diffEl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '% vs TRM real';
+    diffEl.className = 'cop-rate-diff ' + (diff >= 0 ? 'pos' : 'neg');
+  }
+
+  document.getElementById('copUsdVal').textContent = '$' + Math.round(COP_DATA.totalUsd).toLocaleString('en-US');
+  document.getElementById('copValue').textContent = '$' + fmtCOP(COP_DATA.totalUsd * rate) + ' COP';
+  document.getElementById('copCrypto').textContent = '$' + fmtCOP(COP_DATA.cryptoUsd * rate) + ' COP';
+  document.getElementById('copStocks').textContent = '$' + fmtCOP(COP_DATA.stocksUsd * rate) + ' COP';
+  document.getElementById('copCash').textContent = '$' + fmtCOP(COP_DATA.cashUsd * rate) + ' COP';
+}
+
+function resetCopRate() {
+  const slider = document.getElementById('copSlider');
+  slider.value = COP_DATA.baseRate;
+  updateCopWidget(COP_DATA.baseRate);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const slider = document.getElementById('copSlider');
+  const baseRateEl = document.getElementById('copBaseRate');
+  if (slider) {
+    slider.value = COP_DATA.baseRate;
+    slider.min = Math.max(2000, Math.round(COP_DATA.baseRate * 0.7));
+    slider.max = Math.round(COP_DATA.baseRate * 1.3);
+    baseRateEl.textContent = '$' + Number(COP_DATA.baseRate).toLocaleString('es-CO', {minimumFractionDigits:2});
+    updateCopWidget(COP_DATA.baseRate);
+    slider.addEventListener('input', (e) => updateCopWidget(e.target.value));
+  }
+});
+
+let toastTimeout;
+function showToast(el, text) {
+  let toast = document.getElementById('infoToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'infoToast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = text;
+  toast.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
 function exportPDF() {
   const btn = document.querySelector('.pdf-btn');
   btn.textContent = '⏳ Generando...';
