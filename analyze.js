@@ -115,6 +115,8 @@ Incluye precio actual de CADA activo listado arriba.
 }
 
 // ─── SANITIZAR & PARSEAR JSON ─────────────────────────────────────────────────
+// Si el JSON viene cortado (max_tokens insuficiente, corte de red, etc.) en vez
+// de descartar toda la respuesta, recupera los campos completos que si llegaron.
 function sanitizeAndParse(raw) {
   let text = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
   text = text
@@ -126,18 +128,56 @@ function sanitizeAndParse(raw) {
   const start = text.indexOf("{");
   if (start === -1) throw new Error("No se encontro JSON en la respuesta");
 
+  // Buscar el cierre del bloque {...} contando llaves
   let depth = 0, end = -1;
   for (let i = start; i < text.length; i++) {
     if (text[i] === "{") depth++;
     else if (text[i] === "}") { depth--; if (depth === 0) { end = i; break; } }
   }
 
-  if (end === -1) throw new Error("JSON incompleto");
+  // Caso normal: el bloque {...} esta completo (depth volvio a 0)
+  if (end !== -1) {
+    try {
+      return JSON.parse(text.slice(start, end + 1));
+    } catch (e) {
+      console.error("JSON problematico (completo pero invalido):", text.slice(start, start + 400));
+      // si ni siquiera el bloque "completo" parsea, caemos al modo de recuperacion
+    }
+  } else {
+    console.error("JSON incompleto (respuesta cortada) — intentando recuperar campos parciales");
+  }
+
+  // ── MODO RECUPERACION: cortar en la ultima propiedad valida ────────────────
+  const body = text.slice(start);
+
+  // Ultima ocurrencia de un cierre de propiedad tipo `},` o `"},`
+  const closeCommaRe = /\}\s*,/g;
+  let match, lastCloseEnd = -1;
+  while ((match = closeCommaRe.exec(body)) !== null) {
+    lastCloseEnd = match.index; // indice del "}" de cierre
+  }
+
+  if (lastCloseEnd === -1) {
+    throw new Error("JSON incompleto y sin propiedades recuperables");
+  }
+
+  const truncated = body.slice(0, lastCloseEnd + 1); // se queda hasta el "}" inclusive
+
+  // Cerrar las llaves que quedaron abiertas (contando { vs })
+  let openCount = 0, closeCount = 0;
+  for (const ch of truncated) {
+    if (ch === "{") openCount++;
+    else if (ch === "}") closeCount++;
+  }
+  const missing = openCount - closeCount;
+  const repaired = truncated + "}".repeat(Math.max(missing, 0));
 
   try {
-    return JSON.parse(text.slice(start, end + 1));
+    const parsed = JSON.parse(repaired);
+    console.error("Recuperados campos parciales del JSON cortado");
+    return parsed;
   } catch (e) {
-    console.error("JSON problematico:", text.slice(start, start + 400));
+    console.error("JSON problematico (recuperacion fallida):", repaired.slice(0, 400));
     throw e;
   }
 }
@@ -171,7 +211,7 @@ async function main() {
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-5",
-    max_tokens: 2500,
+    max_tokens: 4000,
     tools: [{ type: "web_search_20250305", name: "web_search" }],
     messages: [{ role: "user", content: buildPrompt(rawPortfolio) }],
   });
