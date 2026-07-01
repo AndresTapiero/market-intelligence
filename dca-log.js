@@ -1,7 +1,7 @@
 /**
  * dca-log.js
  * Detecta cambios de cantidad en portfolio.json y los registra como compras DCA.
- * Mantiene un snapshot de las cantidades anteriores para comparar.
+ * Guarda precio unitario y monto en USD de cada compra.
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
@@ -34,14 +34,16 @@ function saveSnapshot(portfolio) {
 /**
  * Compara el portfolio actual con el snapshot anterior.
  * Si detecta aumento de cantidad, lo registra como compra DCA.
- * Devuelve el log actualizado.
+ * marketPrices: { btc: 63700, eth: 1679, voo: 673.20, ... }
  */
-export function detectAndLogDCA(portfolio) {
+export function detectAndLogDCA(portfolio, marketPrices = {}) {
   const snapshot = loadSnapshot();
   const log = loadDcaLog();
-  const today = new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
+  const today = new Date().toLocaleDateString("es-CO", {
+    day: "2-digit", month: "short", year: "numeric"
+  });
 
-  // Primera vez: solo guardar snapshot, no registrar nada
+  // Primera vez: solo guardar snapshot
   if (!snapshot) {
     saveSnapshot(portfolio);
     return log;
@@ -54,9 +56,20 @@ export function detectAndLogDCA(portfolio) {
     const prevQty = snapshot.crypto?.[key] || 0;
     const newQty  = c.qty || 0;
     if (newQty > prevQty + 0.0000001) {
-      const added = +(newQty - prevQty).toFixed(8);
-      log.push({ date: today, asset: key, qtyAdded: added, note: "DCA / compra", type: "crypto" });
-      console.log(`  💰 DCA detectado: +${added} ${key.toUpperCase()}`);
+      const added      = +(newQty - prevQty).toFixed(8);
+      const unitPrice  = marketPrices[key] || c.costAvg || 0;
+      const amountUSD  = +(added * unitPrice).toFixed(2);
+      const entry = {
+        date: today,
+        asset: key,
+        qtyAdded: added,
+        unitPrice: unitPrice,
+        amountUSD: amountUSD,
+        note: "DCA / compra",
+        type: "crypto"
+      };
+      log.push(entry);
+      console.log(`  💰 DCA detectado: +${added} ${key.toUpperCase()} @ $${unitPrice} = $${amountUSD}`);
       changes++;
     }
   }
@@ -67,9 +80,20 @@ export function detectAndLogDCA(portfolio) {
     const prevSh = snapshot.stocks?.[key] || 0;
     const newSh  = s.shares || 0;
     if (newSh > prevSh + 0.0000001) {
-      const added = +(newSh - prevSh).toFixed(6);
-      log.push({ date: today, asset: key, qtyAdded: added, note: "DCA / compra", type: "stock" });
-      console.log(`  💰 DCA detectado: +${added} ${key.toUpperCase()}`);
+      const added     = +(newSh - prevSh).toFixed(6);
+      const unitPrice = marketPrices[key] || s.costAvg || 0;
+      const amountUSD = +(added * unitPrice).toFixed(2);
+      const entry = {
+        date: today,
+        asset: key,
+        qtyAdded: added,
+        unitPrice: unitPrice,
+        amountUSD: amountUSD,
+        note: "DCA / compra",
+        type: "stock"
+      };
+      log.push(entry);
+      console.log(`  💰 DCA detectado: +${added} ${key.toUpperCase()} @ $${unitPrice} = $${amountUSD}`);
       changes++;
     }
   }
@@ -79,8 +103,6 @@ export function detectAndLogDCA(portfolio) {
     console.log(`  📒 ${changes} compra(s) registrada(s) en bitacora`);
   }
 
-  // Actualizar snapshot con cantidades actuales
   saveSnapshot(portfolio);
-
   return log;
 }

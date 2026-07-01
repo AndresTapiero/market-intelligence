@@ -231,8 +231,14 @@ async function main() {
   // 4. Calcular valores actuales con precios reales
   const PORTFOLIO = buildPortfolioForReport(rawPortfolio, analysisData);
 
-  // 4b. Detectar y registrar compras DCA automaticamente
-  const dcaLog = detectAndLogDCA(rawPortfolio);
+  // 4b. Detectar y registrar compras DCA con precios de mercado actuales
+  const marketPrices = {};
+  const allAssetKeys = [...Object.keys(rawPortfolio.crypto||{}), ...Object.keys(rawPortfolio.stocks||{})];
+  for (const key of allAssetKeys) {
+    const price = parseFloat((analysisData[key]?.price||"0").replace(/[$,]/g,"")) || 0;
+    if (price > 0) marketPrices[key] = price;
+  }
+  const dcaLog = detectAndLogDCA(rawPortfolio, marketPrices);
   PORTFOLIO.dcaLog = dcaLog;
 
   // Log valores calculados

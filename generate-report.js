@@ -278,14 +278,28 @@ export function generateHTML(data, history, portfolio) {
     if (entries.length === 0) {
       return `<div class="no-history" style="padding:12px 0;font-size:11px">Las compras DCA se registrarán automáticamente al actualizar las cantidades en portfolio.json.</div>`;
     }
-    const rows = entries.slice(-8).reverse().map(e => `
+    const header = `
+      <div class="log-header">
+        <span>Fecha</span>
+        <span>Activo</span>
+        <span>Cantidad</span>
+        <span>Precio unit.</span>
+        <span>Monto USD</span>
+      </div>`;
+    const rows = entries.slice(-10).reverse().map(e => {
+      const color = (cryptoMeta[e.asset]||stockMeta[e.asset])?.color || 'var(--text)';
+      const unitPrice = e.unitPrice ? `$${e.unitPrice < 1 ? e.unitPrice.toFixed(4) : Number(e.unitPrice).toLocaleString()}` : "—";
+      const amountUSD = e.amountUSD ? `$${Number(e.amountUSD).toFixed(2)}` : "—";
+      return `
       <div class="log-row">
         <div class="log-date mono">${e.date}</div>
-        <div class="log-asset"><span class="mono" style="color:${(cryptoMeta[e.asset]||stockMeta[e.asset])?.color||'var(--text)'}">${e.asset.toUpperCase()}</span></div>
+        <div class="log-asset"><span class="mono" style="color:${color}">${e.asset.toUpperCase()}</span></div>
         <div class="log-qty mono">+${e.qtyAdded}</div>
-        <div class="log-note text-muted">${e.note||""}</div>
-      </div>`).join("");
-    return `<div class="log-list">${rows}</div>`;
+        <div class="log-price mono">${unitPrice}</div>
+        <div class="log-amount mono pos">${amountUSD}</div>
+      </div>`;
+    }).join("");
+    return `<div class="log-list">${header}${rows}</div>`;
   }
 
   // ─── GRÁFICO DE LÍNEA ─────────────────────────────────────────────────────────
@@ -674,9 +688,11 @@ export function generateHTML(data, history, portfolio) {
 
   /* BITÁCORA */
   .log-list{display:flex;flex-direction:column;gap:2px}
-  .log-row{display:grid;grid-template-columns:70px 50px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-subtle);font-size:11px}
+  .log-header{display:grid;grid-template-columns:80px 55px 90px 90px 80px;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--border);font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
+  .log-row{display:grid;grid-template-columns:80px 55px 90px 90px 80px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:11px}
   .log-row:last-child{border-bottom:none}
   .log-date{color:var(--text-muted)} .log-qty{color:var(--green);font-weight:600}
+  .log-price{color:var(--text-dim)} .log-amount{font-weight:700}
   .log-note{font-size:10px}
 
   /* CALENDARIO */
