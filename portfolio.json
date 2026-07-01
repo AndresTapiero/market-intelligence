@@ -1,8 +1,8 @@
 {
   "_comment": "Actualizar cantidades tras cada DCA. Los valores actuales los calcula analyze.js con precios en tiempo real.",
-  "_updated": "2026-06-11",
+  "_updated": "2026-07-01",
   "crypto": {
-    "btc":  { "qty": 0.01235, "costAvg": 82716 },
+    "btc":  { "qty": 0.014049, "costAvg": 82716 },
     "eth":  { "qty": 0.1733,  "costAvg": 3200  },
     "sol":  { "qty": 4.165,   "costAvg": 104.6 },
     "tao":  { "qty": 0.7367,  "costAvg": 449.4 },
