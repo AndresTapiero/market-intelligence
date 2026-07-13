@@ -3,6 +3,11 @@
  * Rediseño visual premium · Comparación mes anterior · Gráfico línea · Export PDF
  */
 
+// BUILD: incrementar en cada cambio entregado por Claude para validar sincronizacion
+// entre lo generado aqui y lo que aparece en tu reporte real tras el deploy.
+const BUILD_VERSION = "v15";
+const BUILD_DATE = "2026-07-13";
+
 export function generateHTML(data, history, portfolio) {
   const d   = data;
   const now = new Date().toLocaleString("es-CO", { dateStyle: "full", timeStyle: "short" });
@@ -613,6 +618,7 @@ export function generateHTML(data, history, portfolio) {
   .sticky-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,12,16,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-subtle);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
   .sticky-logo{font-size:14px;font-weight:800;letter-spacing:-.4px;white-space:nowrap}
   .sticky-logo span{color:var(--accent)}
+  .build-tag{font-size:8px;font-weight:600;color:var(--text-muted)!important;background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:6px;font-family:var(--mono);vertical-align:middle}
   .sticky-stats{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
   .sticky-stat{display:flex;flex-direction:column;align-items:flex-end}
   .sticky-stat-label{font-size:8px;text-transform:uppercase;letter-spacing:.9px;color:var(--text-muted);font-family:var(--mono);margin-bottom:1px}
@@ -901,7 +907,7 @@ export function generateHTML(data, history, portfolio) {
 <body>
 
 <div class="sticky-bar">
-  <div class="sticky-logo">Market<span>Intel</span></div>
+  <div class="sticky-logo">Market<span>Intel</span><span class="build-tag">${BUILD_VERSION}</span></div>
   <div class="sticky-stats">
     <div class="sticky-stat"><div class="sticky-stat-label">Total</div><div class="sticky-stat-val num">$${fmt(totalVal)}</div></div>
     <div class="sticky-stat"><div class="sticky-stat-label">P&L</div><div class="sticky-stat-val num ${cls(totalPnL)}">${sign(totalPnL)}$${fmt(totalPnL)}</div></div>
@@ -1000,7 +1006,7 @@ export function generateHTML(data, history, portfolio) {
 <div class="analyst-card">
   <div class="analyst-header">
     <div class="analyst-avatar">📊</div>
-    <div><div class="analyst-name">Analista Senior de Portafolio</div><div class="analyst-title">10 años · Renta Variable & Activos Digitales · CFA Level II</div>${d.riskProfile ? `<div class="risk-badge">Perfil de riesgo: ${d.riskProfile}${infoIcon("riskprofile")}</div>` : ""}</div>
+    <div><div class="analyst-name">Tu Asesor Financiero</div><div class="analyst-title">Analisis mensual de tu portafolio · Renta Variable & Activos Digitales</div>${d.riskProfile ? `<div class="risk-badge">Perfil de riesgo: ${d.riskProfile}${infoIcon("riskprofile")}</div>` : ""}</div>
   </div>
   <div class="analyst-opinion">${d.analystOpinion||"Analisis no disponible."}</div>
 </div>
@@ -1154,7 +1160,7 @@ ${allocationSection()}
   <div class="card"><div class="section-title">Próximos eventos</div><div class="cal-grid">${calendario.map(calRow).join("")}</div></div>
 </div>
 
-<div class="footer">Market Intelligence v7 · Analista Senior 10 años · Solo informativo, no es asesoría financiera regulada · ${now}</div>
+<div class="footer">Market Intelligence ${BUILD_VERSION} (${BUILD_DATE}) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · ${now}</div>
 
 <script>
 // ─── CONVERSOR INTERACTIVO USD/COP ─────────────────────────────────────────

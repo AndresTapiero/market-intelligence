@@ -163,11 +163,13 @@ function sanitizeAndParse(raw) {
   // ── MODO RECUPERACION: cortar en la ultima propiedad valida ────────────────
   const body = text.slice(start);
 
-  // Ultima ocurrencia de un cierre de propiedad tipo `},` o `"},`
-  const closeCommaRe = /\}\s*,/g;
+  // Ultima ocurrencia de CUALQUIER propiedad cerrada: objeto `},` o string simple `",`
+  // (antes solo detectaba objetos, por lo que perdia campos como analystOpinion
+  // si el corte ocurria justo despues de un texto simple, antes del primer objeto)
+  const closeCommaRe = /("|\})\s*,/g;
   let match, lastCloseEnd = -1;
   while ((match = closeCommaRe.exec(body)) !== null) {
-    lastCloseEnd = match.index; // indice del "}" de cierre
+    lastCloseEnd = match.index + match[1].length - 1; // indice del ultimo caracter de cierre (" o })
   }
 
   if (lastCloseEnd === -1) {
@@ -224,7 +226,7 @@ async function main() {
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-5",
-    max_tokens: 2500,
+    max_tokens: 3800,
     tools: [{ type: "web_search_20250305", name: "web_search" }],
     messages: [{ role: "user", content: buildPrompt(rawPortfolio) }],
   });
