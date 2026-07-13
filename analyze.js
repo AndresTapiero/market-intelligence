@@ -84,8 +84,9 @@ function buildPrompt(raw) {
   const cryptoKeys = Object.keys(raw.crypto || {});
   const stockKeys  = Object.keys(raw.stocks || {});
   const allKeys    = [...cryptoKeys, ...stockKeys];
+  const watchKeys  = Object.keys(raw.watchlist || {});
 
-  const tickersList = allKeys.join(", ").toUpperCase();
+  const tickersList = [...allKeys, ...watchKeys].join(", ").toUpperCase();
 
   // Construir template JSON: accionables con context, resto sin context
   function assetTemplate(key) {
@@ -96,6 +97,12 @@ function buildPrompt(raw) {
   }
 
   const assetsTemplate = allKeys.map(assetTemplate).join(",");
+
+  const watchTemplate = watchKeys.length > 0
+    ? `,"watchlist":{` + watchKeys.map(k =>
+        `"${k}":{"price":"$X","change7d":"+X.X%","entrySignal":"BUY o WAIT","note":"1 oracion: es buen punto de entrada ahora o no y por que"}`
+      ).join(",") + `}`
+    : "";
 
   return `Eres el analista financiero personal de Andres Tapiero. Hoy es ${today}.
 
@@ -109,6 +116,7 @@ CONTEXTO:
 - Las altcoins (ETH, SOL, TAO, UNI, BNB, SUI, SEI, ENA, AVAX) estan en HOLD permanente: solo necesito su precio actual, sin analisis.
 - Analisis narrativo SOLO para: BTC, VOO, QQQ, NVDA (los activos accionables).
 - Perfil de riesgo de Andres: moderado-agresivo (acepta volatilidad crypto pero prioriza disciplina DCA y eliminar deuda antes de nuevas posiciones).
+${watchKeys.length > 0 ? `- WATCHLIST (activos que Andres NO posee pero considera comprar): ${watchKeys.join(", ").toUpperCase()}. Para cada uno: precio, cambio 7d, y evaluacion corta de si es buen punto de entrada.` : ""}
 
 Tambien sugiere 2-3 OPORTUNIDADES NUEVAS de inversion (acciones, BTC adicional, o ETFs) basadas en el comportamiento actual del mercado y el perfil de riesgo de Andres. No sugieras altcoins nuevas. Cada sugerencia debe tener: el activo, por que tiene sentido ahora, y el riesgo principal.
 
@@ -116,7 +124,7 @@ FORMATO: Responde UNICAMENTE JSON valido. Sin texto extra, sin backticks, sin ma
 Solo ASCII en los textos. Signals: BUY, HOLD o WAIT.
 El campo usdcop debe ser la TRM oficial real de HOY, con el valor numerico exacto (ej: "$3,433.71 COP"), no una estimacion.
 
-{"date":"fecha","analystOpinion":"opinion experta del portafolio completo en 3-4 oraciones ASCII, mencionando que funciona, que arrastra, y la recomendacion del mes","riskProfile":"Moderado-Agresivo",${assetsTemplate},"macro":{"usdcop":"$X,XXX.XX COP","fedrate":"X%","btcDominance":"XX%","fearGreed":"XX","fearGreedLabel":"etiqueta","narrative":"2 oraciones macro ASCII"},"newOpportunities":[{"asset":"ticker","reason":"por que tiene sentido ahora en 1-2 oraciones ASCII","risk":"riesgo principal en 1 oracion ASCII"},{"asset":"ticker","reason":"texto ASCII","risk":"texto ASCII"}],"actions":[{"num":"01","text":"accion concreta"},{"num":"02","text":"accion concreta"},{"num":"03","text":"accion concreta"}]}`;
+{"date":"fecha","analystOpinion":"opinion experta del portafolio completo en 3-4 oraciones ASCII, mencionando que funciona, que arrastra, y la recomendacion del mes","riskProfile":"Moderado-Agresivo",${assetsTemplate},"macro":{"usdcop":"$X,XXX.XX COP","fedrate":"X%","btcDominance":"XX%","fearGreed":"XX","fearGreedLabel":"etiqueta","narrative":"2 oraciones macro ASCII"},"newOpportunities":[{"asset":"ticker","reason":"por que tiene sentido ahora en 1-2 oraciones ASCII","risk":"riesgo principal en 1 oracion ASCII"},{"asset":"ticker","reason":"texto ASCII","risk":"texto ASCII"}]${watchTemplate},"actions":[{"num":"01","text":"accion concreta"},{"num":"02","text":"accion concreta"},{"num":"03","text":"accion concreta"}]}`;
 }
 
 // ─── SANITIZAR & PARSEAR JSON ─────────────────────────────────────────────────
@@ -240,6 +248,9 @@ async function main() {
   }
   const dcaLog = detectAndLogDCA(rawPortfolio, marketPrices);
   PORTFOLIO.dcaLog = dcaLog;
+  PORTFOLIO.targets = rawPortfolio.targets || null;
+  PORTFOLIO.watchlistData = analysisData.watchlist || {};
+  PORTFOLIO.watchlistNotes = Object.fromEntries(Object.entries(rawPortfolio.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
 
   // Log valores calculados
   const totalCrypto = Object.values(PORTFOLIO.crypto).reduce((s,a) => s + (a.currentVal||0), 0);

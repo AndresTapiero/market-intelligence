@@ -22,19 +22,36 @@ export function generateHTML(data, history, portfolio) {
     return `<div class="pnl-bar-wrap"><div class="pnl-bar" style="width:${w}%;background:${c}"></div></div>`;
   }
 
-  // ─── META ─────────────────────────────────────────────────────────────────────
-  const cryptoMeta = {
+  // ─── META DINÁMICA ────────────────────────────────────────────────────────────
+  // Activos conocidos tienen meta curada; los nuevos se generan automaticamente.
+  // Agregar un activo a portfolio.json basta para que aparezca en todo el dashboard.
+  const knownCrypto = {
     btc:{label:"Bitcoin",icon:"₿",color:"#f7931a"}, eth:{label:"Ethereum",icon:"Ξ",color:"#627eea"},
     sol:{label:"Solana",icon:"◎",color:"#9945ff"}, tao:{label:"Bittensor",icon:"τ",color:"#38bdf8"},
     uni:{label:"Uniswap",icon:"U",color:"#ff007a"}, bnb:{label:"BNB",icon:"B",color:"#f3ba2f"},
     sui:{label:"SUI",icon:"S",color:"#6fbcf0"}, sei:{label:"SEI",icon:"s",color:"#e84142"},
     ena:{label:"Ethena",icon:"E",color:"#00d4ff"}, avax:{label:"Avalanche",icon:"A",color:"#e84142"},
   };
-  const stockMeta = {
+  const knownStocks = {
     voo:{label:"VOO",icon:"V",color:"#00d4a0"}, qqq:{label:"QQQ",icon:"Q",color:"#4d8fff"},
     nvda:{label:"NVIDIA",icon:"N",color:"#76b900"}, nu:{label:"Nubank",icon:"N",color:"#8250ff"},
     tsla:{label:"Tesla",icon:"T",color:"#e31937"},
+    schd:{label:"SCHD Div.",icon:"S",color:"#f5c842"}, vti:{label:"VTI Total",icon:"V",color:"#ff9838"},
   };
+  const autoPalette = ["#00d4a0","#4d8fff","#ff007a","#f5c842","#8b6dff","#ff9838","#38bdf8","#e84142","#76b900","#6fbcf0","#00d4ff","#8250ff"];
+  function autoMeta(key, idx) {
+    return { label: key.toUpperCase(), icon: key.charAt(0).toUpperCase(), color: autoPalette[idx % autoPalette.length] };
+  }
+
+  // Construir meta iterando el PORTFOLIO (no listas fijas) — esto hace el dashboard dinamico
+  const cryptoMeta = {};
+  Object.keys(portfolio.crypto || {}).forEach((key, i) => {
+    cryptoMeta[key] = knownCrypto[key] || autoMeta(key, i);
+  });
+  const stockMeta = {};
+  Object.keys(portfolio.stocks || {}).filter(k => k !== "cash").forEach((key, i) => {
+    stockMeta[key] = knownStocks[key] || autoMeta(key, i + 5);
+  });
 
   // ─── COMPARACIÓN VS MES ANTERIOR ──────────────────────────────────────────────
   // Busca el valor de cada activo en el penúltimo reporte del historial
@@ -74,7 +91,7 @@ export function generateHTML(data, history, portfolio) {
     const buyPrice = s.costAvg || 0;
     const marketPrice = parseFloat((d[key]?.price||"0").replace(/[$,]/g,"")) || 0;
     const priceGain = buyPrice > 0 && marketPrice > 0 ? ((marketPrice-buyPrice)/buyPrice*100).toFixed(1) : null;
-    return { key, ...stockMeta[key], ic:key, qty:`${s.shares||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta, buyPrice, marketPrice, priceGain };
+    return { key, ...stockMeta[key], ic:key, cat: s.cat || "stock", qty:`${s.shares||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta, buyPrice, marketPrice, priceGain };
   });
 
   const cashVal = portfolio.stocks.cash?.val || 0;
@@ -461,6 +478,85 @@ export function generateHTML(data, history, portfolio) {
       </div>`).join("");
   }
 
+  function watchlistSection() {
+    const watch = portfolio.watchlistData || {};
+    const notes = portfolio.watchlistNotes || {};
+    const keys = Object.keys(watch);
+    if (keys.length === 0) return "";
+    const cards = keys.map((k, i) => {
+      const w = watch[k] || {};
+      const meta = knownStocks[k] || knownCrypto[k] || autoMeta(k, i + 8);
+      const isPos = (w.change7d||"").startsWith("+");
+      const sig = w.entrySignal === "BUY" ? "signal-buy" : "signal-wait";
+      const sigLabel = w.entrySignal === "BUY" ? "ENTRADA" : "ESPERAR";
+      return `
+      <div class="watch-card" style="--asset-color:${meta.color}">
+        <div class="asset-header">
+          <div class="asset-name">
+            <div class="asset-icon" style="background:${meta.color}22;color:${meta.color}">${meta.icon}</div>
+            <div><div class="asset-ticker">${k.toUpperCase()}</div><div class="asset-label">${meta.label}</div></div>
+          </div>
+          <span class="signal-badge ${sig}">${sigLabel}</span>
+        </div>
+        <div class="asset-price num">${w.price||"—"}</div>
+        <div class="asset-change num ${isPos?"pos":"neg"}">${w.change7d||"—"} <span class="asset-change-label">semana</span></div>
+        <div class="asset-context">${w.note || notes[k] || ""}</div>
+        <div class="watch-tag">👁 En observación — no posees este activo</div>
+      </div>`;
+    }).join("");
+    return `<div class="section-title">Watchlist — candidatas a comprar</div>
+    <div class="watch-grid mb">${cards}</div>`;
+  }
+
+  function allocationSection() {
+    const targets = portfolio.targets || null;
+    if (!targets) return "";
+    const investedTotal = totalCryptoVal + totalStocksVal;
+    if (investedTotal <= 0) return "";
+
+    const btcVal = portfolio.crypto.btc?.currentVal || 0;
+    const altVal = totalCryptoVal - btcVal;
+    const etfVal = stockAssets.filter(a => a.cat === "etf").reduce((s,a)=>s+a.current,0);
+    const indVal = stockAssets.filter(a => a.cat !== "etf").reduce((s,a)=>s+a.current,0);
+
+    const cats = [
+      { key:"btc",     label:"Bitcoin",           color:"#f7931a", actual: btcVal },
+      { key:"etf",     label:"ETFs",              color:"#00d4a0", actual: etfVal },
+      { key:"stock",   label:"Acciones indiv.",   color:"#4d8fff", actual: indVal },
+      { key:"altcoin", label:"Altcoins (HOLD)",   color:"#8b6dff", actual: altVal },
+    ];
+
+    let maxGap = -Infinity, nextDca = null;
+    const rows = cats.map(cat => {
+      const target = targets[cat.key] || 0;
+      const actualPct = +(cat.actual/investedTotal*100).toFixed(1);
+      const gap = target - actualPct;
+      if (cat.key !== "altcoin" && gap > maxGap) { maxGap = gap; nextDca = cat.label; }
+      const gapStr = (gap>=0?"+":"")+gap.toFixed(1);
+      const gapCls = Math.abs(gap) < 3 ? "text-muted" : (gap > 0 ? "pos" : "neg");
+      return `
+      <div class="alloc-row">
+        <div class="alloc-label"><span class="comp-dot" style="background:${cat.color}"></span>${cat.label}</div>
+        <div class="alloc-bars">
+          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:${Math.min(actualPct,100)}%;background:${cat.color}"></div><div class="alloc-bar-target" style="left:${Math.min(target,100)}%"></div></div>
+        </div>
+        <div class="alloc-nums mono num">${actualPct}% <span class="text-muted">/ ${target}%</span></div>
+        <div class="alloc-gap mono num ${gapCls}">${gapStr}pp</div>
+      </div>`;
+    }).join("");
+
+    const hint = nextDca && maxGap > 2
+      ? `<div class="alloc-hint">💡 Tu proxima inversion deberia priorizar <strong>${nextDca}</strong> (${maxGap.toFixed(1)} puntos por debajo del objetivo). Edita tus objetivos en portfolio.json → targets.</div>`
+      : `<div class="alloc-hint">✓ Asignacion cerca de los objetivos. Manten el DCA actual.</div>`;
+
+    return `<div class="section-title">Asignación objetivo vs real${infoIcon("riskprofile")}</div>
+    <div class="card mb">
+      <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
+      ${rows}
+      ${hint}
+    </div>`;
+  }
+
   function actionItems() {
     if (!d.actions) return "";
     return d.actions.map(a=>`<div class="action-item"><span class="action-num">${a.num}</span><span class="action-text">${a.text}</span></div>`).join("");
@@ -737,6 +833,27 @@ export function generateHTML(data, history, portfolio) {
   .cop-breakdown-item{display:flex;gap:6px;font-size:11px;color:var(--text-muted)}
   .cop-breakdown-item .mono{color:var(--text-dim);font-weight:600}
 
+  /* WATCHLIST */
+  .watch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g);max-width:720px}
+  .watch-card{background:var(--surface);border:1px dashed var(--border);border-radius:var(--r-sm);padding:16px 17px;border-top:2px dashed var(--asset-color,var(--border));opacity:.95}
+  .watch-tag{font-size:9px;color:var(--text-muted);font-family:var(--mono);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-subtle)}
+
+  /* ASIGNACIÓN OBJETIVO */
+  .alloc-legend{display:flex;gap:18px;margin-bottom:14px;font-size:10px;color:var(--text-muted);font-family:var(--mono)}
+  .alloc-legend-item{display:flex;align-items:center;gap:6px}
+  .alloc-swatch{width:18px;height:8px;border-radius:3px;background:var(--accent)}
+  .alloc-marker{width:2px;height:12px;background:var(--text);border-radius:1px}
+  .alloc-row{display:grid;grid-template-columns:130px 1fr 90px 60px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-subtle)}
+  .alloc-row:last-of-type{border-bottom:none}
+  .alloc-label{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600}
+  .alloc-bar-track{position:relative;height:10px;background:var(--surface2);border-radius:5px;overflow:visible}
+  .alloc-bar-actual{height:10px;border-radius:5px;transition:width .5s ease}
+  .alloc-bar-target{position:absolute;top:-3px;width:2px;height:16px;background:var(--text);border-radius:1px}
+  .alloc-nums{font-size:12px;text-align:right}
+  .alloc-gap{font-size:11px;text-align:right;font-weight:700}
+  .alloc-hint{margin-top:14px;padding:12px 14px;background:var(--surface2);border-radius:var(--r-sm);border-left:3px solid var(--accent);font-size:12px;line-height:1.6;color:var(--text-dim)}
+  @media(max-width:600px){.alloc-row{grid-template-columns:90px 1fr 70px 50px;gap:8px}.alloc-label{font-size:10px}}
+
   /* INFO ICON + TOAST */
   .info-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--surface2);color:var(--text-muted);font-size:10px;margin-left:5px;cursor:help;vertical-align:middle;transition:all .15s}
   .info-icon:hover{background:var(--accent);color:white}
@@ -896,6 +1013,8 @@ export function generateHTML(data, history, portfolio) {
 </div>
 
 
+<!-- 2c. WATCHLIST -->
+${watchlistSection()}
 <!-- 3. MACRO ECONÓMICO -->
 <div class="section-title">Contexto Macroeconómico</div>
 <div class="card mb">
@@ -981,10 +1100,14 @@ export function generateHTML(data, history, portfolio) {
 
 <!-- 6. SEÑALES -->
 <div class="section-title">Señales de mercado</div>
-<div class="signals-group">
-  <div class="signals-group-title">📈 Acciones</div>
-  ${assetCardGroup(stockAssets, "assets-grid-stocks")}
-</div>
+${stockAssets.filter(a=>a.cat==="etf").length > 0 ? `<div class="signals-group">
+  <div class="signals-group-title">📊 ETFs</div>
+  ${assetCardGroup(stockAssets.filter(a=>a.cat==="etf"), "assets-grid-stocks")}
+</div>` : ""}
+${stockAssets.filter(a=>a.cat!=="etf").length > 0 ? `<div class="signals-group">
+  <div class="signals-group-title">📈 Acciones individuales</div>
+  ${assetCardGroup(stockAssets.filter(a=>a.cat!=="etf"), "assets-grid-stocks")}
+</div>` : ""}
 <div class="signals-group">
   <div class="signals-group-title">🔶 Crypto</div>
   ${assetCardGroup(cryptoAssets, "assets-grid-crypto")}
@@ -1015,6 +1138,8 @@ export function generateHTML(data, history, portfolio) {
 </div>
 
 
+<!-- 8b. ASIGNACIÓN OBJETIVO -->
+${allocationSection()}
 <!-- 9. DECISIONES DEL MES -->
 <div class="section-title">Decisiones para este mes</div>
 <div class="decision-card mb">

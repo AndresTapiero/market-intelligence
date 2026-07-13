@@ -73,6 +73,9 @@ async function main() {
   const raw = loadPortfolio();
   const portfolio = buildPortfolio(raw, analysisData);
   portfolio.dcaLog = detectAndLogDCA(raw);
+  portfolio.targets = raw.targets || null;
+  portfolio.watchlistData = analysisData.watchlist || {};
+  portfolio.watchlistNotes = Object.fromEntries(Object.entries(raw.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
 
   // Calcular totales para log
   const totalCrypto = Object.values(portfolio.crypto).reduce((s,a) => s+(a.currentVal||0), 0);
