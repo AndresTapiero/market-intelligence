@@ -46,6 +46,32 @@
   .header-actions{display:flex;gap:8px;align-items:center}
   .refresh-btn{background:var(--green-dim);color:var(--green);border:1px solid var(--green);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
   .refresh-btn:hover{background:var(--green);color:white}
+  .buy-btn{background:var(--accent);color:white;border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
+  .buy-btn:hover{background:#7550f0;box-shadow:0 0 0 3px var(--accent-dim)}
+
+  /* MODAL REGISTRAR COMPRA */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.show{display:flex}
+  .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);max-width:420px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border-subtle)}
+  .modal-title{font-size:15px;font-weight:700}
+  .modal-close{background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px}
+  .modal-close:hover{background:var(--surface2);color:var(--text)}
+  .modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+  .modal-field{display:flex;flex-direction:column;gap:6px}
+  .modal-field label{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
+  .modal-field select, .modal-field input, .modal-field textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none}
+  .modal-field select:focus, .modal-field input:focus{border-color:var(--accent)}
+  .modal-field textarea{font-family:var(--mono);font-size:10px;resize:vertical;color:var(--text-dim)}
+  .modal-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .buy-preview{background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+  .buy-preview-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)}
+  .buy-preview-row .num{font-weight:700;color:var(--accent)}
+  .copy-btn{background:var(--green-dim);color:var(--green);border:1px solid var(--green);padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px}
+  .copy-btn:hover{background:var(--green);color:white}
+  .modal-submit{background:var(--accent);color:white;border:none;padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px}
+  .modal-submit:hover{background:#7550f0}
+  @media(max-width:480px){.modal-row{grid-template-columns:1fr}}
 
   /* HEADER */
   .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border-subtle);flex-wrap:wrap;gap:12px}
@@ -319,13 +345,13 @@
     .sticky-stat:nth-child(n+3){display:none}
     .comp-row{grid-template-columns:52px 1fr 38px 52px}
   }
-  @media print{ .sticky-bar,.pdf-btn{display:none!important} body{padding-top:20px} }
+  @media print{ .sticky-bar,.pdf-btn,.modal-overlay{display:none!important} body{padding-top:20px} }
 </style>
 </head>
 <body>
 
 <div class="sticky-bar">
-  <div class="sticky-logo">Market<span>Intel</span><span class="build-tag">v15</span></div>
+  <div class="sticky-logo">Market<span>Intel</span><span class="build-tag">v17</span></div>
   <div class="sticky-stats">
     <div class="sticky-stat"><div class="sticky-stat-label">Total</div><div class="sticky-stat-val num">$2,128</div></div>
     <div class="sticky-stat"><div class="sticky-stat-label">P&L</div><div class="sticky-stat-val num neg">-$1,813</div></div>
@@ -333,6 +359,7 @@
     
   </div>
   <div class="header-actions">
+    <button class="buy-btn" onclick="openBuyModal()">📥 Registrar compra</button>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Actualizar datos</a>
     <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
   </div>
@@ -341,7 +368,7 @@
 <div class="header" id="report-content">
   <div>
     <h1>Market Intelligence</h1>
-    <div class="header-sub">Reporte de inversiones · lunes, 13 de julio de 2026, 6:56 p. m.</div>
+    <div class="header-sub">Reporte de inversiones · lunes, 13 de julio de 2026, 7:05 p. m.</div>
   </div>
   <div class="header-right">
     <div class="week-badge">julio de 2026</div>
@@ -1319,7 +1346,66 @@
   <div class="card"><div class="section-title">Próximos eventos</div><div class="cal-grid"><div class="cal-row"><div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div><div class="cal-dot" style="background:var(--blue)"></div><div class="cal-evento">Decisión FED — tasas de interés</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--yellow)">Jun 25</div><div class="cal-dot" style="background:var(--yellow)"></div><div class="cal-evento">Earnings NVDA Q2 (estimado)</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Acciones — VOO/QQQ $50</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div></div></div>
 </div>
 
-<div class="footer">Market Intelligence v15 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · lunes, 13 de julio de 2026, 6:56 p. m.</div>
+<div class="footer">Market Intelligence v17 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · lunes, 13 de julio de 2026, 7:05 p. m.</div>
+
+<!-- MODAL: REGISTRAR COMPRA -->
+<div class="modal-overlay" id="buyModalOverlay" onclick="if(event.target===this)closeBuyModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">📥 Registrar nueva compra</div>
+      <button class="modal-close" onclick="closeBuyModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Activo</label>
+        <select id="buyAssetSelect" onchange="onAssetSelectChange()">
+          <option value="">Selecciona un activo...</option>
+          <optgroup label="Crypto" id="buyGroupCrypto"></optgroup>
+          <optgroup label="Acciones/ETFs" id="buyGroupStocks"></optgroup>
+          <option value="__new__">+ Nuevo activo (no esta en el portafolio)</option>
+        </select>
+      </div>
+      <div class="modal-field" id="newAssetFields" style="display:none">
+        <label>Ticker del nuevo activo</label>
+        <input type="text" id="buyNewTicker" placeholder="ej: schd, vti, btc">
+        <label style="margin-top:8px">Tipo</label>
+        <select id="buyNewType">
+          <option value="crypto">Crypto</option>
+          <option value="etf">Accion ETF</option>
+          <option value="stock">Accion individual</option>
+        </select>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Cantidad comprada</label>
+          <input type="number" id="buyQty" placeholder="0.00" step="any" oninput="updateBuyPreview()">
+        </div>
+        <div class="modal-field">
+          <label>Precio unitario (USD)</label>
+          <input type="number" id="buyPrice" placeholder="0.00" step="any" oninput="updateBuyPreview()">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Fecha de compra</label>
+        <input type="date" id="buyDate">
+      </div>
+
+      <div class="buy-preview" id="buyPreview" style="display:none">
+        <div class="buy-preview-row"><span>Monto total</span><span class="mono num" id="previewTotal">$0</span></div>
+        <div class="buy-preview-row"><span>Cantidad nueva total</span><span class="mono num" id="previewNewQty">0</span></div>
+        <div class="buy-preview-row"><span>Costo promedio nuevo</span><span class="mono num" id="previewNewCostAvg">$0</span></div>
+      </div>
+
+      <div class="modal-field" id="commandBlock" style="display:none">
+        <label>Comando listo para Claude Code</label>
+        <textarea id="commandOutput" readonly rows="6"></textarea>
+        <button class="copy-btn" onclick="copyCommand()">📋 Copiar comando</button>
+      </div>
+
+      <button class="modal-submit" onclick="generateCommand()">Generar comando</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ─── CONVERSOR INTERACTIVO USD/COP ─────────────────────────────────────────
@@ -1389,6 +1475,159 @@ function showToast(el, text) {
   toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
+// ─── REGISTRAR COMPRA — modal interactivo ──────────────────────────────────
+const EXISTING_ASSETS = {
+  "btc": { type: "crypto", label: "Bitcoin", qty: 0.014049, costAvg: 82716 },
+  "eth": { type: "crypto", label: "Ethereum", qty: 0.1733, costAvg: 3200 },
+  "sol": { type: "crypto", label: "Solana", qty: 4.165, costAvg: 104.6 },
+  "tao": { type: "crypto", label: "Bittensor", qty: 0.7367, costAvg: 449.4 },
+  "uni": { type: "crypto", label: "Uniswap", qty: 30.68, costAvg: 9.16 },
+  "bnb": { type: "crypto", label: "BNB", qty: 0.1075, costAvg: 1344 },
+  "sui": { type: "crypto", label: "SUI", qty: 60.85, costAvg: 1.52 },
+  "sei": { type: "crypto", label: "SEI", qty: 464.78, costAvg: 0.566 },
+  "ena": { type: "crypto", label: "Ethena", qty: 249.59, costAvg: 0.278 },
+  "avax": { type: "crypto", label: "Avalanche", qty: 2.428, costAvg: 18.74 },
+  "voo": { type: "stock", label: "VOO", qty: 0.36947, costAvg: 508.99 },
+  "qqq": { type: "stock", label: "QQQ", qty: 0.15618, costAvg: 533.7 },
+  "nvda": { type: "stock", label: "NVIDIA", qty: 1.10855, costAvg: 119.11 },
+  "nu": { type: "stock", label: "Nubank", qty: 1, costAvg: 8.18 },
+  "tsla": { type: "stock", label: "Tesla", qty: 0.12903, costAvg: 302.24 }
+};
+
+function openBuyModal() {
+  const selectEl = document.getElementById('buyAssetSelect');
+  const cryptoGroup = document.getElementById('buyGroupCrypto');
+  const stocksGroup = document.getElementById('buyGroupStocks');
+  cryptoGroup.innerHTML = '';
+  stocksGroup.innerHTML = '';
+  Object.entries(EXISTING_ASSETS).forEach(([key, a]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = a.label + ' (' + key.toUpperCase() + ')';
+    if (a.type === 'crypto') cryptoGroup.appendChild(opt);
+    else stocksGroup.appendChild(opt);
+  });
+  document.getElementById('buyDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('buyModalOverlay').classList.add('show');
+}
+
+function closeBuyModal() {
+  document.getElementById('buyModalOverlay').classList.remove('show');
+  document.getElementById('buyPreview').style.display = 'none';
+  document.getElementById('commandBlock').style.display = 'none';
+  document.getElementById('buyQty').value = '';
+  document.getElementById('buyPrice').value = '';
+  document.getElementById('buyNewTicker').value = '';
+  document.getElementById('buyAssetSelect').value = '';
+  document.getElementById('newAssetFields').style.display = 'none';
+}
+
+function onAssetSelectChange() {
+  const val = document.getElementById('buyAssetSelect').value;
+  document.getElementById('newAssetFields').style.display = (val === '__new__') ? 'flex' : 'none';
+  updateBuyPreview();
+}
+
+function getSelectedAssetKey() {
+  const val = document.getElementById('buyAssetSelect').value;
+  if (val === '__new__') {
+    return document.getElementById('buyNewTicker').value.trim().toLowerCase();
+  }
+  return val;
+}
+
+function updateBuyPreview() {
+  const key = getSelectedAssetKey();
+  const qty = parseFloat(document.getElementById('buyQty').value) || 0;
+  const price = parseFloat(document.getElementById('buyPrice').value) || 0;
+  const preview = document.getElementById('buyPreview');
+
+  if (!key || qty <= 0 || price <= 0) { preview.style.display = 'none'; return; }
+
+  const existing = EXISTING_ASSETS[key];
+  const oldQty = existing ? existing.qty : 0;
+  const oldCostAvg = existing ? existing.costAvg : 0;
+
+  const newQty = oldQty + qty;
+  const newCostAvg = ((oldQty * oldCostAvg) + (qty * price)) / newQty;
+  const total = qty * price;
+
+  document.getElementById('previewTotal').textContent = '$' + total.toLocaleString('en-US', {maximumFractionDigits:2});
+  document.getElementById('previewNewQty').textContent = newQty.toFixed(newQty < 1 ? 8 : 6).replace(/0+$/,'').replace(/.$/,'');
+  document.getElementById('previewNewCostAvg').textContent = '$' + newCostAvg.toLocaleString('en-US', {maximumFractionDigits: newCostAvg < 1 ? 6 : 2});
+  preview.style.display = 'flex';
+}
+
+function generateCommand() {
+  const key = getSelectedAssetKey();
+  const qty = parseFloat(document.getElementById('buyQty').value) || 0;
+  const price = parseFloat(document.getElementById('buyPrice').value) || 0;
+  const date = document.getElementById('buyDate').value;
+  const newType = document.getElementById('buyNewType').value;
+
+  if (!key || qty <= 0 || price <= 0) {
+    alert('Completa el activo, la cantidad y el precio antes de generar el comando.');
+    return;
+  }
+
+  const existing = EXISTING_ASSETS[key];
+  const oldQty = existing ? existing.qty : 0;
+  const oldCostAvg = existing ? existing.costAvg : 0;
+  const newQty = +(oldQty + qty).toFixed(8);
+  const newCostAvg = +(((oldQty * oldCostAvg) + (qty * price)) / newQty).toFixed(6);
+  const total = (qty * price).toFixed(2);
+  const isCrypto = existing ? existing.type === 'crypto' : newType === 'crypto';
+  const qtyField = isCrypto ? 'qty' : 'shares';
+  const section = isCrypto ? 'crypto' : 'stocks';
+
+  var lines = [];
+  if (existing) {
+    lines.push('En ~/Documents/Personal/market-intelligence/portfolio.json, dentro de "' + section + '" -> "' + key + '", actualiza:');
+    lines.push('  ' + qtyField + ': ' + newQty);
+    lines.push('  costAvg: ' + newCostAvg);
+    lines.push('');
+    lines.push('Esto refleja una compra de ' + qty + ' unidades a $' + price + ' c/u (total $' + total + ') el ' + date + '.');
+    lines.push('');
+    lines.push('Luego ejecuta: node regenerate.js (para validar sin gastar API)');
+    lines.push('');
+    lines.push('Si todo se ve bien, haz:');
+    lines.push('git add .');
+    lines.push('git commit -m "portfolio: compra ' + key.toUpperCase() + ' ' + date + '"');
+    lines.push('git push');
+  } else {
+    lines.push('En ~/Documents/Personal/market-intelligence/portfolio.json, agrega este NUEVO activo dentro de "' + section + '":');
+    lines.push('');
+    lines.push('  "' + key + '": {');
+    lines.push('    "' + qtyField + '": ' + qty + ',');
+    if (newType !== 'crypto') lines.push('    "cat": "' + newType + '",');
+    lines.push('    "costAvg": ' + price);
+    lines.push('  }');
+    lines.push('');
+    lines.push('Esto registra tu primera compra: ' + qty + ' unidades a $' + price + ' c/u (total $' + total + ') el ' + date + '.');
+    lines.push('');
+    lines.push('Luego ejecuta: node regenerate.js (para validar sin gastar API)');
+    lines.push('');
+    lines.push('Si todo se ve bien, haz:');
+    lines.push('git add .');
+    lines.push('git commit -m "portfolio: nueva posicion ' + key.toUpperCase() + '"');
+    lines.push('git push');
+  }
+
+  document.getElementById('commandOutput').value = lines.join(String.fromCharCode(10));
+  document.getElementById('commandBlock').style.display = 'flex';
+}
+
+function copyCommand() {
+  const el = document.getElementById('commandOutput');
+  el.select();
+  navigator.clipboard.writeText(el.value).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    const original = btn.textContent;
+    btn.textContent = '✅ Copiado';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  });
+}
+
 function exportPDF() {
   const btn = document.querySelector('.pdf-btn');
   btn.textContent = '⏳ Generando...';
@@ -1401,6 +1640,7 @@ function exportPDF() {
   };
   const el = document.body.cloneNode(true);
   const stickyClone = el.querySelector('.sticky-bar'); if (stickyClone) stickyClone.remove();
+  const modalClone = el.querySelector('.modal-overlay'); if (modalClone) modalClone.remove();
   html2pdf().set(opt).from(el).save().then(() => { btn.textContent = '⬇ PDF'; }).catch(() => { btn.textContent = '⬇ PDF'; });
 }
 </script>
