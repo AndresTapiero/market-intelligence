@@ -95,5 +95,14 @@
     "amountUSD": 41.52,
     "note": "DCA / compra",
     "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "spx6900",
+    "qtyAdded": 37.87,
+    "unitPrice": 1.149,
+    "amountUSD": 43.51,
+    "note": "DCA / compra",
+    "type": "crypto"
   }
 ]

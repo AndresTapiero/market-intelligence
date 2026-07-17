@@ -42,10 +42,6 @@
       "qty": 2.428,
       "costAvg": 18.93
     },
-    "spx": {
-      "qty": 37.87,
-      "costAvg": 1.149
-    },
     "usdt": {
       "qty": 9.925,
       "costAvg": 1.0
@@ -57,6 +53,10 @@
     "trump": {
       "qty": 1.151,
       "costAvg": 36.07
+    },
+    "spx6900": {
+      "qty": 37.87,
+      "costAvg": 1.149
     }
   },
   "stocks": {

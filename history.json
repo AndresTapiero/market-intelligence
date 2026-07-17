@@ -126,11 +126,6 @@
         "change7d": "-2.8%",
         "signal": "HOLD"
       },
-      "spx": {
-        "price": "$6,850",
-        "change7d": "-0.5%",
-        "signal": "HOLD"
-      },
       "usdt": {
         "price": "$1.00",
         "change7d": "+0.0%",
@@ -226,7 +221,12 @@
           "num": "03",
           "text": "Si se libera flujo de caja tras reducir la deuda, iniciar una posicion inicial pequena en VTI desde la watchlist, priorizando VTI sobre SCHD por su mejor punto de entrada actual."
         }
-      ]
+      ],
+      "spx6900": {
+        "price": "$0.3494",
+        "change7d": "-3.28%",
+        "signal": "HOLD"
+      }
     },
     "portfolioSnapshot": {
       "totalCrypto": 261721.06,
