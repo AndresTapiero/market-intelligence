@@ -5,5 +5,95 @@
     "qtyAdded": 0.001699,
     "note": "DCA / compra",
     "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "btc",
+    "qtyAdded": 0.000681,
+    "unitPrice": 63600,
+    "amountUSD": 43.31,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "eth",
+    "qtyAdded": 0.0003,
+    "unitPrice": 2532.66,
+    "amountUSD": 0.76,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "sol",
+    "qtyAdded": 0.014,
+    "unitPrice": 173.74,
+    "amountUSD": 2.43,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "tao",
+    "qtyAdded": 0.0002,
+    "unitPrice": 350.93,
+    "amountUSD": 0.07,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "sui",
+    "qtyAdded": 0.01,
+    "unitPrice": 3.688,
+    "amountUSD": 0.04,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "sei",
+    "qtyAdded": 1.84,
+    "unitPrice": 0.2916,
+    "amountUSD": 0.54,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "spx",
+    "qtyAdded": 37.87,
+    "unitPrice": 1.149,
+    "amountUSD": 43.51,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "usdt",
+    "qtyAdded": 9.925,
+    "unitPrice": 1,
+    "amountUSD": 9.93,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "giga",
+    "qtyAdded": 873.2,
+    "unitPrice": 0.06385,
+    "amountUSD": 55.75,
+    "note": "DCA / compra",
+    "type": "crypto"
+  },
+  {
+    "date": "17 de jul de 2026",
+    "asset": "trump",
+    "qtyAdded": 1.151,
+    "unitPrice": 36.07,
+    "amountUSD": 41.52,
+    "note": "DCA / compra",
+    "type": "crypto"
   }
 ]

@@ -69,17 +69,17 @@
     }
   },
   {
-    "timestamp": "2026-07-17T16:44:48.808Z",
+    "timestamp": "2026-07-17T16:32:14.274Z",
     "week": "2026-W29",
     "data": {
-      "date": "17 de julio de 2026",
-      "analystOpinion": "El portafolio mantiene una base solida gracias al DCA constante en BTC y VOO/QQQ, que sigue comprando fortaleza estructural pese a la volatilidad reciente por la tension geopolitica Estados Unidos-Iran. El lastre principal es el bloque de altcoins en HOLD (TAO, ENA, AVAX, SUI) que arrastran caidas semanales de doble digito y no aportan a la tesis de largo plazo. La recomendacion del mes es mantener disciplina: seguir el DCA de 50 en BTC y 50 en VOO/QQQ, no tocar altcoins, y destinar cualquier excedente a eliminar la deuda de tarjeta de credito antes de abrir posiciones nuevas como SCHD o VTI.",
+      "date": "2026-07-17",
+      "analystOpinion": "El portafolio muestra buena disciplina con el DCA mensual de USD 50 en BTC y USD 50 en VOO/QQQ, lo cual sigue siendo la base correcta en un mercado con alta volatilidad por tensiones geopoliticas. BTC y las acciones tech (QQQ, NVDA) arrastran presion de corto plazo por las tensiones EEUU-Iran y ventas en risk assets, pero el patron de fondo (demanda institucional, IA) sigue intacto. Las altcoins en HOLD deben mantenerse sin nuevas compras segun la regla establecida; la prioridad number one sigue siendo eliminar la deuda de tarjeta de credito antes de abrir posiciones nuevas. Recomendacion del mes: mantener el DCA, no tocar altcoins, y evaluar SCHD como nueva posicion solo despues de liquidar la deuda.",
       "riskProfile": "Moderado-Agresivo",
       "btc": {
-        "price": "$63,205",
-        "change7d": "-1.8%",
+        "price": "$64,197",
+        "change7d": "-2.0%",
         "signal": "BUY",
-        "context": "<cite index=\"4-12,4-13\">Bitcoin esta por debajo de $64,000 tras un nuevo ataque de EEUU a Iran, y comentarios de Trump sobre China suman incertidumbre a los activos de riesgo</cite>. Aun asi, <cite index=\"4-1,4-2\">Morgan Stanley lanzo trading de BTC y ETH via Zero Hash, y JPMorgan ve senales alentadoras para BTC por la demanda institucional</cite>, lo que sostiene la tesis de DCA continuo en la caida."
+        "context": "<cite index=\"4-12,4-13\">Bitcoin under $64,000 after new U.S. strike on Iran, con tensiones geopoliticas presionando activos de riesgo</cite>. <cite index=\"4-14,4-15\">Morgan Stanley lanzo trading de BTC/ETH/SOL en E*Trade y JPMorgan ve senales alentadoras en la demanda institucional de bitcoin</cite>, lo que sostiene la tesis DCA de largo plazo pese a la debilidad de corto plazo."
       },
       "eth": {
         "price": "$1,824.50",
@@ -87,38 +87,38 @@
         "signal": "HOLD"
       },
       "sol": {
-        "price": "$74.92",
-        "change7d": "-2.8%",
+        "price": "$74.64",
+        "change7d": "+3.0%",
         "signal": "HOLD"
       },
       "tao": {
-        "price": "$192.49",
-        "change7d": "-9.8%",
+        "price": "$205.57",
+        "change7d": "+5.3%",
         "signal": "HOLD"
       },
       "uni": {
-        "price": "$3.21",
-        "change7d": "-3.7%",
+        "price": "$3.89",
+        "change7d": "+1.6%",
         "signal": "HOLD"
       },
       "bnb": {
-        "price": "$578.10",
+        "price": "$570.51",
         "change7d": "-1.7%",
         "signal": "HOLD"
       },
       "sui": {
-        "price": "$0.7536",
-        "change7d": "-2.0%",
+        "price": "$0.98",
+        "change7d": "+3.3%",
         "signal": "HOLD"
       },
       "sei": {
-        "price": "$0.0489",
-        "change7d": "+4.2%",
+        "price": "$0.20",
+        "change7d": "+0.5%",
         "signal": "HOLD"
       },
       "ena": {
-        "price": "$0.0806",
-        "change7d": "-6.0%",
+        "price": "$0.35",
+        "change7d": "+1.0%",
         "signal": "HOLD"
       },
       "avax": {
@@ -127,8 +127,8 @@
         "signal": "HOLD"
       },
       "spx": {
-        "price": "$0.3508",
-        "change7d": "-8.0%",
+        "price": "$0.000103",
+        "change7d": "-1.9%",
         "signal": "HOLD"
       },
       "usdt": {
@@ -137,102 +137,48 @@
         "signal": "HOLD"
       },
       "giga": {
-        "price": "$0.002297",
-        "change7d": "+3.5%",
+        "price": "$0.005",
+        "change7d": "-1.0%",
         "signal": "HOLD"
       },
       "trump": {
-        "price": "$1.56",
-        "change7d": "-5.9%",
+        "price": "$1.54",
+        "change7d": "-6.1%",
         "signal": "HOLD"
       },
       "voo": {
         "price": "$690.14",
-        "change7d": "-1.0%",
+        "change7d": "-0.5%",
         "signal": "BUY",
-        "context": "<cite index=\"44-1,44-2\">VOO cotiza a 690.14, con un cierre previo de 693.80 y un rango diario entre 687.43 y 693.55</cite>. La correccion reciente por tension en Medio Oriente es ruido de corto plazo; el DCA mensual sigue siendo la estrategia correcta para acumulacion pasiva de largo plazo."
+        "context": "<cite index=\"34-1,34-2\">VOO cotiza en 690.14, con un cierre previo de 693.80 y un rango de 52 semanas entre 569.29 y 699.15</cite>. <cite index=\"37-19\">Wall Street entra a julio con tono mas alcista tras un junio volatil, apoyado en estacionalidad y ganancias de empresas mas fuertes</cite>, lo que sigue favoreciendo el DCA mensual en el activo."
       },
       "qqq": {
-        "price": "$695.45",
-        "change7d": "-2.0%",
+        "price": "$705.94",
+        "change7d": "-1.6%",
         "signal": "BUY",
-        "context": "<cite index=\"105-1\">QQQ cotiza en 695.45, bajando 10.49 puntos (-1.49%) en la sesion del 17 de julio</cite>, presionado por una caida sectorial en semiconductores. El pullback es una oportunidad para continuar el DCA de 50 mensuales sin perseguir maximos."
+        "context": "<cite index=\"29-2\">QQQ cotiza actualmente en 705.94</cite> tras una correccion reciente. <cite index=\"37-7\">El ETF cerro mas bajo el jueves mientras los inversores evaluaban nuevos desarrollos EEUU-Iran antes del discurso presidencial</cite>, generando una oportunidad de entrada dentro de la estrategia DCA."
       },
       "nvda": {
-        "price": "$212.50",
-        "change7d": "+1.0%",
-        "signal": "BUY",
-        "context": "NVDA se mantiene como pilar de la narrativa de IA con margenes brutos elevados y respaldo de demanda de centros de datos; la debilidad reciente en semiconductores abre una ventana de entrada táctica dentro de la posicion ya existente."
+        "price": "$185.00",
+        "change7d": "+1.8%",
+        "signal": "BUY"
       },
       "nu": {
-        "price": "$13.76",
-        "change7d": "-1.5%",
+        "price": "$13.63",
+        "change7d": "-1.1%",
         "signal": "HOLD"
       },
       "tsla": {
-        "price": "$389.76",
+        "price": "$383.20",
         "change7d": "-2.0%",
         "signal": "HOLD"
-      },
-      "macro": {
-        "usdcop": "$3,221.41 COP",
-        "fedrate": "3.75%",
-        "btcDominance": "60%",
-        "fearGreed": "38",
-        "fearGreedLabel": "Miedo",
-        "narrative": "<cite index=\"61-2,61-3\">El Banco de la Republica fijo la TRM en $3,221.41 para el viernes 17 de julio, el nivel mas bajo en mas de 7 años</cite>, favorecido por el diferencial de tasas y flujos hacia deuda colombiana. En EEUU, <cite index=\"66-3,66-4\">la tasa de la Fed se ubica en 3.75% mientras la tension geopolitica entre EEUU e Iran genera cautela en activos de riesgo globales</cite>."
-      },
-      "newOpportunities": [
-        {
-          "asset": "SCHD",
-          "reason": "Con el pullback reciente hacia zona de soporte, ofrece un yield atractivo cercano al 3.3% con menor volatilidad que VTI, ideal para diversificar el flujo DCA hacia dividendos una vez saldada la deuda TC.",
-          "risk": "Ha quedado rezagado frente al S&P 500 en los ultimos meses, lo que podria significar underperformance prolongado si el mercado sigue liderado por growth/tech."
-        },
-        {
-          "asset": "BTC (DCA adicional)",
-          "reason": "La caida por el conflicto EEUU-Iran ofrece un punto de entrada mas bajo dentro de la misma estrategia DCA ya establecida, sin desviarse de las reglas del portafolio.",
-          "risk": "Mayor escalada geopolitica podria extender la correccion antes de cualquier rebote, generando presion emocional sobre la disciplina de compra."
-        },
-        {
-          "asset": "VTI",
-          "reason": "Complementa a VOO con exposicion a small y mid caps de EEUU a bajo costo (0.03% expense ratio), diversificando el riesgo de concentracion en las 10 mayores tecnologicas del S&P 500.",
-          "risk": "Alta correlacion con VOO reduce el beneficio real de diversificacion si ambas caen simultaneamente en un mismo evento de mercado."
-        }
-      ],
-      "watchlist": {
-        "schd": {
-          "price": "$32.84",
-          "change7d": "+0.5%",
-          "entrySignal": "BUY",
-          "note": "<cite index=\"53-2\">SCHD alcanzo un maximo diario de 33.01 y un minimo de 32.39 en la sesion del 16 de julio</cite>, cotizando cerca de soporte tras meses laterales, lo que representa una entrada razonable para perfiles que buscan dividendos."
-        },
-        "vti": {
-          "price": "$370.58",
-          "change7d": "-1.0%",
-          "entrySignal": "WAIT",
-          "note": "<cite index=\"40-2\">VTI cotiza en 370.58 con una caida de 0.49%</cite>, siguiendo de cerca la correccion de VOO; conviene esperar mayor estabilizacion antes de iniciar posicion nueva."
-        }
-      },
-      "actions": [
-        {
-          "num": "01",
-          "text": "Continuar el DCA mensual de 50 en BTC y 50 en VOO/QQQ aprovechando la correccion actual por tension geopolitica."
-        },
-        {
-          "num": "02",
-          "text": "Priorizar el pago de la deuda de tarjeta de credito antes de abrir posicion en SCHD o VTI, aunque ambos muestran puntos de entrada razonables."
-        },
-        {
-          "num": "03",
-          "text": "Mantener las altcoins (ETH, SOL, TAO, UNI, BNB, SUI, SEI, ENA, AVAX) en HOLD estricto sin nuevas compras, ignorando el ruido de las caidas semanales de TAO y ENA."
-        }
-      ]
+      }
     },
     "portfolioSnapshot": {
-      "totalCrypto": 1995.06,
-      "totalStocks": 863.23,
+      "totalCrypto": 2178.75,
+      "totalStocks": 770.32,
       "cash": 200,
-      "total": 3058.29
+      "total": 3149.07
     }
   }
 ]

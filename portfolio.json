@@ -1,46 +1,62 @@
 {
-  "_comment": "Fuente unica de verdad. Actualizar cantidades tras cada DCA. cat: etf|stock para asignacion. watchlist: activos a monitorear sin poseer. targets: asignacion objetivo % (editable).",
-  "_updated": "2026-07-10",
+  "_comment": "Fuente unica de verdad. Actualizar cantidades tras cada DCA. cat: etf|stock para asignacion. watchlist: activos a monitorear sin poseer. targets: asignacion objetivo % (editable). Cantidades y costAvg validados contra CoinStats 17/jul/2026.",
+  "_updated": "2026-07-17",
   "crypto": {
     "btc": {
-      "qty": 0.014049,
-      "costAvg": 82716
+      "qty": 0.01473,
+      "costAvg": 84349.32
     },
     "eth": {
-      "qty": 0.1733,
-      "costAvg": 3200
+      "qty": 0.1736,
+      "costAvg": 2532.66
     },
     "sol": {
-      "qty": 4.165,
-      "costAvg": 104.6
+      "qty": 4.179,
+      "costAvg": 173.74
     },
     "tao": {
-      "qty": 0.7367,
-      "costAvg": 449.4
+      "qty": 0.7369,
+      "costAvg": 350.93
     },
     "uni": {
       "qty": 30.68,
-      "costAvg": 9.16
+      "costAvg": 9.191
     },
     "bnb": {
       "qty": 0.1075,
-      "costAvg": 1344
+      "costAvg": 673.0
     },
     "sui": {
-      "qty": 60.85,
-      "costAvg": 1.52
+      "qty": 60.86,
+      "costAvg": 3.688
     },
     "sei": {
-      "qty": 464.78,
-      "costAvg": 0.566
+      "qty": 466.62,
+      "costAvg": 0.2916
     },
     "ena": {
       "qty": 249.59,
-      "costAvg": 0.278
+      "costAvg": 0.2802
     },
     "avax": {
       "qty": 2.428,
-      "costAvg": 18.74
+      "costAvg": 18.93
+    },
+    "spx": {
+      "qty": 37.87,
+      "costAvg": 1.149
+    },
+    "usdt": {
+      "qty": 9.925,
+      "costAvg": 1.0
+    },
+    "giga": {
+      "qty": 873.2,
+      "costAvg": 0.06385
+    },
+    "trump": {
+      "qty": 1.151,
+      "costAvg": 36.07
     }
   },
   "stocks": {
