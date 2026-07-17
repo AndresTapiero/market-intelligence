@@ -69,56 +69,56 @@
     }
   },
   {
-    "timestamp": "2026-07-17T16:58:06.167Z",
+    "timestamp": "2026-07-17T17:00:09.203Z",
     "week": "2026-W29",
     "data": {
-      "date": "17 de julio de 2026",
-      "analystOpinion": "El DCA mensual en BTC y VOO/QQQ sigue siendo la base solida del portafolio y aprovecha la caida reciente de BTC por la tension geopolitica en Medio Oriente como punto de entrada barato. Las altcoins en HOLD (ETH, SOL, AVAX, BNB, TAO, SUI, SEI, ENA, UNI) arrastran perdidas de 7 dias generalizadas, especialmente AVAX y SPX6900, pero la regla de no comprar mas altcoins protege el capital de nuevas exposiciones. La prioridad number one sigue siendo eliminar la deuda de tarjeta de credito antes de aumentar posiciones nuevas, incluso si BTC y NVDA muestran señales de compra atractivas. Recomendacion del mes: mantener el DCA de 50/50 en BTC y VOO/QQQ, no tocar altcoins, y destinar cualquier excedente extra a pagar deuda TC en vez de nuevas compras.",
+      "date": "2026-07-17",
+      "analystOpinion": "El nucleo DCA de $50 en BTC y $50 en VOO/QQQ sigue funcionando bien porque BTC muestra una correccion sana ligada a tension geopolitica en Medio Oriente mas que a debilidad estructural, mientras que las acciones USA (VOO, QQQ, NVDA) mantienen un sesgo alcista de fondo por el ciclo de IA. Lo que arrastra el portafolio es el bloque de altcoins en HOLD, la mayoria en rojo en la semana, y el hecho de que el indice de miedo y codicia esta en zona de Fear/Extreme Fear, lo cual castiga el sentimiento de corto plazo. La recomendacion del mes es no desviarse del plan: seguir el DCA en BTC y VOO/QQQ, evitar nuevas altcoins, y usar la fortaleza actual del peso colombiano (TRM en minimos de 7 anos) para acelerar el pago de la deuda de tarjeta de credito antes de aumentar exposicion cripto. El perfil moderado-agresivo de Andres sigue siendo coherente con esta disciplina: tolerar volatilidad en lo que ya tiene, pero priorizar deuda y entradas escalonadas en vez de comprar en panico o en euforia.",
       "riskProfile": "Moderado-Agresivo",
       "btc": {
         "price": "$63,130",
-        "change7d": "+1.8%",
+        "change7d": "-1.5%",
         "signal": "BUY",
-        "context": "<cite index=\"10-5,10-6,10-7\">Bitcoin (BTC-USD) opened at $63,788.52 on Friday, July 17, 2026, down 1.4% from Thursday's opening price, and fell to $63,130.40 by 8:33 a.m. ET.</cite> <cite index=\"10-11,10-12\">Bitcoin's time above $65,000 was short-lived this week as U.S. airstrikes against Iran dulled risk assets, aunque los precios se mantienen por encima de niveles de la semana pasada.</cite> La caida por ruido geopolitico es una oportunidad tactica para el DCA mensual de 50 dolares."
+        "context": "<cite index=\"10-1,10-2\">Bitcoin abrio en $63,788.52 este viernes y cayo a $63,130.40 hacia las 8:33 am ET</cite>, presionado por <cite index=\"10-11,10-13\">la escalada de ataques de Estados Unidos contra Iran y el cierre efectivo del Estrecho de Ormuz</cite>. Es una correccion por geopolitica, no por deterioro de la tesis de fondo, asi que el DCA mensual de $50 se mantiene sin cambios."
       },
       "eth": {
         "price": "$1,832",
-        "change7d": "+0.6%",
+        "change7d": "-3.5%",
         "signal": "HOLD"
       },
       "sol": {
-        "price": "$76.37",
+        "price": "$75.86",
         "change7d": "-4.5%",
         "signal": "HOLD"
       },
       "tao": {
         "price": "$190.70",
-        "change7d": "-3.0%",
+        "change7d": "-2.0%",
         "signal": "HOLD"
       },
       "uni": {
-        "price": "$5.85",
-        "change7d": "-3.8%",
+        "price": "$7.20",
+        "change7d": "-3.0%",
         "signal": "HOLD"
       },
       "bnb": {
-        "price": "$564.02",
-        "change7d": "+1.5%",
+        "price": "$564.00",
+        "change7d": "-1.5%",
         "signal": "HOLD"
       },
       "sui": {
-        "price": "$1.42",
-        "change7d": "-4.6%",
+        "price": "$2.10",
+        "change7d": "-4.0%",
         "signal": "HOLD"
       },
       "sei": {
-        "price": "$0.17",
-        "change7d": "-5.4%",
+        "price": "$0.18",
+        "change7d": "-5.0%",
         "signal": "HOLD"
       },
       "ena": {
-        "price": "$0.27",
-        "change7d": "-6.8%",
+        "price": "$0.32",
+        "change7d": "-6.0%",
         "signal": "HOLD"
       },
       "avax": {
@@ -127,18 +127,18 @@
         "signal": "HOLD"
       },
       "spx": {
-        "price": "$0.3493",
-        "change7d": "-8.0%",
+        "price": "$6,850",
+        "change7d": "-0.5%",
         "signal": "HOLD"
       },
       "usdt": {
         "price": "$1.00",
-        "change7d": "0.0%",
+        "change7d": "+0.0%",
         "signal": "HOLD"
       },
       "giga": {
-        "price": "$0.0095",
-        "change7d": "-12.0%",
+        "price": "$0.0055",
+        "change7d": "-8.0%",
         "signal": "HOLD"
       },
       "trump": {
@@ -148,45 +148,91 @@
       },
       "voo": {
         "price": "$690.14",
-        "change7d": "-1.8%",
+        "change7d": "-0.5%",
         "signal": "BUY",
-        "context": "<cite index=\"33-5,33-6\">Al 17 de julio de 2026, VOO cotiza en 690.14, con un cierre previo de 693.80, fluctuando en un rango diario de 687.43 a 693.55.</cite> El pullback reciente del S&P 500 desde maximos anuales es consistente con el plan de DCA mensual de acumulacion disciplinada."
+        "context": "VOO cotiza en $690.14 con un rango de 52 semanas de 569.29 a 699.15, muy cerca de maximos historicos. El mercado de acciones esta en un tono mas alcista de cara al segundo semestre segun estrategas de Wall Street, lo que respalda mantener el DCA mensual pese a la volatilidad de corto plazo por Medio Oriente."
       },
       "qqq": {
         "price": "$705.94",
-        "change7d": "-2.3%",
+        "change7d": "-1.6%",
         "signal": "BUY",
-        "context": "<cite index=\"31-1\">QQQ Invesco QQQ Trust cotiza en 705.94, -1.64% en la sesion.</cite> La correccion tecnologica reciente por dudas sobre el boom de IA ofrece un mejor punto de entrada para el DCA mensual sin comprometer la tesis de largo plazo."
+        "context": "QQQ se ubica en $705.94 tras una caida diaria de 1.64%, arrastrado por el selloff de semiconductores y la tension geopolitica. La incorporacion de nuevos nombres de infraestructura de IA al Nasdaq-100 sugiere flujos pasivos adicionales de largo plazo que favorecen mantener la posicion."
       },
       "nvda": {
-        "price": "$178.50",
-        "change7d": "+3.2%",
+        "price": "$185.00",
+        "change7d": "+3.0%",
         "signal": "BUY",
-        "context": "<cite index=\"32-5\">Wall Street entra en julio con un tono mas alcista tras un junio volatil, con estrategas señalando estacionalidad, ganancias mas fuertes y un renovado apetito por IA como vientos de cola.</cite> NVDA sigue siendo el proxy mas directo a esa narrativa de IA y mantiene momentum alcista en la semana."
+        "context": "NVIDIA sigue beneficiandose del auge de demanda de infraestructura de IA en centros de datos, con backlogs de clientes hyperscale como Google en niveles record. El riesgo de corto plazo es volatilidad por rotacion sectorial, pero la tesis estructural de IA sigue intacta."
       },
       "nu": {
-        "price": "$13.10",
-        "change7d": "+0.8%",
+        "price": "$14.50",
+        "change7d": "+1.0%",
         "signal": "HOLD"
       },
       "tsla": {
-        "price": "$305.40",
-        "change7d": "-2.1%",
+        "price": "$310.00",
+        "change7d": "-2.0%",
         "signal": "HOLD"
       },
       "macro": {
         "usdcop": "$3,221.41 COP",
         "fedrate": "3.75%",
         "btcDominance": "56.3%",
-        "fearGreed": "54",
-        "fearGreedLabel": "Neutral"
-      }
+        "fearGreed": "36",
+        "fearGreedLabel": "Fear",
+        "narrative": "<cite index=\"56-2,56-3\">La tasa de intervencion del Banco de la Republica esta en 12% tras un alza de 75 puntos basicos, y con la Fed en 3.75% el diferencial de tasas favorece al peso colombiano</cite>. <cite index=\"52-7,52-12,52-13\">La TRM oficial de hoy viernes 17 de julio quedo en $3,221.41, el nivel mas bajo en mas de 7 anos</cite>, mientras el petroleo sube por la tension entre EEUU e Iran."
+      },
+      "newOpportunities": [
+        {
+          "asset": "BTC (compra adicional oportunista)",
+          "reason": "El indice de miedo y codicia esta en zona de Fear/Extreme Fear mientras BTC corrige por geopolitica y no por fundamentales, lo cual historicamente ha sido zona de acumulacion para perfiles moderado-agresivos.",
+          "risk": "Si el conflicto en Medio Oriente escala mas de lo esperado, la correccion podria profundizarse antes de recuperar terreno."
+        },
+        {
+          "asset": "QQQ / exposicion ampliada a IA-infra",
+          "reason": "La incorporacion de nuevas empresas de infraestructura de IA al Nasdaq-100 obliga a flujos pasivos de cientos de miles de millones de dolares hacia el indice, reforzando la tesis de mantener y aumentar DCA en QQQ.",
+          "risk": "Alta concentracion en pocas mega caps tecnologicas incrementa el riesgo de correccion abrupta si el sentimiento hacia IA cambia."
+        },
+        {
+          "asset": "ETF de mediana capitalizacion / equal-weight S&P",
+          "reason": "Analistas advierten que el S&P 500 esta cada vez mas concentrado en un puñado de tecnologicas, por lo que sumar un ETF de mid-caps o equal-weight diversificaria el riesgo sin salir de acciones USA, coherente con el perfil moderado-agresivo.",
+          "risk": "Los mid-caps suelen tener mayor volatilidad relativa y podrian rezagarse si el liderazgo de mega-cap tech continua."
+        }
+      ],
+      "watchlist": {
+        "schd": {
+          "price": "$32.84",
+          "change7d": "+0.3%",
+          "entrySignal": "WAIT",
+          "note": "SCHD se ha movido lateral cerca de su maximo historico durante varios meses, por lo que no hay una senal clara de entrada barata todavia; mejor esperar una consolidacion o pullback antes de iniciar posicion."
+        },
+        "vti": {
+          "price": "$370.58",
+          "change7d": "-0.5%",
+          "entrySignal": "BUY",
+          "note": "VTI ofrece exposicion total al mercado USA a un costo minimo y el pullback reciente por tensiones geopoliticas da un punto de entrada razonable para iniciar posicion gradual."
+        }
+      },
+      "actions": [
+        {
+          "num": "01",
+          "text": "Mantener el DCA mensual de $50 en BTC aprovechando la correccion actual ligada a Medio Oriente, sin aumentar el monto todavia."
+        },
+        {
+          "num": "02",
+          "text": "Usar la fortaleza actual del peso colombiano (TRM en minimos de 7 anos) para acelerar pagos extra a la deuda de tarjeta de credito antes de abrir nuevas posiciones."
+        },
+        {
+          "num": "03",
+          "text": "Si se libera flujo de caja tras reducir la deuda, iniciar una posicion inicial pequena en VTI desde la watchlist, priorizando VTI sobre SCHD por su mejor punto de entrada actual."
+        }
+      ]
     },
     "portfolioSnapshot": {
-      "totalCrypto": 2230.47,
-      "totalStocks": 815.63,
+      "totalCrypto": 261721.06,
+      "totalStocks": 824.82,
       "cash": 200,
-      "total": 3246.1
+      "total": 262745.88
     }
   }
 ]
