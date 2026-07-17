@@ -126,11 +126,6 @@
         "change7d": "-2.8%",
         "signal": "HOLD"
       },
-      "usdt": {
-        "price": "$1.00",
-        "change7d": "+0.0%",
-        "signal": "HOLD"
-      },
       "giga": {
         "price": "$0.0055",
         "change7d": "-8.0%",
