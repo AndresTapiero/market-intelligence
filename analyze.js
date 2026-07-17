@@ -252,6 +252,7 @@ async function main() {
   PORTFOLIO.dcaLog = dcaLog;
   PORTFOLIO.targets = rawPortfolio.targets || null;
   PORTFOLIO.watchlistData = analysisData.watchlist || {};
+  PORTFOLIO.cashUpdated = rawPortfolio.cash?._updated || null;
   PORTFOLIO.watchlistNotes = Object.fromEntries(Object.entries(rawPortfolio.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
 
   // Log valores calculados

@@ -75,6 +75,7 @@ async function main() {
   portfolio.dcaLog = detectAndLogDCA(raw);
   portfolio.targets = raw.targets || null;
   portfolio.watchlistData = analysisData.watchlist || {};
+  portfolio.cashUpdated = raw.cash?._updated || null;
   portfolio.watchlistNotes = Object.fromEntries(Object.entries(raw.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
 
   // Calcular totales para log

@@ -2,30 +2,85 @@
   "_comment": "Fuente unica de verdad. Actualizar cantidades tras cada DCA. cat: etf|stock para asignacion. watchlist: activos a monitorear sin poseer. targets: asignacion objetivo % (editable).",
   "_updated": "2026-07-10",
   "crypto": {
-    "btc":  { "qty": 0.014049, "costAvg": 82716 },
-    "eth":  { "qty": 0.1733,  "costAvg": 3200  },
-    "sol":  { "qty": 4.165,   "costAvg": 104.6 },
-    "tao":  { "qty": 0.7367,  "costAvg": 449.4 },
-    "uni":  { "qty": 30.68,   "costAvg": 9.16  },
-    "bnb":  { "qty": 0.1075,  "costAvg": 1344  },
-    "sui":  { "qty": 60.85,   "costAvg": 1.52  },
-    "sei":  { "qty": 464.78,  "costAvg": 0.566 },
-    "ena":  { "qty": 249.59,  "costAvg": 0.278 },
-    "avax": { "qty": 2.428,   "costAvg": 18.74 }
+    "btc": {
+      "qty": 0.014049,
+      "costAvg": 82716
+    },
+    "eth": {
+      "qty": 0.1733,
+      "costAvg": 3200
+    },
+    "sol": {
+      "qty": 4.165,
+      "costAvg": 104.6
+    },
+    "tao": {
+      "qty": 0.7367,
+      "costAvg": 449.4
+    },
+    "uni": {
+      "qty": 30.68,
+      "costAvg": 9.16
+    },
+    "bnb": {
+      "qty": 0.1075,
+      "costAvg": 1344
+    },
+    "sui": {
+      "qty": 60.85,
+      "costAvg": 1.52
+    },
+    "sei": {
+      "qty": 464.78,
+      "costAvg": 0.566
+    },
+    "ena": {
+      "qty": 249.59,
+      "costAvg": 0.278
+    },
+    "avax": {
+      "qty": 2.428,
+      "costAvg": 18.74
+    }
   },
   "stocks": {
-    "voo":  { "shares": 0.36947, "costAvg": 508.99, "cat": "etf" },
-    "qqq":  { "shares": 0.15618, "costAvg": 533.70, "cat": "etf" },
-    "nvda": { "shares": 1.10855, "costAvg": 119.11, "cat": "stock" },
-    "nu":   { "shares": 1.0,     "costAvg": 8.18,   "cat": "stock" },
-    "tsla": { "shares": 0.12903, "costAvg": 302.24, "cat": "stock" }
+    "voo": {
+      "shares": 0.36947,
+      "costAvg": 508.99,
+      "cat": "etf"
+    },
+    "qqq": {
+      "shares": 0.15618,
+      "costAvg": 533.7,
+      "cat": "etf"
+    },
+    "nvda": {
+      "shares": 1.10855,
+      "costAvg": 119.11,
+      "cat": "stock"
+    },
+    "nu": {
+      "shares": 1.0,
+      "costAvg": 8.18,
+      "cat": "stock"
+    },
+    "tsla": {
+      "shares": 0.12903,
+      "costAvg": 302.24,
+      "cat": "stock"
+    }
   },
   "cash": {
-    "hapi": 150.74
+    "hapi": 200.0,
+    "_updated": "2026-07-17"
   },
   "watchlist": {
-    "schd": { "note": "ETF dividendos crecientes, complemento defensivo a VOO/QQQ" },
-    "vti":  { "note": "Total market USA, diversificacion maxima en un solo ETF" }
+    "schd": {
+      "note": "ETF dividendos crecientes, complemento defensivo a VOO/QQQ"
+    },
+    "vti": {
+      "note": "Total market USA, diversificacion maxima en un solo ETF"
+    }
   },
   "targets": {
     "_comment": "Asignacion objetivo en % sobre el total invertido (sin cash). Editar libremente.",
@@ -35,7 +90,7 @@
     "altcoin": 15
   },
   "dca": {
-    "btc":    "agosto 1, 2026",
+    "btc": "agosto 1, 2026",
     "stocks": "julio 30, 2026",
     "amount": 50
   }

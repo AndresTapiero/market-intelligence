@@ -5,7 +5,7 @@
 
 // BUILD: incrementar en cada cambio entregado por Claude para validar sincronizacion
 // entre lo generado aqui y lo que aparece en tu reporte real tras el deploy.
-const BUILD_VERSION = "v17";
+const BUILD_VERSION = "v18";
 const BUILD_DATE = "2026-07-13";
 
 export function generateHTML(data, history, portfolio) {
@@ -100,6 +100,13 @@ export function generateHTML(data, history, portfolio) {
   });
 
   const cashVal = portfolio.stocks.cash?.val || 0;
+  const cashUpdatedStr = portfolio.cashUpdated || null;
+  let cashDaysOld = null;
+  if (cashUpdatedStr) {
+    const diffMs = new Date() - new Date(cashUpdatedStr + "T12:00:00");
+    cashDaysOld = Math.floor(diffMs / 86400000);
+  }
+  const cashStale = cashDaysOld !== null && cashDaysOld > 20;
 
   // ─── TOTALES ──────────────────────────────────────────────────────────────────
   const totalCryptoInvested = cryptoAssets.reduce((s,a)=>s+a.invested,0);
@@ -289,7 +296,12 @@ export function generateHTML(data, history, portfolio) {
       </div>
       ${cashVal > 0 ? `<div class="dca-item">
         <div class="asset-icon-sm" style="background:rgba(90,96,128,0.15);color:var(--text-muted);font-size:13px">$</div>
-        <div class="dca-info"><div class="dca-name">Cash disponible (Hapi)</div><div class="dca-amount mono">$${fmt(cashVal)} USD</div><div class="dca-next">Listo para próximo DCA</div></div>
+        <div class="dca-info">
+          <div class="dca-name">Cash disponible (Hapi)</div>
+          <div class="dca-amount mono">$${fmt(cashVal)} USD</div>
+          <div class="dca-next ${cashStale ? 'cash-stale' : ''}">${cashDaysOld !== null ? (cashStale ? `⚠ Actualizado hace ${cashDaysOld} días — verifica si sigue exacto` : `Actualizado hace ${cashDaysOld} día${cashDaysOld===1?'':'s'}`) : 'Sin fecha de actualización registrada'}</div>
+        </div>
+        <button class="cash-update-btn" onclick="openCashModal()">✏️ Actualizar</button>
       </div>` : ""}
     </div>`;
   }
@@ -813,6 +825,9 @@ export function generateHTML(data, history, portfolio) {
   .dca-amount{font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:2px}
   .dca-next{font-size:10px;color:var(--text-muted);margin-top:2px}
   .dca-stats{text-align:right} .dca-stats div{font-size:11px}
+  .cash-stale{color:var(--orange)!important;font-weight:600}
+  .cash-update-btn{background:var(--surface2);color:var(--accent);border:1px solid var(--accent);padding:6px 10px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .cash-update-btn:hover{background:var(--accent);color:white}
 
   /* BITÁCORA */
   .log-list{display:flex;flex-direction:column;gap:2px}
@@ -1248,6 +1263,35 @@ ${allocationSection()}
   </div>
 </div>
 
+<!-- MODAL: ACTUALIZAR CASH -->
+<div class="modal-overlay" id="cashModalOverlay" onclick="if(event.target===this)closeCashModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Actualizar cash disponible</div>
+      <button class="modal-close" onclick="closeCashModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Cash registrado actualmente</label>
+        <input type="text" id="cashRegistered" readonly>
+      </div>
+      <div class="modal-field">
+        <label>Cash real (verifica en tu app de Hapi)</label>
+        <input type="number" id="cashReal" placeholder="0.00" step="any" oninput="updateCashPreview()">
+      </div>
+      <div class="buy-preview" id="cashPreview" style="display:none">
+        <div class="buy-preview-row"><span>Diferencia</span><span class="mono num" id="cashDiff">$0</span></div>
+      </div>
+      <div class="modal-field" id="cashCommandBlock" style="display:none">
+        <label>Comando listo para Claude Code</label>
+        <textarea id="cashCommandOutput" readonly rows="6"></textarea>
+        <button class="copy-btn" onclick="copyCashCommand()">📋 Copiar comando</button>
+      </div>
+      <button class="modal-submit" onclick="generateCashCommand()">Generar comando</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── CONVERSOR INTERACTIVO USD/COP ─────────────────────────────────────────
 const COP_DATA = {
@@ -1456,6 +1500,68 @@ function copyCommand() {
   });
 }
 
+// ─── ACTUALIZAR CASH — modal interactivo ───────────────────────────────────
+const CASH_REGISTERED = ${cashVal};
+
+function openCashModal() {
+  document.getElementById('cashRegistered').value = '$' + CASH_REGISTERED.toFixed(2) + ' USD';
+  document.getElementById('cashReal').value = '';
+  document.getElementById('cashPreview').style.display = 'none';
+  document.getElementById('cashCommandBlock').style.display = 'none';
+  document.getElementById('cashModalOverlay').classList.add('show');
+}
+
+function closeCashModal() {
+  document.getElementById('cashModalOverlay').classList.remove('show');
+}
+
+function updateCashPreview() {
+  const real = parseFloat(document.getElementById('cashReal').value);
+  const preview = document.getElementById('cashPreview');
+  if (isNaN(real)) { preview.style.display = 'none'; return; }
+  const diff = real - CASH_REGISTERED;
+  const diffEl = document.getElementById('cashDiff');
+  diffEl.textContent = (diff >= 0 ? '+' : '') + '$' + diff.toFixed(2);
+  diffEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+  preview.style.display = 'flex';
+}
+
+function generateCashCommand() {
+  const real = parseFloat(document.getElementById('cashReal').value);
+  if (isNaN(real) || real < 0) {
+    alert('Ingresa el monto real de cash antes de generar el comando.');
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  var lines = [];
+  lines.push('En ~/Documents/Personal/market-intelligence/portfolio.json, dentro de "cash", actualiza:');
+  lines.push('  "hapi": ' + real);
+  lines.push('  "_updated": "' + today + '"');
+  lines.push('');
+  lines.push('Esto refleja el saldo real verificado en Hapi el ' + today + ' (antes registrado: $' + CASH_REGISTERED.toFixed(2) + ').');
+  lines.push('');
+  lines.push('Luego ejecuta: node regenerate.js (para validar sin gastar API)');
+  lines.push('');
+  lines.push('Si todo se ve bien, haz:');
+  lines.push('git add .');
+  lines.push('git commit -m "portfolio: actualizar cash a $' + real.toFixed(2) + '"');
+  lines.push('git push');
+
+  document.getElementById('cashCommandOutput').value = lines.join(String.fromCharCode(10));
+  document.getElementById('cashCommandBlock').style.display = 'flex';
+}
+
+function copyCashCommand() {
+  const el = document.getElementById('cashCommandOutput');
+  el.select();
+  navigator.clipboard.writeText(el.value).then(() => {
+    const btn = event.target;
+    const original = btn.textContent;
+    btn.textContent = '✅ Copiado';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  });
+}
+
 function exportPDF() {
   const btn = document.querySelector('.pdf-btn');
   btn.textContent = '⏳ Generando...';
@@ -1468,7 +1574,7 @@ function exportPDF() {
   };
   const el = document.body.cloneNode(true);
   const stickyClone = el.querySelector('.sticky-bar'); if (stickyClone) stickyClone.remove();
-  const modalClone = el.querySelector('.modal-overlay'); if (modalClone) modalClone.remove();
+  el.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   html2pdf().set(opt).from(el).save().then(() => { btn.textContent = '⬇ PDF'; }).catch(() => { btn.textContent = '⬇ PDF'; });
 }
 </script>
