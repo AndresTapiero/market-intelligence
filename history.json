@@ -69,37 +69,124 @@
     }
   },
   {
-    "timestamp": "2026-07-17T16:53:27.116Z",
+    "timestamp": "2026-07-17T16:58:06.167Z",
     "week": "2026-W29",
     "data": {
-      "date": "2026-07-17",
-      "analystOpinion": "El nucleo del portafolio (BTC via DCA y las acciones USA) sigue funcionando bien a pesar de la correccion de esta semana por tensiones en Medio Oriente y menores expectativas de recorte de tasas. Las altcoins en hold continuan siendo el lastre de volatilidad pero no requieren accion bajo tu regla de no comprar mas. La recomendacion del mes es mantener disciplina: seguir el DCA de 50 en BTC y 50 en VOO/QQQ, priorizar eliminar la deuda de tarjeta de credito antes de desplegar capital nuevo, y aprovechar la debilidad reciente de BTC y NVDA como puntos de entrada para el DCA regular, no para compras adicionales apalancadas. El mercado esta en fase de consolidacion tecnica, por lo que la paciencia sera clave este mes.",
+      "date": "17 de julio de 2026",
+      "analystOpinion": "El DCA mensual en BTC y VOO/QQQ sigue siendo la base solida del portafolio y aprovecha la caida reciente de BTC por la tension geopolitica en Medio Oriente como punto de entrada barato. Las altcoins en HOLD (ETH, SOL, AVAX, BNB, TAO, SUI, SEI, ENA, UNI) arrastran perdidas de 7 dias generalizadas, especialmente AVAX y SPX6900, pero la regla de no comprar mas altcoins protege el capital de nuevas exposiciones. La prioridad number one sigue siendo eliminar la deuda de tarjeta de credito antes de aumentar posiciones nuevas, incluso si BTC y NVDA muestran señales de compra atractivas. Recomendacion del mes: mantener el DCA de 50/50 en BTC y VOO/QQQ, no tocar altcoins, y destinar cualquier excedente extra a pagar deuda TC en vez de nuevas compras.",
       "riskProfile": "Moderado-Agresivo",
       "btc": {
-        "price": "$63,833.50",
-        "change7d": "+2.1%",
+        "price": "$63,130",
+        "change7d": "+1.8%",
         "signal": "BUY",
-        "context": "Bitcoin retrocedio tras tocar los 65,000 dolares esta semana debido a la escalada del conflicto en Iran y menores expectativas de recorte de tasas de la Fed, entrando en consolidacion tecnica entre 63,500 y 64,000. Sigue siendo un buen nivel para continuar el DCA mensual de 50 dolares, sin necesidad de acelerar compras adicionales."
+        "context": "<cite index=\"10-5,10-6,10-7\">Bitcoin (BTC-USD) opened at $63,788.52 on Friday, July 17, 2026, down 1.4% from Thursday's opening price, and fell to $63,130.40 by 8:33 a.m. ET.</cite> <cite index=\"10-11,10-12\">Bitcoin's time above $65,000 was short-lived this week as U.S. airstrikes against Iran dulled risk assets, aunque los precios se mantienen por encima de niveles de la semana pasada.</cite> La caida por ruido geopolitico es una oportunidad tactica para el DCA mensual de 50 dolares."
       },
       "eth": {
-        "price": "$1,864.56",
-        "change7d": "-3.9%",
+        "price": "$1,832",
+        "change7d": "+0.6%",
         "signal": "HOLD"
       },
       "sol": {
-        "price": "$75.86",
-        "change7d": "-3.3%",
+        "price": "$76.37",
+        "change7d": "-4.5%",
         "signal": "HOLD"
       },
       "tao": {
-        "price": "$189.47"
+        "price": "$190.70",
+        "change7d": "-3.0%",
+        "signal": "HOLD"
+      },
+      "uni": {
+        "price": "$5.85",
+        "change7d": "-3.8%",
+        "signal": "HOLD"
+      },
+      "bnb": {
+        "price": "$564.02",
+        "change7d": "+1.5%",
+        "signal": "HOLD"
+      },
+      "sui": {
+        "price": "$1.42",
+        "change7d": "-4.6%",
+        "signal": "HOLD"
+      },
+      "sei": {
+        "price": "$0.17",
+        "change7d": "-5.4%",
+        "signal": "HOLD"
+      },
+      "ena": {
+        "price": "$0.27",
+        "change7d": "-6.8%",
+        "signal": "HOLD"
+      },
+      "avax": {
+        "price": "$6.74",
+        "change7d": "-2.8%",
+        "signal": "HOLD"
+      },
+      "spx": {
+        "price": "$0.3493",
+        "change7d": "-8.0%",
+        "signal": "HOLD"
+      },
+      "usdt": {
+        "price": "$1.00",
+        "change7d": "0.0%",
+        "signal": "HOLD"
+      },
+      "giga": {
+        "price": "$0.0095",
+        "change7d": "-12.0%",
+        "signal": "HOLD"
+      },
+      "trump": {
+        "price": "$1.55",
+        "change7d": "-5.9%",
+        "signal": "HOLD"
+      },
+      "voo": {
+        "price": "$690.14",
+        "change7d": "-1.8%",
+        "signal": "BUY",
+        "context": "<cite index=\"33-5,33-6\">Al 17 de julio de 2026, VOO cotiza en 690.14, con un cierre previo de 693.80, fluctuando en un rango diario de 687.43 a 693.55.</cite> El pullback reciente del S&P 500 desde maximos anuales es consistente con el plan de DCA mensual de acumulacion disciplinada."
+      },
+      "qqq": {
+        "price": "$705.94",
+        "change7d": "-2.3%",
+        "signal": "BUY",
+        "context": "<cite index=\"31-1\">QQQ Invesco QQQ Trust cotiza en 705.94, -1.64% en la sesion.</cite> La correccion tecnologica reciente por dudas sobre el boom de IA ofrece un mejor punto de entrada para el DCA mensual sin comprometer la tesis de largo plazo."
+      },
+      "nvda": {
+        "price": "$178.50",
+        "change7d": "+3.2%",
+        "signal": "BUY",
+        "context": "<cite index=\"32-5\">Wall Street entra en julio con un tono mas alcista tras un junio volatil, con estrategas señalando estacionalidad, ganancias mas fuertes y un renovado apetito por IA como vientos de cola.</cite> NVDA sigue siendo el proxy mas directo a esa narrativa de IA y mantiene momentum alcista en la semana."
+      },
+      "nu": {
+        "price": "$13.10",
+        "change7d": "+0.8%",
+        "signal": "HOLD"
+      },
+      "tsla": {
+        "price": "$305.40",
+        "change7d": "-2.1%",
+        "signal": "HOLD"
+      },
+      "macro": {
+        "usdcop": "$3,221.41 COP",
+        "fedrate": "3.75%",
+        "btcDominance": "56.3%",
+        "fearGreed": "54",
+        "fearGreedLabel": "Neutral"
       }
     },
     "portfolioSnapshot": {
-      "totalCrypto": 1720.6,
-      "totalStocks": 200,
+      "totalCrypto": 2230.47,
+      "totalStocks": 815.63,
       "cash": 200,
-      "total": 2120.6
+      "total": 3246.1
     }
   }
 ]
