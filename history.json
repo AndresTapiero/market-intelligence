@@ -67,5 +67,25 @@
         }
       ]
     }
+  },
+  {
+    "timestamp": "2026-07-17T16:27:48.009Z",
+    "week": "2026-W29",
+    "data": {
+      "date": "July 17, 2026",
+      "analystOpinion": "El DCA sistematico de $50 en BTC y $50 en VOO/QQQ sigue siendo la base solida del portafolio, especialmente con el mercado cripto en zona de miedo (Fear&Greed 54) que favorece la acumulacion disciplinada de BTC a bajo costo promedio. La canasta de altcoins en HOLD (TAO, AVAX, SUI, ENA) arrastra el rendimiento este mes por debilidad generalizada en L1s y IA descentralizada, pero la regla de no vender con perdida sigue siendo correcta dado el horizonte largo. NVDA y el sector semiconductor muestran una correccion sana tras meses de sobrecompra, lo cual abre una ventana de entrada para el perfil moderado-agresivo de Andres. Recomendacion del mes: mantener el DCA sin cambios, considerar un aporte extra puntual en BTC aprovechando el nivel de miedo del mercado, y evaluar iniciar posicion en VTI para diversificar mas alla del S&P 500.",
+      "riskProfile": "Moderado-Agresivo",
+      "btc": {
+        "price": "$63,600",
+        "change7d": "-3.2%",
+        "signal": "BUY"
+      }
+    },
+    "portfolioSnapshot": {
+      "totalCrypto": 936.83,
+      "totalStocks": 200,
+      "cash": 200,
+      "total": 1336.83
+    }
   }
 ]
