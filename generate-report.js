@@ -48,14 +48,23 @@ export function generateHTML(data, history, portfolio) {
     return { label: key.toUpperCase(), icon: key.charAt(0).toUpperCase(), color: autoPalette[idx % autoPalette.length] };
   }
 
-  // Construir meta iterando el PORTFOLIO (no listas fijas) — esto hace el dashboard dinamico
+  // Construir meta iterando el PORTFOLIO (no listas fijas) — esto hace el dashboard dinamico.
+  // Prioridad: 1) meta definida en portfolio.json (label/icon/color por activo)
+  //            2) meta curada conocida (knownCrypto/knownStocks)
+  //            3) meta automatica (autoPalette)
+  // Con esto, agregar un activo con estilo propio solo requiere editar portfolio.json —
+  // nunca hace falta tocar este archivo.
   const cryptoMeta = {};
   Object.keys(portfolio.crypto || {}).forEach((key, i) => {
-    cryptoMeta[key] = knownCrypto[key] || autoMeta(key, i);
+    const raw = portfolio.crypto[key] || {};
+    const custom = (raw.label || raw.icon || raw.color) ? { label: raw.label, icon: raw.icon, color: raw.color } : null;
+    cryptoMeta[key] = { ...(knownCrypto[key] || autoMeta(key, i)), ...(custom || {}) };
   });
   const stockMeta = {};
   Object.keys(portfolio.stocks || {}).filter(k => k !== "cash").forEach((key, i) => {
-    stockMeta[key] = knownStocks[key] || autoMeta(key, i + 5);
+    const raw = portfolio.stocks[key] || {};
+    const custom = (raw.label || raw.icon || raw.color) ? { label: raw.label, icon: raw.icon, color: raw.color } : null;
+    stockMeta[key] = { ...(knownStocks[key] || autoMeta(key, i + 5)), ...(custom || {}) };
   });
 
   // ─── COMPARACIÓN VS MES ANTERIOR ──────────────────────────────────────────────

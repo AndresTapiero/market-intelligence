@@ -77,9 +77,14 @@ function buildPrompt(raw) {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
-  // Activos que SI reciben analisis narrativo completo
-  const ACCIONABLES = ["btc", "voo", "qqq", "nvda"];
-  // El resto solo trae precio + cambio + senal corta
+  // Activos que SI reciben analisis narrativo completo.
+  // Se define con "accionable": true en portfolio.json (por defecto: btc, voo, qqq, nvda).
+  // Nunca hace falta tocar este archivo para cambiar cuales activos llevan analisis largo.
+  const DEFAULT_ACCIONABLES = ["btc", "voo", "qqq", "nvda"];
+  const allAssetsRaw = { ...(raw.crypto || {}), ...(raw.stocks || {}) };
+  const ACCIONABLES = Object.keys(allAssetsRaw).filter(k =>
+    allAssetsRaw[k]?.accionable === true || (allAssetsRaw[k]?.accionable !== false && DEFAULT_ACCIONABLES.includes(k))
+  );
 
   const cryptoKeys = Object.keys(raw.crypto || {});
   const stockKeys  = Object.keys(raw.stocks || {});
@@ -211,37 +216,40 @@ async function gitPush(weekLabel) {
   }
 }
 
-// ─── MAIN ─────────────────────────────────────────────────────────────────────
-async function main() {
-  console.log("\n🔍 Market Intelligence — Iniciando analisis...");
-  console.log(`📅 ${new Date().toLocaleString("es-CO")}\n`);
+// ─── CACHE DE RESPUESTA CRUDA ───────────────────────────────────────────────
+// Se guarda el texto crudo del modelo ANTES de intentar parsearlo.
+// Si el parseo o el resto del pipeline falla por un bug de codigo (no del modelo),
+// se puede reprocesar este mismo texto con node reparse-cache.js SIN volver a
+// gastar en busquedas web ni tokens del modelo. Evita loops costosos de debug.
+const RAW_CACHE_FILE = join(__dirname, ".raw-response-cache.json");
 
-  // 1. Leer portafolio desde JSON
-  const rawPortfolio = loadPortfolio();
-  console.log(`📂 Portafolio cargado: ${Object.keys(rawPortfolio.crypto).length} cryptos · ${Object.keys(rawPortfolio.stocks).length} acciones`);
+function saveRawCache(rawText) {
+  try {
+    writeFileSync(RAW_CACHE_FILE, JSON.stringify({
+      timestamp: new Date().toISOString(),
+      rawText,
+    }, null, 2), "utf8");
+    console.log("  💾 Respuesta cruda guardada en cache (.raw-response-cache.json)");
+  } catch (e) {
+    console.log("  ⚠️  No se pudo guardar el cache:", e.message);
+  }
+}
 
-  // 2. Obtener precios y análisis de mercado
-  const client = new Anthropic();
-  console.log("🌐 Consultando mercado en tiempo real...");
+export function loadRawCache() {
+  if (!existsSync(RAW_CACHE_FILE)) return null;
+  try { return JSON.parse(readFileSync(RAW_CACHE_FILE, "utf8")); }
+  catch { return null; }
+}
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-5",
-    max_tokens: 6000,
-    tools: [{ type: "web_search_20250305", name: "web_search" }],
-    messages: [{ role: "user", content: buildPrompt(rawPortfolio) }],
-  });
-
-  const rawText = response.content.filter(b => b.type === "text").map(b => b.text).join("");
-  if (!rawText.trim()) throw new Error("Respuesta vacia del modelo");
-
-  // 3. Parsear análisis
+// ─── PROCESAR RESPUESTA (reutilizable, sin llamar la API) ──────────────────
+// Toma el texto crudo (de una llamada real o del cache) y genera todo el
+// reporte. Separado de main() para poder reprocesar cache sin gastar API.
+export function processRawResponse(rawPortfolio, rawText) {
   console.log("🧠 Procesando analisis...");
   const analysisData = sanitizeAndParse(rawText);
 
-  // 4. Calcular valores actuales con precios reales
   const PORTFOLIO = buildPortfolioForReport(rawPortfolio, analysisData);
 
-  // 4b. Detectar y registrar compras DCA con precios de mercado actuales
   const marketPrices = {};
   const allAssetKeys = [...Object.keys(rawPortfolio.crypto||{}), ...Object.keys(rawPortfolio.stocks||{})];
   for (const key of allAssetKeys) {
@@ -255,13 +263,10 @@ async function main() {
   PORTFOLIO.cashUpdated = rawPortfolio.cash?._updated || null;
   PORTFOLIO.watchlistNotes = Object.fromEntries(Object.entries(rawPortfolio.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
 
-  // Log valores calculados
   const totalCrypto = Object.values(PORTFOLIO.crypto).reduce((s,a) => s + (a.currentVal||0), 0);
   const totalStocks = Object.values(PORTFOLIO.stocks).filter(s => !s.shares === false || s.val).reduce((s,a) => s + (a.val||0), 0);
   console.log(`  💰 Crypto: $${totalCrypto.toFixed(0)} · Acciones: $${totalStocks.toFixed(0)}`);
 
-  // 5. Guardar historial
-  // Calcular totales REALES de este momento para guardar snapshot del portafolio
   const totalCryptoSnapshot = Object.values(PORTFOLIO.crypto).reduce((s,a) => s + (a.currentVal||0), 0);
   const totalStocksSnapshot = Object.values(PORTFOLIO.stocks).filter(s => s.val != null).reduce((s,a) => s + (a.val||0), 0);
   const cashSnapshot = PORTFOLIO.stocks.cash?.val || 0;
@@ -281,7 +286,6 @@ async function main() {
   saveHistory(historyEntry);
   const history = loadHistory();
 
-  // 6. Generar reporte HTML
   const reportsDir = join(__dirname, "reports");
   if (!existsSync(reportsDir)) mkdirSync(reportsDir, { recursive: true });
 
@@ -296,6 +300,41 @@ async function main() {
   console.log(`\n✅ Analisis completado`);
   console.log(`📊 Reporte: reports/${filename}`);
   printSummary(analysisData);
+
+  return { weekLabel, latestPath };
+}
+
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
+async function main() {
+  console.log("\n🔍 Market Intelligence — Iniciando analisis...");
+  console.log(`📅 ${new Date().toLocaleString("es-CO")}\n`);
+
+  // 1. Leer portafolio desde JSON
+  const rawPortfolio = loadPortfolio();
+  console.log(`📂 Portafolio cargado: ${Object.keys(rawPortfolio.crypto).length} cryptos · ${Object.keys(rawPortfolio.stocks).length} acciones`);
+
+  // 2. Obtener precios y análisis de mercado — UNICO paso que gasta API real
+  const client = new Anthropic();
+  console.log("🌐 Consultando mercado en tiempo real...");
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-5",
+    max_tokens: 6000,
+    tools: [{ type: "web_search_20250305", name: "web_search" }],
+    messages: [{ role: "user", content: buildPrompt(rawPortfolio) }],
+  });
+
+  const rawText = response.content.filter(b => b.type === "text").map(b => b.text).join("");
+  if (!rawText.trim()) throw new Error("Respuesta vacia del modelo");
+
+  // 2b. Guardar la respuesta cruda ANTES de intentar parsearla.
+  // Si algo falla despues de este punto (parseo, template, etc.), ese fallo
+  // es un bug de codigo — se puede arreglar y reprocesar gratis con
+  // node reparse-cache.js, sin volver a pagar por busquedas.
+  saveRawCache(rawText);
+
+  // 3-6. Procesar respuesta y generar reporte (funcion reutilizable)
+  const { weekLabel, latestPath } = processRawResponse(rawPortfolio, rawText);
 
   // 7. Push a GitHub
   await gitPush(weekLabel);
@@ -330,4 +369,10 @@ function printSummary(d) {
   console.log("");
 }
 
-main().catch(err => { console.error("\n❌ Error:", err.message); process.exit(1); });
+// Solo ejecutar main() si este archivo se corre directamente (node analyze.js),
+// NUNCA cuando se importa como modulo (ej: desde reparse-cache.js).
+// Sin este guardia, importar processRawResponse/loadRawCache dispararia una
+// llamada real a la API cada vez — justo lo que el cache busca evitar.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(err => { console.error("\n❌ Error:", err.message); process.exit(1); });
+}
