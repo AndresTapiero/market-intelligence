@@ -225,7 +225,7 @@ async function main() {
   console.log("🌐 Consultando mercado en tiempo real...");
 
   const response = await client.messages.create({
-    model: "claude-sonnet-4-5",
+    model: "claude-sonnet-5",
     max_tokens: 3800,
     tools: [{ type: "web_search_20250305", name: "web_search" }],
     messages: [{ role: "user", content: buildPrompt(rawPortfolio) }],

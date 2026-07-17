@@ -28,6 +28,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Configurar identidad de Git
+        run: |
+          git config user.name "Market Intelligence Bot"
+          git config user.email "actions@users.noreply.github.com"
+
       # Validación previa: si test-dry-run.js falla (exit != 0), el job se
       # detiene aquí y el análisis nunca corre.
       - name: Validación previa (dry run)
