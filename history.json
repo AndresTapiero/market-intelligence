@@ -69,23 +69,106 @@
     }
   },
   {
-    "timestamp": "2026-07-17T16:27:48.009Z",
+    "timestamp": "2026-07-17T16:32:14.274Z",
     "week": "2026-W29",
     "data": {
-      "date": "July 17, 2026",
-      "analystOpinion": "El DCA sistematico de $50 en BTC y $50 en VOO/QQQ sigue siendo la base solida del portafolio, especialmente con el mercado cripto en zona de miedo (Fear&Greed 54) que favorece la acumulacion disciplinada de BTC a bajo costo promedio. La canasta de altcoins en HOLD (TAO, AVAX, SUI, ENA) arrastra el rendimiento este mes por debilidad generalizada en L1s y IA descentralizada, pero la regla de no vender con perdida sigue siendo correcta dado el horizonte largo. NVDA y el sector semiconductor muestran una correccion sana tras meses de sobrecompra, lo cual abre una ventana de entrada para el perfil moderado-agresivo de Andres. Recomendacion del mes: mantener el DCA sin cambios, considerar un aporte extra puntual en BTC aprovechando el nivel de miedo del mercado, y evaluar iniciar posicion en VTI para diversificar mas alla del S&P 500.",
+      "date": "2026-07-17",
+      "analystOpinion": "El portafolio muestra buena disciplina con el DCA mensual de USD 50 en BTC y USD 50 en VOO/QQQ, lo cual sigue siendo la base correcta en un mercado con alta volatilidad por tensiones geopoliticas. BTC y las acciones tech (QQQ, NVDA) arrastran presion de corto plazo por las tensiones EEUU-Iran y ventas en risk assets, pero el patron de fondo (demanda institucional, IA) sigue intacto. Las altcoins en HOLD deben mantenerse sin nuevas compras segun la regla establecida; la prioridad number one sigue siendo eliminar la deuda de tarjeta de credito antes de abrir posiciones nuevas. Recomendacion del mes: mantener el DCA, no tocar altcoins, y evaluar SCHD como nueva posicion solo despues de liquidar la deuda.",
       "riskProfile": "Moderado-Agresivo",
       "btc": {
-        "price": "$63,600",
-        "change7d": "-3.2%",
+        "price": "$64,197",
+        "change7d": "-2.0%",
+        "signal": "BUY",
+        "context": "<cite index=\"4-12,4-13\">Bitcoin under $64,000 after new U.S. strike on Iran, con tensiones geopoliticas presionando activos de riesgo</cite>. <cite index=\"4-14,4-15\">Morgan Stanley lanzo trading de BTC/ETH/SOL en E*Trade y JPMorgan ve senales alentadoras en la demanda institucional de bitcoin</cite>, lo que sostiene la tesis DCA de largo plazo pese a la debilidad de corto plazo."
+      },
+      "eth": {
+        "price": "$1,824.50",
+        "change7d": "+3.0%",
+        "signal": "HOLD"
+      },
+      "sol": {
+        "price": "$74.64",
+        "change7d": "+3.0%",
+        "signal": "HOLD"
+      },
+      "tao": {
+        "price": "$205.57",
+        "change7d": "+5.3%",
+        "signal": "HOLD"
+      },
+      "uni": {
+        "price": "$3.89",
+        "change7d": "+1.6%",
+        "signal": "HOLD"
+      },
+      "bnb": {
+        "price": "$570.51",
+        "change7d": "-1.7%",
+        "signal": "HOLD"
+      },
+      "sui": {
+        "price": "$0.98",
+        "change7d": "+3.3%",
+        "signal": "HOLD"
+      },
+      "sei": {
+        "price": "$0.20",
+        "change7d": "+0.5%",
+        "signal": "HOLD"
+      },
+      "ena": {
+        "price": "$0.35",
+        "change7d": "+1.0%",
+        "signal": "HOLD"
+      },
+      "avax": {
+        "price": "$6.56",
+        "change7d": "-2.8%",
+        "signal": "HOLD"
+      },
+      "spx": {
+        "price": "$0.000103",
+        "change7d": "-1.9%",
+        "signal": "HOLD"
+      },
+      "usdt": {
+        "price": "$1.00",
+        "change7d": "0.0%",
+        "signal": "HOLD"
+      },
+      "giga": {
+        "price": "$0.005",
+        "change7d": "-1.0%",
+        "signal": "HOLD"
+      },
+      "trump": {
+        "price": "$1.54",
+        "change7d": "-6.1%",
+        "signal": "HOLD"
+      },
+      "voo": {
+        "price": "$690.14",
+        "change7d": "-0.5%",
+        "signal": "BUY",
+        "context": "<cite index=\"34-1,34-2\">VOO cotiza en 690.14, con un cierre previo de 693.80 y un rango de 52 semanas entre 569.29 y 699.15</cite>. <cite index=\"37-19\">Wall Street entra a julio con tono mas alcista tras un junio volatil, apoyado en estacionalidad y ganancias de empresas mas fuertes</cite>, lo que sigue favoreciendo el DCA mensual en el activo."
+      },
+      "qqq": {
+        "price": "$705.94",
+        "change7d": "-1.6%",
+        "signal": "BUY",
+        "context": "<cite index=\"29-2\">QQQ cotiza actualmente en 705.94</cite> tras una correccion reciente. <cite index=\"37-7\">El ETF cerro mas bajo el jueves mientras los inversores evaluaban nuevos desarrollos EEUU-Iran antes del discurso presidencial</cite>, generando una oportunidad de entrada dentro de la estrategia DCA."
+      },
+      "nvda": {
+        "price": "$185.00",
+        "change7d": "+1.8%",
         "signal": "BUY"
       }
     },
     "portfolioSnapshot": {
-      "totalCrypto": 936.83,
-      "totalStocks": 200,
+      "totalCrypto": 2178.75,
+      "totalStocks": 770.32,
       "cash": 200,
-      "total": 1336.83
+      "total": 3149.07
     }
   }
 ]
