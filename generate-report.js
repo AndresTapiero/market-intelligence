@@ -5,7 +5,7 @@
 
 // BUILD: incrementar en cada cambio entregado por Claude para validar sincronizacion
 // entre lo generado aqui y lo que aparece en tu reporte real tras el deploy.
-const BUILD_VERSION = "v18";
+const BUILD_VERSION = "v19";
 const BUILD_DATE = "2026-07-13";
 
 export function generateHTML(data, history, portfolio) {
@@ -93,7 +93,7 @@ export function generateHTML(data, history, portfolio) {
     const buyPrice = c.costAvg || 0;
     const marketPrice = parseFloat((d[key]?.price||"0").replace(/[$,]/g,"")) || 0;
     const priceGain = buyPrice > 0 && marketPrice > 0 ? ((marketPrice-buyPrice)/buyPrice*100).toFixed(1) : null;
-    return { key, ...cryptoMeta[key], ic:key, qty:`${c.qty||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta, buyPrice, marketPrice, priceGain };
+    return { key, ...cryptoMeta[key], ic:key, qty:`${c.qty||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta, buyPrice, marketPrice, priceGain, fundamento: c.fundamento || "" };
   });
 
   const stockAssets = Object.keys(stockMeta).map(key => {
@@ -105,7 +105,7 @@ export function generateHTML(data, history, portfolio) {
     const buyPrice = s.costAvg || 0;
     const marketPrice = parseFloat((d[key]?.price||"0").replace(/[$,]/g,"")) || 0;
     const priceGain = buyPrice > 0 && marketPrice > 0 ? ((marketPrice-buyPrice)/buyPrice*100).toFixed(1) : null;
-    return { key, ...stockMeta[key], ic:key, cat: s.cat || "stock", qty:`${s.shares||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta, buyPrice, marketPrice, priceGain };
+    return { key, ...stockMeta[key], ic:key, cat: s.cat || "stock", qty:`${s.shares||0} ${key.toUpperCase()}`, invested:inv, current:cur, pnlV:cur-inv, pnlP:pnlPct(cur,inv), monthDelta, buyPrice, marketPrice, priceGain, fundamento: s.fundamento || "" };
   });
 
   const cashVal = portfolio.stocks.cash?.val || 0;
@@ -214,6 +214,7 @@ export function generateHTML(data, history, portfolio) {
   }
 
   function fmtPrice(n){ return n < 1 ? n.toFixed(4) : (n < 100 ? n.toFixed(2) : fmt(n)); }
+  function escFundamento(s){ return String(s||"").replace(/\\/g,"\\\\").replace(/"/g,'\\"').replace(/\n/g," "); }
 
   function pnlRows(arr) {
     const rows = arr.map(r => `
@@ -266,7 +267,7 @@ export function generateHTML(data, history, portfolio) {
         <div class="asset-header">
           <div class="asset-name">
             <div class="asset-icon" style="background:${a.color}22;color:${a.color}">${a.icon}</div>
-            <div><div class="asset-ticker">${a.key.toUpperCase()}</div><div class="asset-label">${a.label}</div></div>
+            <div><div class="asset-ticker">${a.key.toUpperCase()}${a.fundamento ? `<span class="fundamento-icon" onclick="showToast(this, ${JSON.stringify('📝 Tu fundamento: ' + a.fundamento)})" title="Ver tu fundamento de compra">📝</span>` : ""}</div><div class="asset-label">${a.label}</div></div>
           </div>
           <span class="signal-badge ${signalClass[sig]}">${signalLabel[sig]||sig}</span>
         </div>
@@ -761,6 +762,8 @@ export function generateHTML(data, history, portfolio) {
   .asset-name{display:flex;align-items:center;gap:8px}
   .asset-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--mono);font-size:13px;flex-shrink:0}
   .asset-ticker{font-size:14px;font-weight:700;font-family:var(--mono)} .asset-label{font-size:9px;color:var(--text-muted);margin-top:1px}
+  .fundamento-icon{font-size:10px;margin-left:5px;cursor:pointer;opacity:.75;vertical-align:middle}
+  .fundamento-icon:hover{opacity:1}
   .signal-badge{font-size:8px;font-weight:700;letter-spacing:.7px;padding:3px 7px;border-radius:4px;font-family:var(--mono)}
   .signal-buy{background:var(--green-dim);color:var(--green)} .signal-hold{background:var(--yellow-dim);color:var(--yellow)} .signal-wait{background:var(--red-dim);color:var(--red)}
   .asset-price{font-size:19px;font-weight:700;font-family:var(--mono);letter-spacing:-.4px;margin-bottom:4px}
@@ -1254,6 +1257,10 @@ ${allocationSection()}
         <label>Fecha de compra</label>
         <input type="date" id="buyDate">
       </div>
+      <div class="modal-field">
+        <label id="fundamentoLabel">Fundamento (opcional)</label>
+        <textarea id="buyFundamento" rows="3" placeholder="¿Por qué compraste esto? Tesis, contexto, lo que quieras recordar en el futuro..."></textarea>
+      </div>
 
       <div class="buy-preview" id="buyPreview" style="display:none">
         <div class="buy-preview-row"><span>Monto total</span><span class="mono num" id="previewTotal">$0</span></div>
@@ -1371,8 +1378,8 @@ function showToast(el, text) {
 
 // ─── REGISTRAR COMPRA — modal interactivo ──────────────────────────────────
 const EXISTING_ASSETS = {
-${cryptoAssets.map(a => `  "${a.key}": { type: "crypto", label: "${a.label}", qty: ${portfolio.crypto[a.key]?.qty || 0}, costAvg: ${portfolio.crypto[a.key]?.costAvg || 0} }`).join(",\n")},
-${stockAssets.map(a => `  "${a.key}": { type: "${a.cat || 'stock'}", label: "${a.label}", qty: ${portfolio.stocks[a.key]?.shares || 0}, costAvg: ${portfolio.stocks[a.key]?.costAvg || 0} }`).join(",\n")}
+${cryptoAssets.map(a => `  "${a.key}": { type: "crypto", label: "${a.label}", qty: ${portfolio.crypto[a.key]?.qty || 0}, costAvg: ${portfolio.crypto[a.key]?.costAvg || 0}, fundamento: "${escFundamento(portfolio.crypto[a.key]?.fundamento)}" }`).join(",\n")},
+${stockAssets.map(a => `  "${a.key}": { type: "${a.cat || 'stock'}", label: "${a.label}", qty: ${portfolio.stocks[a.key]?.shares || 0}, costAvg: ${portfolio.stocks[a.key]?.costAvg || 0}, fundamento: "${escFundamento(portfolio.stocks[a.key]?.fundamento)}" }`).join(",\n")}
 };
 
 function openBuyModal() {
@@ -1400,12 +1407,25 @@ function closeBuyModal() {
   document.getElementById('buyPrice').value = '';
   document.getElementById('buyNewTicker').value = '';
   document.getElementById('buyAssetSelect').value = '';
+  document.getElementById('buyFundamento').value = '';
   document.getElementById('newAssetFields').style.display = 'none';
 }
 
 function onAssetSelectChange() {
   const val = document.getElementById('buyAssetSelect').value;
   document.getElementById('newAssetFields').style.display = (val === '__new__') ? 'flex' : 'none';
+  const label = document.getElementById('fundamentoLabel');
+  const fundamentoInput = document.getElementById('buyFundamento');
+  if (val === '__new__' || val === '') {
+    label.textContent = 'Fundamento (recomendado para activos nuevos)';
+    fundamentoInput.placeholder = '¿Por qué compraste esto? Tesis, contexto, lo que quieras recordar en el futuro...';
+  } else {
+    const existing = EXISTING_ASSETS[val];
+    label.textContent = 'Fundamento (opcional — ya tienes este activo)';
+    fundamentoInput.placeholder = existing?.fundamento
+      ? 'Ya registrado: "' + existing.fundamento + '" — deja vacío para no cambiarlo'
+      : 'Deja vacío si no quieres agregar/cambiar el fundamento';
+  }
   updateBuyPreview();
 }
 
@@ -1445,6 +1465,7 @@ function generateCommand() {
   const price = parseFloat(document.getElementById('buyPrice').value) || 0;
   const date = document.getElementById('buyDate').value;
   const newType = document.getElementById('buyNewType').value;
+  const fundamento = document.getElementById('buyFundamento').value.trim();
 
   if (!key || qty <= 0 || price <= 0) {
     alert('Completa el activo, la cantidad y el precio antes de generar el comando.');
@@ -1466,8 +1487,10 @@ function generateCommand() {
     lines.push('En ~/Documents/Personal/market-intelligence/portfolio.json, dentro de "' + section + '" -> "' + key + '", actualiza:');
     lines.push('  ' + qtyField + ': ' + newQty);
     lines.push('  costAvg: ' + newCostAvg);
+    if (fundamento) lines.push('  fundamento: "' + fundamento.replace(/"/g, '\\"') + '"');
     lines.push('');
     lines.push('Esto refleja una compra de ' + qty + ' unidades a $' + price + ' c/u (total $' + total + ') el ' + date + '.');
+    if (fundamento) lines.push('Fundamento de esta compra: ' + fundamento);
     lines.push('');
     lines.push('Luego ejecuta: node regenerate.js (para validar sin gastar API)');
     lines.push('');
@@ -1481,10 +1504,12 @@ function generateCommand() {
     lines.push('  "' + key + '": {');
     lines.push('    "' + qtyField + '": ' + qty + ',');
     if (newType !== 'crypto') lines.push('    "cat": "' + newType + '",');
-    lines.push('    "costAvg": ' + price);
+    lines.push('    "costAvg": ' + price + (fundamento ? ',' : ''));
+    if (fundamento) lines.push('    "fundamento": "' + fundamento.replace(/"/g, '\\"') + '"');
     lines.push('  }');
     lines.push('');
     lines.push('Esto registra tu primera compra: ' + qty + ' unidades a $' + price + ' c/u (total $' + total + ') el ' + date + '.');
+    if (fundamento) lines.push('Fundamento de esta compra: ' + fundamento);
     lines.push('');
     lines.push('Luego ejecuta: node regenerate.js (para validar sin gastar API)');
     lines.push('');
