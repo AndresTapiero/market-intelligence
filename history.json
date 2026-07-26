@@ -226,8 +226,170 @@
     "portfolioSnapshot": {
       "totalCrypto": 2314.86,
       "totalStocks": 624.82,
-      "cash": 200.0,
+      "cash": 200,
       "total": 3139.68
+    }
+  },
+  {
+    "timestamp": "2026-07-26T12:55:45.827Z",
+    "week": "2026-W31",
+    "data": {
+      "date": "2026-07-26",
+      "analystOpinion": "El portafolio sigue solido gracias al DCA mensual en BTC y VOO/QQQ, que compra disciplina en medio de la volatilidad reciente causada por el ruido de tasas de la Fed y el selloff de julio en tech. Las altcoins en HOLD (ETH, SOL, TAO, UNI, BNB, SUI, SEI, ENA, AVAX) siguen arrastrando el portafolio con caidas moderadas esta semana, especialmente AVAX y GIGA, pero la regla de no vender con perdida protege de decisiones emocionales. NVDA cayo a zona de $206, una correccion sana dentro de la tesis de IA que abre una oportunidad de entrada. La recomendacion del mes es mantener el DCA sin cambios, evaluar VOO/QQQ como compra en la debilidad reciente, y seguir priorizando la eliminacion de deuda de tarjeta de credito antes de aumentar exposicion nueva.",
+      "riskProfile": "Moderado-Agresivo",
+      "btc": {
+        "price": "$64,250",
+        "change7d": "-1.2%",
+        "signal": "BUY",
+        "context": "Bitcoin se mantiene rangebound cerca de $64k mientras el mercado espera definicion de la Fed sobre tasas. El DCA mensual de $50 sigue siendo la estrategia correcta para acumular en esta fase de consolidacion."
+      },
+      "eth": {
+        "price": "$1,875",
+        "change7d": "-3.1%",
+        "signal": "HOLD"
+      },
+      "sol": {
+        "price": "$74.50",
+        "change7d": "-1.1%",
+        "signal": "HOLD"
+      },
+      "tao": {
+        "price": "$192.00",
+        "change7d": "-4.0%",
+        "signal": "HOLD"
+      },
+      "uni": {
+        "price": "$3.75",
+        "change7d": "+4.4%",
+        "signal": "HOLD"
+      },
+      "bnb": {
+        "price": "$563.33",
+        "change7d": "-1.5%",
+        "signal": "HOLD"
+      },
+      "sui": {
+        "price": "$0.74",
+        "change7d": "-3.0%",
+        "signal": "HOLD"
+      },
+      "sei": {
+        "price": "$0.19",
+        "change7d": "-4.0%",
+        "signal": "HOLD"
+      },
+      "ena": {
+        "price": "$0.32",
+        "change7d": "-5.0%",
+        "signal": "HOLD"
+      },
+      "avax": {
+        "price": "$6.26",
+        "change7d": "-5.6%",
+        "signal": "HOLD"
+      },
+      "giga": {
+        "price": "$0.00203",
+        "change7d": "-10.3%",
+        "signal": "HOLD"
+      },
+      "trump": {
+        "price": "$1.56",
+        "change7d": "+1.4%",
+        "signal": "HOLD"
+      },
+      "spx6900": {
+        "price": "$0.34",
+        "change7d": "-3.0%",
+        "signal": "HOLD"
+      },
+      "voo": {
+        "price": "$679.14",
+        "change7d": "+0.3%",
+        "signal": "BUY",
+        "context": "VOO se mantiene cerca de maximos con el S&P 500 sostenido por resultados corporativos solidos. Buen punto para continuar el DCA mensual sin necesidad de timing adicional."
+      },
+      "qqq": {
+        "price": "$684.23",
+        "change7d": "-0.5%",
+        "signal": "BUY",
+        "context": "QQQ retrocede levemente arrastrado por la correccion de semiconductores y tech de alto crecimiento. La debilidad relativa favorece seguir con el DCA mensual planificado."
+      },
+      "nvda": {
+        "price": "$206.84",
+        "change7d": "-4.5%",
+        "signal": "BUY",
+        "context": "NVDA corrige a la zona de $206 tras un julio de ventas fuertes en lideres de mercado, pese a nuevos acuerdos de IA como el de SK Group por mas de 500 mil millones. La tesis de infraestructura de IA sigue intacta y la caida representa una oportunidad de entrada para posicion adicional fuera del DCA regular."
+      },
+      "nu": {
+        "price": "$14.09",
+        "change7d": "+4.4%",
+        "signal": "HOLD"
+      },
+      "tsla": {
+        "price": "$313.03",
+        "change7d": "-4.0%",
+        "signal": "HOLD"
+      },
+      "macro": {
+        "usdcop": "$3,210.56 COP",
+        "fedrate": "3.50%-3.75%",
+        "btcDominance": "56.9%",
+        "fearGreed": "45",
+        "fearGreedLabel": "Neutral",
+        "narrative": "La Fed mantiene su tasa en el rango 3.50%-3.75% con especulacion de una posible subida en la reunion del 28-29 de julio, lo que genera cautela en mercados de riesgo. El peso colombiano se fortalece a niveles minimos de siete anos frente al dolar, favoreciendo el poder adquisitivo local para nuevas compras en USD."
+      },
+      "newOpportunities": [
+        {
+          "asset": "BTC (posicion adicional fuera del DCA)",
+          "reason": "El rango de consolidacion cerca de $64k con dominancia de BTC estable ofrece un punto de entrada atractivo para reforzar la posicion core antes de un posible catalizador de fin de ano.",
+          "risk": "Si la Fed sorprende con una subida de tasas el 28-29 de julio, el apetito por riesgo podria contraerse y presionar el precio a la baja en el corto plazo."
+        },
+        {
+          "asset": "MU (Micron Technology)",
+          "reason": "El auge de infraestructura de IA esta impulsando la demanda de memoria de alto ancho de banda, y Micron se beneficia directamente del mismo ciclo que sostiene a NVDA.",
+          "risk": "Alta ciclicidad del sector de semiconductores de memoria puede generar volatilidad fuerte ante cambios en la demanda de data centers."
+        },
+        {
+          "asset": "GLD (oro fisico via ETF)",
+          "reason": "En un entorno de incertidumbre sobre tasas y un dolar debilitandose frente al peso colombiano, el oro ofrece cobertura frente a shocks macro sin anadir mas riesgo cripto o tech.",
+          "risk": "El oro no genera flujo de caja y puede rezagarse si la Fed opta por una postura mas hawkish de lo esperado, fortaleciendo el dolar."
+        }
+      ],
+      "watchlist": {
+        "schd": {
+          "price": "$33.33",
+          "change7d": "+0.3%",
+          "entrySignal": "WAIT",
+          "note": "SCHD cotiza muy cerca de su maximo de 52 semanas ($33.50), por lo que conviene esperar una correccion antes de iniciar posicion."
+        },
+        "vti": {
+          "price": "$364.80",
+          "change7d": "+1.2%",
+          "entrySignal": "BUY",
+          "note": "VTI ofrece exposicion diversificada a todo el mercado de EE.UU. a un precio razonable y en tendencia alcista moderada, buen complemento a VOO/QQQ."
+        }
+      },
+      "actions": [
+        {
+          "num": "01",
+          "text": "Continuar el DCA mensual de $50 en BTC y $50 en VOO/QQQ sin interrupciones, aprovechando la debilidad reciente en NVDA y el rango de BTC."
+        },
+        {
+          "num": "02",
+          "text": "Priorizar el pago de la deuda de tarjeta de credito antes de considerar nuevas posiciones en MU, GLD o BTC adicional."
+        },
+        {
+          "num": "03",
+          "text": "Mantener todas las altcoins en HOLD sin comprar mas, y revisar VTI como candidato de entrada para diversificar mas alla de VOO/QQQ una vez saldada la deuda."
+        }
+      ]
+    },
+    "portfolioSnapshot": {
+      "totalCrypto": 2145.55,
+      "totalStocks": 841.55,
+      "cash": 200,
+      "total": 3187.1
     }
   }
 ]
