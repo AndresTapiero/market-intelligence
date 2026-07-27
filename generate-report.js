@@ -5,7 +5,7 @@
 
 // BUILD: incrementar en cada cambio entregado por Claude para validar sincronizacion
 // entre lo generado aqui y lo que aparece en tu reporte real tras el deploy.
-const BUILD_VERSION = "v20";
+const BUILD_VERSION = "v21";
 const BUILD_DATE = "2026-07-13";
 
 export function generateHTML(data, history, portfolio) {
@@ -953,6 +953,8 @@ export function generateHTML(data, history, portfolio) {
     .pnl-nums{width:100%}
     .sticky-stat:nth-child(n+3){display:none}
     .comp-row{grid-template-columns:52px 1fr 38px 52px}
+    .log-header{grid-template-columns:42px 32px 1fr 1fr 1fr;gap:4px;font-size:8px}
+    .log-row{grid-template-columns:42px 32px 1fr 1fr 1fr;gap:4px;font-size:9px}
   }
   @media print{ .sticky-bar,.pdf-btn,.modal-overlay{display:none!important} body{padding-top:20px} }
 </style>
