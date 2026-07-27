@@ -5,7 +5,7 @@
 
 // BUILD: incrementar en cada cambio entregado por Claude para validar sincronizacion
 // entre lo generado aqui y lo que aparece en tu reporte real tras el deploy.
-const BUILD_VERSION = "v19";
+const BUILD_VERSION = "v20";
 const BUILD_DATE = "2026-07-13";
 
 export function generateHTML(data, history, portfolio) {
@@ -515,7 +515,7 @@ export function generateHTML(data, history, portfolio) {
       const meta = knownStocks[k] || knownCrypto[k] || autoMeta(k, i + 8);
       const isPos = (w.change7d||"").startsWith("+");
       const sig = w.entrySignal === "BUY" ? "signal-buy" : "signal-wait";
-      const sigLabel = w.entrySignal === "BUY" ? "ENTRADA" : "ESPERAR";
+      const sigLabel = w.entrySignal === "BUY" ? "COMPRAR" : "ESPERAR";
       return `
       <div class="watch-card" style="--asset-color:${meta.color}">
         <div class="asset-header">
@@ -531,7 +531,7 @@ export function generateHTML(data, history, portfolio) {
         <div class="watch-tag">👁 En observación — no posees este activo</div>
       </div>`;
     }).join("");
-    return `<div class="section-title">Watchlist — candidatas a comprar</div>
+    return `<div class="section-title">En seguimiento — candidatas a comprar</div>
     <div class="watch-grid mb">${cards}</div>`;
   }
 
@@ -969,7 +969,7 @@ export function generateHTML(data, history, portfolio) {
   </div>
   <div class="header-actions">
     <button class="buy-btn" onclick="openBuyModal()">📥 Registrar compra</button>
-    <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Actualizar datos</a>
+    <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
     <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
   </div>
 </div>
@@ -986,7 +986,7 @@ export function generateHTML(data, history, portfolio) {
 </div>
 
 <!-- 1. PORTAFOLIO TOTAL -->
-<div class="section-title">Portafolio Total</div>
+<div class="section-title">Portafolio total</div>
 <div class="totals-bar mb">
   <div class="total-card">
     <div class="total-label">Capital Invertido</div>
@@ -1076,7 +1076,7 @@ export function generateHTML(data, history, portfolio) {
 <!-- 2c. WATCHLIST -->
 ${watchlistSection()}
 <!-- 3. MACRO ECONÓMICO -->
-<div class="section-title">Contexto Macroeconómico</div>
+<div class="section-title">Contexto macroeconómico</div>
 <div class="card mb">
   <div class="macro-grid">
     <div class="macro-item"><div class="macro-item-label">USD/COP${infoIcon("trm")}</div><div class="macro-item-value num">${d.macro?.usdcop||"—"}</div><div class="macro-item-sub">tasa ARQ</div></div>
