@@ -104,5 +104,14 @@
     "amountUSD": 43.51,
     "note": "DCA / compra",
     "type": "crypto"
+  },
+  {
+    "date": "03 de ago de 2026",
+    "asset": "btc",
+    "qtyAdded": 0.001541,
+    "unitPrice": 76370.002869,
+    "amountUSD": 117.69,
+    "note": "DCA / compra",
+    "type": "crypto"
   }
 ]

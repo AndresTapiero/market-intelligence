@@ -3,8 +3,9 @@
   "_updated": "2026-07-17",
   "crypto": {
     "btc": {
-      "qty": 0.01473,
-      "costAvg": 84349.32
+      "qty": 0.016271,
+      "costAvg": 76370.002869,
+      "fundamento": "Acumulación Pago Julio"
     },
     "eth": {
       "qty": 0.1736,
