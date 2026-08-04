@@ -113,7 +113,7 @@ function buildPrompt(raw) {
 
 Busca en la web los precios actuales de: ${tickersList}.
 Busca tambien la TRM oficial de Colombia (USD/COP) de HOY especificamente -- no estimes ni redondees, usa el valor oficial publicado por Banco de la Republica o fuentes financieras colombianas confiables.
-Haz maximo 7 busquedas (agrupa varios tickers por busqueda cuando sea posible).
+Haz MAXIMO 5 busquedas — agrupa varios tickers en cada busqueda (ej: una busqueda para varias altcoins juntas). Prioriza terminar el JSON completo sobre hacer mas busquedas.
 
 CONTEXTO:
 - Portafolio diversificado crypto + acciones USA. Estrategia DCA mensual de $${raw.dca?.amount || 50} en BTC y $${raw.dca?.amount || 50} en acciones (VOO/QQQ).
@@ -319,13 +319,19 @@ async function main() {
 
   const response = await client.messages.create({
     model: "claude-sonnet-5",
-    max_tokens: 6000,
+    max_tokens: 9000,
     tools: [{ type: "web_search_20250305", name: "web_search" }],
     messages: [{ role: "user", content: buildPrompt(rawPortfolio) }],
   });
 
   const rawText = response.content.filter(b => b.type === "text").map(b => b.text).join("");
-  if (!rawText.trim()) throw new Error("Respuesta vacia del modelo");
+  if (!rawText.trim()) {
+    const blockTypes = response.content.map(b => b.type).join(", ");
+    throw new Error(
+      `Respuesta vacia del modelo. stop_reason="${response.stop_reason}" bloques=[${blockTypes}] tokens_usados=${response.usage?.output_tokens}. ` +
+      `Si stop_reason es "max_tokens", sube max_tokens o reduce el numero de activos/busquedas.`
+    );
+  }
 
   // 2b. Guardar la respuesta cruda ANTES de intentar parsearla.
   // Si algo falla despues de este punto (parseo, template, etc.), ese fallo
