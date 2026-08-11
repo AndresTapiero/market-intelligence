@@ -22,14 +22,16 @@
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--text);font-family:var(--sans);padding:24px;padding-top:124px;min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
 
-  /* TABS NAV */
-  .tabs-nav{position:fixed;top:53px;left:0;right:0;z-index:99;background:var(--bg);border-bottom:1px solid var(--border-subtle);padding:0 24px;display:flex;gap:4px;overflow-x:auto}
-  .tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-family:var(--sans);font-size:12px;font-weight:600;padding:10px 14px;cursor:pointer;white-space:nowrap;transition:all .15s}
+  /* TABS NAV — segmented control fijo, un solo acento (patron fintech dark-mode) */
+  .tabs-nav-wrap{position:fixed;top:53px;left:0;right:0;z-index:99;background:rgba(10,12,16,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);padding:10px 24px}
+  .tabs-nav{display:inline-flex;gap:2px;background:var(--surface2);border:1px solid var(--border-subtle);border-radius:10px;padding:3px;max-width:100%;overflow-x:auto}
+  .tab-btn{background:none;border:none;border-radius:7px;color:var(--text-muted);font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px}
   .tab-btn:hover{color:var(--text-dim)}
-  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab-btn.active{color:white;background:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .tab-panel{display:none}
   .tab-panel.active{display:block}
-  @media print{.tabs-nav{display:none!important}}
+  @media print{.tabs-nav-wrap{display:none!important}}
+  @media(max-width:480px){.tabs-nav-wrap{padding:8px 12px}.tab-btn{padding:7px 12px;font-size:11px}}
   .num{font-variant-numeric:tabular-nums}
   .mono{font-family:var(--mono)} .pos{color:var(--green)} .neg{color:var(--red)}
   .text-muted{color:var(--text-muted)} .small{font-size:10px}
@@ -79,6 +81,8 @@
   .refresh-btn:hover{background:var(--green);color:white}
   .buy-btn{background:var(--accent);color:white;border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
   .buy-btn:hover{background:#7550f0;box-shadow:0 0 0 3px var(--accent-dim)}
+  .sell-btn{background:transparent;color:var(--red);border:1px solid var(--red);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
+  .sell-btn:hover{background:var(--red);color:white;box-shadow:0 0 0 3px var(--red-dim)}
 
   /* MODAL */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;padding:20px;role:presentation}
@@ -280,6 +284,11 @@
   .cash-update-btn:hover{background:var(--accent);color:white}
 
   /* LOG */
+  .log-card-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .log-month-select{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:11px;font-family:var(--sans);cursor:pointer}
+  .log-scroll{max-height:280px;overflow-y:auto;padding-right:4px}
+  .log-scroll::-webkit-scrollbar{width:4px} .log-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:2px} .log-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  .log-empty{font-size:11px;color:var(--text-muted);padding:14px 0;text-align:center}
   .log-list{display:flex;flex-direction:column;gap:2px}
   .log-header{display:grid;grid-template-columns:80px 55px 90px 90px 80px;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--border);font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
   .log-row{display:grid;grid-template-columns:80px 55px 90px 90px 80px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:11px}
@@ -330,7 +339,7 @@
   }
   @media(max-width:768px){
     body{padding:14px;padding-top:132px}
-    .tabs-nav{top:90px;padding:0 14px}
+    .tabs-nav-wrap{top:90px}
     .totals-bar{grid-template-columns:1fr 1fr}
     .insights-mid{grid-template-columns:1fr 1fr}
     .pnl-grid{grid-template-columns:1fr}
@@ -345,7 +354,7 @@
   }
   @media(max-width:480px){
     body{padding:12px;padding-top:128px}
-    .tabs-nav{top:86px}
+    .tabs-nav-wrap{top:86px}
     .totals-bar{grid-template-columns:1fr 1fr}
     .assets-grid-crypto{grid-template-columns:1fr 1fr}
     .assets-grid-stocks{grid-template-columns:1fr 1fr}
@@ -404,7 +413,7 @@
   </div>
   <div class="header-actions">
     <button class="buy-btn" onclick="openBuyModal()" aria-label="Registrar nueva compra">📥 Registrar compra</button>
-    <button class="buy-btn" onclick="openSellModal()" aria-label="Registrar venta">📤 Registrar venta</button>
+    <button class="sell-btn" onclick="openSellModal()" aria-label="Registrar venta">📤 Registrar venta</button>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
     <button class="pdf-btn" onclick="exportPDF()" aria-label="Descargar reporte en PDF">⬇ PDF</button>
     <span id="authStatus" style="font-size:11px; color:var(--text-muted); margin-left:16px;">⏳ Conectando...</span>
@@ -420,12 +429,14 @@
   </div>
 </header>
 
-<nav class="tabs-nav" role="tablist" aria-label="Secciones del reporte">
-  <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-resumen" onclick="switchTab('resumen')">📊 Resumen</button>
-  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-activos" onclick="switchTab('activos')">💼 Activos</button>
-  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-transacciones" onclick="switchTab('transacciones')">🧾 Transacciones</button>
-  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-analisis" onclick="switchTab('analisis')">🔍 Análisis</button>
-</nav>
+<div class="tabs-nav-wrap">
+  <nav class="tabs-nav" role="tablist" aria-label="Secciones del reporte">
+    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-resumen" onclick="switchTab('resumen')">📊 Resumen</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-activos" onclick="switchTab('activos')">💼 Activos</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-transacciones" onclick="switchTab('transacciones')">🧾 Transacciones</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-analisis" onclick="switchTab('analisis')">🔍 Análisis</button>
+  </nav>
+</div>
 
 <div class="tab-panel active" id="tab-resumen" data-tab="resumen" role="tabpanel">
 
@@ -748,18 +759,30 @@
       </div>
     </div>
   </div>
-  <div class="card"><h3 class="section-title">Bitácora de compras</h3><div class="log-list">
+  <div class="card">
+    <div class="log-card-header">
+      <h3 class="section-title" style="margin-bottom:0">Bitácora de compras</h3>
+      <select class="log-month-select" id="logMonthFilter" onchange="filterLogByMonth(this.value)">
+        <option value="all">Todos los meses</option>
+        <option value="2026-08" selected>Agosto 2026</option>
+        <option value="2026-07">Julio 2026</option>
+      </select>
+    </div>
+    <div class="log-list">
     <div class="log-header"><span>Fecha</span><span>Activo</span><span>Cantidad</span><span>Precio unit.</span><span>Monto USD</span></div>
-    <div class="log-row"><div class="log-date mono">03 de ago de 2026</div><div class="log-asset"><span class="mono" style="color:#f7931a">BTC</span></div><div class="log-qty mono">+0.001541</div><div class="log-price mono">$76,370.003</div><div class="log-amount mono pos">$117.69</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#00d4a0">SPX6900</span></div><div class="log-qty mono">+37.87</div><div class="log-price mono">$1.149</div><div class="log-amount mono pos">$43.51</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#8250ff">TRUMP</span></div><div class="log-qty mono">+1.151</div><div class="log-price mono">$36.07</div><div class="log-amount mono pos">$41.52</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#00d4ff">GIGA</span></div><div class="log-qty mono">+873.2</div><div class="log-price mono">$0.0639</div><div class="log-amount mono pos">$55.75</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:var(--text)">USDT</span></div><div class="log-qty mono">+9.925</div><div class="log-price mono">$1</div><div class="log-amount mono pos">$9.93</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:var(--text)">SPX</span></div><div class="log-qty mono">+37.87</div><div class="log-price mono">$1.149</div><div class="log-amount mono pos">$43.51</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#e84142">SEI</span></div><div class="log-qty mono">+1.84</div><div class="log-price mono">$0.2916</div><div class="log-amount mono pos">$0.54</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#6fbcf0">SUI</span></div><div class="log-qty mono">+0.01</div><div class="log-price mono">$3.688</div><div class="log-amount mono pos">$0.04</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#38bdf8">TAO</span></div><div class="log-qty mono">+0.0002</div><div class="log-price mono">$350.93</div><div class="log-amount mono pos">$0.07</div></div>
-    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#9945ff">SOL</span></div><div class="log-qty mono">+0.014</div><div class="log-price mono">$173.74</div><div class="log-amount mono pos">$2.43</div></div>
+    <div class="log-scroll" id="logScroll">
+    <div class="log-row" data-month="2026-08"><div class="log-date mono">03 de ago de 2026</div><div class="log-asset"><span class="mono" style="color:#f7931a">BTC</span></div><div class="log-qty mono">+0.001541</div><div class="log-price mono">$76,370.003</div><div class="log-amount mono pos">$117.69</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#00d4a0">SPX6900</span></div><div class="log-qty mono">+37.87</div><div class="log-price mono">$1.149</div><div class="log-amount mono pos">$43.51</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#8250ff">TRUMP</span></div><div class="log-qty mono">+1.151</div><div class="log-price mono">$36.07</div><div class="log-amount mono pos">$41.52</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#00d4ff">GIGA</span></div><div class="log-qty mono">+873.2</div><div class="log-price mono">$0.0639</div><div class="log-amount mono pos">$55.75</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:var(--text)">USDT</span></div><div class="log-qty mono">+9.925</div><div class="log-price mono">$1</div><div class="log-amount mono pos">$9.93</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:var(--text)">SPX</span></div><div class="log-qty mono">+37.87</div><div class="log-price mono">$1.149</div><div class="log-amount mono pos">$43.51</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#e84142">SEI</span></div><div class="log-qty mono">+1.84</div><div class="log-price mono">$0.2916</div><div class="log-amount mono pos">$0.54</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#6fbcf0">SUI</span></div><div class="log-qty mono">+0.01</div><div class="log-price mono">$3.688</div><div class="log-amount mono pos">$0.04</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#38bdf8">TAO</span></div><div class="log-qty mono">+0.0002</div><div class="log-price mono">$350.93</div><div class="log-amount mono pos">$0.07</div></div>
+    <div class="log-row" data-month="2026-07"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#9945ff">SOL</span></div><div class="log-qty mono">+0.014</div><div class="log-price mono">$173.74</div><div class="log-amount mono pos">$2.43</div></div>
+    </div>
+    <div class="log-empty" id="logEmpty" style="display:none">Sin compras registradas ese mes.</div>
   </div></div>
   <div class="card"><h3 class="section-title">Próximos eventos</h3><div class="cal-grid">
     <div class="cal-row"><div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div><div class="cal-dot" style="background:var(--blue)"></div><div class="cal-evento">Decisión FED — tasas de interés</div></div>
@@ -1109,6 +1132,23 @@ function formatQty(qty) {
   return qty.toLocaleString('es-CO', { maximumFractionDigits: 6 });
 }
 
+function filterLogByMonth(month) {
+  const rows = document.querySelectorAll('#logScroll .log-row');
+  let visibleCount = 0;
+  rows.forEach(row => {
+    const show = month === 'all' || row.dataset.month === month;
+    row.style.display = show ? 'grid' : 'none';
+    if (show) visibleCount++;
+  });
+  const emptyEl = document.getElementById('logEmpty');
+  if (emptyEl) emptyEl.style.display = visibleCount === 0 ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const select = document.getElementById('logMonthFilter');
+  if (select) filterLogByMonth(select.value);
+});
+
 function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === name));
   document.querySelectorAll('.tab-btn').forEach(b => {
@@ -1225,7 +1265,7 @@ function exportPDF() {
   };
   const el = document.body.cloneNode(true);
   const stickyClone = el.querySelector('.sticky-bar'); if (stickyClone) stickyClone.remove();
-  const tabsNavClone = el.querySelector('.tabs-nav'); if (tabsNavClone) tabsNavClone.remove();
+  const tabsNavClone = el.querySelector('.tabs-nav-wrap'); if (tabsNavClone) tabsNavClone.remove();
   el.querySelectorAll('.tab-panel').forEach(p => { p.style.display = 'block'; });
   el.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   html2pdf().set(opt).from(el).save().then(() => { btn.textContent = '⬇ PDF'; }).catch(() => { btn.textContent = '⬇ PDF'; });
