@@ -14,12 +14,23 @@ import fs from "fs";
 import path from "path";
 import url from "url";
 import dotenv from "dotenv";
-import { insertExitEntry } from "./supabase-client.js";
 
 dotenv.config();
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const PORT = 3000;
+
+let insertExitEntry = null;
+
+// Cargar Supabase si está disponible
+try {
+  const supabase = await import("./supabase-client.js");
+  insertExitEntry = supabase.insertExitEntry;
+  console.log("✅ Supabase integrado");
+} catch (err) {
+  console.warn("⚠️  Supabase no disponible — solo portfolio.json será actualizado");
+  insertExitEntry = async () => ({ id: "local-" + Date.now() });
+}
 
 function loadPortfolio() {
   return JSON.parse(fs.readFileSync(path.join(__dirname, "portfolio.json"), "utf8"));
@@ -119,7 +130,12 @@ const server = http.createServer(async (req, res) => {
           observaciones: observations || null,
         };
 
-        const inserted = await insertExitEntry(exitEntry);
+        try {
+          const inserted = await insertExitEntry(exitEntry);
+          console.log(`✅ Venta ${ticker}: ${quantity} a $${price} (${gananciaPct}%)`);
+        } catch (err) {
+          console.warn("⚠️  No se registró en Supabase:", err.message);
+        }
 
         // Actualizar portfolio.json
         const newQty = currentQty - quantity;
@@ -136,7 +152,6 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({
           success: true,
           message: `Venta registrada: ${quantity} ${ticker} a $${price}`,
-          id: inserted.id,
           ganancia_pct: gananciaPct,
           nuevo_saldo: newQty,
         }));
@@ -183,6 +198,8 @@ const server = http.createServer(async (req, res) => {
 
         portfolio._updated = new Date().toISOString().split("T")[0];
         savePortfolio(portfolio);
+
+        console.log(`✅ Compra ${ticker}: ${quantity} a $${price}`);
 
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({
