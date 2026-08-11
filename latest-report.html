@@ -20,7 +20,16 @@
     --r:14px;--r-sm:10px;--g:16px;--g-lg:20px;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--text);font-family:var(--sans);padding:24px;padding-top:80px;min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);padding:24px;padding-top:124px;min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+  /* TABS NAV */
+  .tabs-nav{position:fixed;top:53px;left:0;right:0;z-index:99;background:var(--bg);border-bottom:1px solid var(--border-subtle);padding:0 24px;display:flex;gap:4px;overflow-x:auto}
+  .tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-family:var(--sans);font-size:12px;font-weight:600;padding:10px 14px;cursor:pointer;white-space:nowrap;transition:all .15s}
+  .tab-btn:hover{color:var(--text-dim)}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+  @media print{.tabs-nav{display:none!important}}
   .num{font-variant-numeric:tabular-nums}
   .mono{font-family:var(--mono)} .pos{color:var(--green)} .neg{color:var(--red)}
   .text-muted{color:var(--text-muted)} .small{font-size:10px}
@@ -190,7 +199,11 @@
   .fundamento-icon{font-size:10px;margin-left:5px;cursor:pointer;opacity:.75;vertical-align:middle}
   .fundamento-icon:hover{opacity:1}
   .signal-badge{font-size:8px;font-weight:700;letter-spacing:.7px;padding:3px 7px;border-radius:4px;font-family:var(--mono)}
-  .signal-buy{background:var(--green-dim);color:var(--green)} .signal-hold{background:var(--yellow-dim);color:var(--yellow)} .signal-wait{background:var(--red-dim);color:var(--red)}
+  .signal-buy{background:var(--green-dim);color:var(--green)} .signal-hold{background:var(--yellow-dim);color:var(--yellow)} .signal-wait{background:var(--yellow-dim);color:var(--yellow)}
+  .asset-holdings{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--text-muted);padding:5px 8px;background:var(--surface2);border-radius:6px;margin-bottom:9px}
+  .asset-holdings-label{font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;font-size:9px}
+  .asset-holdings-qty{color:var(--text-dim);font-weight:600}
+  .decision-empty{font-size:12px;line-height:1.65;color:var(--text-dim)}
   .asset-price{font-size:19px;font-weight:700;font-family:var(--mono);letter-spacing:-.4px;margin-bottom:4px}
   .asset-change{font-size:11px;font-family:var(--mono);margin-bottom:9px}
   .asset-change-label{color:var(--text-muted);font-size:9px}
@@ -316,7 +329,8 @@
     .three-col{grid-template-columns:1fr}
   }
   @media(max-width:768px){
-    body{padding:14px;padding-top:76px}
+    body{padding:14px;padding-top:132px}
+    .tabs-nav{top:90px;padding:0 14px}
     .totals-bar{grid-template-columns:1fr 1fr}
     .insights-mid{grid-template-columns:1fr 1fr}
     .pnl-grid{grid-template-columns:1fr}
@@ -330,7 +344,8 @@
     .sticky-stats{gap:14px}
   }
   @media(max-width:480px){
-    body{padding:12px;padding-top:72px}
+    body{padding:12px;padding-top:128px}
+    .tabs-nav{top:86px}
     .totals-bar{grid-template-columns:1fr 1fr}
     .assets-grid-crypto{grid-template-columns:1fr 1fr}
     .assets-grid-stocks{grid-template-columns:1fr 1fr}
@@ -405,6 +420,15 @@
   </div>
 </header>
 
+<nav class="tabs-nav" role="tablist" aria-label="Secciones del reporte">
+  <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-resumen" onclick="switchTab('resumen')">📊 Resumen</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-activos" onclick="switchTab('activos')">💼 Activos</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-transacciones" onclick="switchTab('transacciones')">🧾 Transacciones</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-analisis" onclick="switchTab('analisis')">🔍 Análisis</button>
+</nav>
+
+<div class="tab-panel active" id="tab-resumen" data-tab="resumen" role="tabpanel">
+
 <h2 class="section-title">Portafolio total</h2>
 <div class="totals-bar mb">
   <div class="total-card">
@@ -434,148 +458,6 @@
     <div class="total-sub">activos + cash · <span class="pos">+1.5% vs mes</span></div>
     <div class="total-breakdown"><span>Cash $200</span><span class="neg">Ann. -89.5%</span></div>
   </div>
-</div>
-
-<h2 class="section-title">Simulador de conversión a pesos</h2>
-<div class="card mb">
-  <div class="cop-widget">
-    <div class="cop-header">
-      <div>
-        <div class="cop-current-rate">TRM actual: <span class="mono num" id="copBaseRate">$0</span> COP</div>
-        <div class="cop-sub">Desliza para simular distintos escenarios de tasa de cambio</div>
-      </div>
-      <button class="cop-reset" onclick="resetCopRate()">↺ Restablecer</button>
-    </div>
-    <input type="range" id="copSlider" class="cop-slider" min="2800" max="4500" step="1" value="3433">
-    <div class="cop-rate-display">
-      <span class="cop-rate-label">Tasa simulada:</span>
-      <span class="mono num cop-rate-value" id="copRateValue">$3,433.71</span>
-      <span class="cop-rate-diff" id="copRateDiff"></span>
-    </div>
-    <div class="cop-results">
-      <div class="cop-result-item">
-        <div class="cop-result-label">Total Portafolio (USD)</div>
-        <div class="mono num cop-result-value" id="copUsdVal">$0</div>
-      </div>
-      <div class="cop-result-arrow">→</div>
-      <div class="cop-result-item highlight">
-        <div class="cop-result-label">Equivalente en COP</div>
-        <div class="mono num cop-result-value" id="copValue">$0</div>
-      </div>
-    </div>
-    <div class="cop-breakdown">
-      <div class="cop-breakdown-item"><span>Crypto</span><span class="mono num" id="copCrypto">$0</span></div>
-      <div class="cop-breakdown-item"><span>Acciones</span><span class="mono num" id="copStocks">$0</span></div>
-      <div class="cop-breakdown-item"><span>Cash</span><span class="mono num" id="copCash">$0</span></div>
-    </div>
-  </div>
-</div>
-
-<article class="analyst-card">
-  <div class="analyst-header">
-    <div class="analyst-avatar">📊</div>
-    <div>
-      <div class="analyst-name">Tu Asesor Financiero</div>
-      <div class="analyst-title">Analisis mensual de tu portafolio · Renta Variable & Activos Digitales</div>
-      <div class="risk-badge">Perfil de riesgo: Moderado-Agresivo<span class="info-icon" data-tooltip-key="risk_profile">ⓘ</span></div>
-    </div>
-  </div>
-  <div class="analyst-opinion">El portafolio muestra una base solida: el DCA mensual en BTC y VOO/QQQ sigue funcionando bien porque compra disciplinadamente sin importar el ruido de corto plazo, y BTC se mantiene estable cerca de $63,700 con dominancia alta (56.4%) lo cual favorece a los holders de largo plazo. El lastre principal sigue siendo la deuda de tarjeta de credito, que debe ser la prioridad absoluta antes de abrir nuevas posiciones, y el bloque de altcoins en HOLD (SUI, SEI, ENA, AVAX, UNI) sigue debil frente a BTC en este ciclo de fear index bajo (27, zona de miedo). Recomendacion del mes: mantener el DCA de $50/$50 sin modificar, no tocar las altcoins, y usar cualquier excedente extra en pagar deuda antes de considerar las oportunidades nuevas listadas abajo.</div>
-</article>
-
-<h2 class="section-title">Oportunidades de inversión sugeridas</h2>
-<div class="opp-grid mb">
-  <div class="opp-card">
-    <div class="opp-asset">BTC (aporte extra)</div>
-    <div class="opp-reason">Con el fear index en zona de miedo (27) y BTC estable cerca de $63,700 con dominancia alta, historicamente estos niveles han sido buenos puntos de entrada adicionales para DCA oportunista.</div>
-    <div class="opp-risk">⚠ Si el sentimiento de miedo se profundiza por un shock macro, el precio podria corregir mas antes de recuperarse.</div>
-  </div>
-  <div class="opp-card">
-    <div class="opp-asset">VTI</div>
-    <div class="opp-reason">Diversifica mas alla de la concentracion en mega-cap tech de VOO/QQQ, dando exposicion a small y mid caps de EEUU en un solo ETF de bajo costo.</div>
-    <div class="opp-risk">⚠ Correlacion alta con VOO/QQQ en caidas de mercado amplias, por lo que no reduce el riesgo sistemico de EEUU.</div>
-  </div>
-  <div class="opp-card">
-    <div class="opp-asset">SMH (VanEck Semiconductor ETF)</div>
-    <div class="opp-reason">Complementa la posicion en NVDA con exposicion diversificada a toda la cadena de semiconductores de IA, cotizando en $545.58 con momentum positivo (+0.93%).</div>
-    <div class="opp-risk">⚠ Alta concentracion sectorial en tecnologia y semiconductores, vulnerable a correcciones bruscas si se enfria el ciclo de IA.</div>
-  </div>
-</div>
-
-<h2 class="section-title">En seguimiento — candidatas a comprar</h2>
-<div class="watch-grid mb">
-  <div class="watch-card asset-schd">
-    <div class="asset-header">
-      <div class="asset-name">
-        <div class="asset-icon" style="background:#f5c84222;color:#f5c842">S</div>
-        <div><div class="asset-ticker">SCHD</div><div class="asset-label">SCHD Div.</div></div>
-      </div>
-      <span class="signal-badge signal-wait">ESPERAR</span>
-    </div>
-    <div class="asset-price num">$33.55</div>
-    <div class="asset-change num pos">+1.0% <span class="asset-change-label">semana</span></div>
-    <div class="asset-context">SCHD subio 0.24% en la sesion y se mueve en linea con el rally amplio del mercado, por lo que conviene esperar una correccion antes de iniciar posicion y no perseguir el precio.</div>
-    <div class="watch-tag">👁 En observación — no posees este activo</div>
-  </div>
-  <div class="watch-card asset-vti">
-    <div class="asset-header">
-      <div class="asset-name">
-        <div class="asset-icon" style="background:#ff983822;color:#ff9838">V</div>
-        <div><div class="asset-ticker">VTI</div><div class="asset-label">VTI Total</div></div>
-      </div>
-      <span class="signal-badge signal-wait">ESPERAR</span>
-    </div>
-    <div class="asset-price num">$373.84</div>
-    <div class="asset-change num pos">+2.5% <span class="asset-change-label">semana</span></div>
-    <div class="asset-context">Total market USA, diversificacion maxima en un solo ETF</div>
-    <div class="watch-tag">👁 En observación — no posees este activo</div>
-  </div>
-</div>
-
-<h2 class="section-title">Contexto macroeconómico</h2>
-<div class="card mb">
-  <div class="macro-grid">
-    <div class="macro-item"><div class="macro-item-label">USD/COP<span class="info-icon" data-tooltip-key="trm">ⓘ</span></div><div class="macro-item-value num">$3,230.44 COP</div><div class="macro-item-sub">tasa ARQ</div></div>
-    <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value num">4.25%-4.50%</div><div class="macro-item-sub">política</div></div>
-    <div class="macro-item"><div class="macro-item-label">BTC Dom.<span class="info-icon" data-tooltip-key="btc_dominance">ⓘ</span></div><div class="macro-item-value num">56.4%</div><div class="macro-item-sub">dominancia</div></div>
-    <div class="macro-item"><div class="macro-item-label">Fear & Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-item-value num">27</div><div class="macro-item-sub">Fear</div></div>
-  </div>
-  <div class="macro-narrative">El Banco de la Republica fijo la TRM de hoy en $3,230.44, el nivel mas alto en mas de una semana, tras subir 86.3 pesos frente al dia anterior. En cripto, el Fear and Greed Index se ubica en 27 (zona de miedo), mientras la dominancia de BTC en 56.4% confirma que el capital sigue rotando hacia el activo mas seguro del ecosistema.</div>
-</div>
-
-<h2 class="section-title">Evolución del portafolio</h2>
-<div class="chart-card mb">
-  <div class="chart-header">
-    <div>
-      <div class="chart-current num">$3,131</div>
-      <div class="chart-growth pos">+4.8% desde inicio del seguimiento</div>
-    </div>
-  </div>
-  <svg viewBox="0 0 600 200" class="chart-svg" preserveAspectRatio="xMidYMid meet">
-    <defs>
-      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
-        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2 L564.0,164 L36.0,164 Z" fill="url(#areaGrad)"/>
-    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="36.0" cy="135.0" r="3.5" fill="var(--accent)"/>
-    <text x="36.0" y="125.0" text-anchor="middle" class="chart-val-label">$3.0k</text>
-    <text x="36.0" y="182" text-anchor="middle" class="chart-x-label">jun de 26</text>
-    <circle cx="168.0" cy="105.6" r="3.5" fill="var(--accent)"/>
-    <text x="168.0" y="95.6" text-anchor="middle" class="chart-val-label">$3.1k</text>
-    <text x="168.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
-    <circle cx="300.0" cy="96.5" r="3.5" fill="var(--accent)"/>
-    <text x="300.0" y="86.5" text-anchor="middle" class="chart-val-label">$3.2k</text>
-    <text x="300.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
-    <circle cx="432.0" cy="68.4" r="3.5" fill="var(--accent)"/>
-    <text x="432.0" y="58.4" text-anchor="middle" class="chart-val-label">$3.3k</text>
-    <text x="432.0" y="182" text-anchor="middle" class="chart-x-label">ago de 26</text>
-    <circle cx="564.0" cy="107.2" r="3.5" fill="var(--accent)"/>
-    <text x="564.0" y="97.2" text-anchor="middle" class="chart-val-label">$3.1k</text>
-    <text x="564.0" y="182" text-anchor="middle" class="chart-x-label">Hoy</text>
-  </svg>
 </div>
 
 <h2 class="section-title">Indicadores clave</h2>
@@ -637,6 +519,82 @@
   </div>
 </div>
 
+<article class="analyst-card">
+  <div class="analyst-header">
+    <div class="analyst-avatar">📊</div>
+    <div>
+      <div class="analyst-name">Tu Asesor Financiero</div>
+      <div class="analyst-title">Analisis mensual de tu portafolio · Renta Variable & Activos Digitales</div>
+      <div class="risk-badge">Perfil de riesgo: Moderado-Agresivo<span class="info-icon" data-tooltip-key="risk_profile">ⓘ</span></div>
+    </div>
+  </div>
+  <div class="analyst-opinion">El portafolio muestra una base solida: el DCA mensual en BTC y VOO/QQQ sigue funcionando bien porque compra disciplinadamente sin importar el ruido de corto plazo, y BTC se mantiene estable cerca de $63,700 con dominancia alta (56.4%) lo cual favorece a los holders de largo plazo. El lastre principal sigue siendo la deuda de tarjeta de credito, que debe ser la prioridad absoluta antes de abrir nuevas posiciones, y el bloque de altcoins en HOLD (SUI, SEI, ENA, AVAX, UNI) sigue debil frente a BTC en este ciclo de fear index bajo (27, zona de miedo). Recomendacion del mes: mantener el DCA de $50/$50 sin modificar, no tocar las altcoins, y usar cualquier excedente extra en pagar deuda antes de considerar las oportunidades nuevas listadas abajo.</div>
+</article>
+
+<h2 class="section-title">Decisiones para este mes</h2>
+<div class="decision-card mb">
+  <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
+  <div class="decision-empty">Este mes no hay decisiones puntuales fuera de lo ya establecido — sigue el plan: DCA de $50/$50 sin cambios y prioriza pagar la deuda de tarjeta con cualquier excedente. Ver el detalle en la opinión del asesor arriba.</div>
+</div>
+
+<h2 class="section-title">Oportunidades de inversión sugeridas</h2>
+<div class="opp-grid mb">
+  <div class="opp-card">
+    <div class="opp-asset">BTC (aporte extra)</div>
+    <div class="opp-reason">Con el fear index en zona de miedo (27) y BTC estable cerca de $63,700 con dominancia alta, historicamente estos niveles han sido buenos puntos de entrada adicionales para DCA oportunista.</div>
+    <div class="opp-risk">⚠ Si el sentimiento de miedo se profundiza por un shock macro, el precio podria corregir mas antes de recuperarse.</div>
+  </div>
+  <div class="opp-card">
+    <div class="opp-asset">VTI</div>
+    <div class="opp-reason">Diversifica mas alla de la concentracion en mega-cap tech de VOO/QQQ, dando exposicion a small y mid caps de EEUU en un solo ETF de bajo costo.</div>
+    <div class="opp-risk">⚠ Correlacion alta con VOO/QQQ en caidas de mercado amplias, por lo que no reduce el riesgo sistemico de EEUU.</div>
+  </div>
+  <div class="opp-card">
+    <div class="opp-asset">SMH (VanEck Semiconductor ETF)</div>
+    <div class="opp-reason">Complementa la posicion en NVDA con exposicion diversificada a toda la cadena de semiconductores de IA, cotizando en $545.58 con momentum positivo (+0.93%).</div>
+    <div class="opp-risk">⚠ Alta concentracion sectorial en tecnologia y semiconductores, vulnerable a correcciones bruscas si se enfria el ciclo de IA.</div>
+  </div>
+</div>
+
+<h2 class="section-title">Evolución del portafolio</h2>
+<div class="chart-card mb">
+  <div class="chart-header">
+    <div>
+      <div class="chart-current num">$3,131</div>
+      <div class="chart-growth pos">+4.8% desde inicio del seguimiento</div>
+    </div>
+  </div>
+  <svg viewBox="0 0 600 200" class="chart-svg" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2 L564.0,164 L36.0,164 Z" fill="url(#areaGrad)"/>
+    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="36.0" cy="135.0" r="3.5" fill="var(--accent)"/>
+    <text x="36.0" y="125.0" text-anchor="middle" class="chart-val-label">$3.0k</text>
+    <text x="36.0" y="182" text-anchor="middle" class="chart-x-label">jun de 26</text>
+    <circle cx="168.0" cy="105.6" r="3.5" fill="var(--accent)"/>
+    <text x="168.0" y="95.6" text-anchor="middle" class="chart-val-label">$3.1k</text>
+    <text x="168.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
+    <circle cx="300.0" cy="96.5" r="3.5" fill="var(--accent)"/>
+    <text x="300.0" y="86.5" text-anchor="middle" class="chart-val-label">$3.2k</text>
+    <text x="300.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
+    <circle cx="432.0" cy="68.4" r="3.5" fill="var(--accent)"/>
+    <text x="432.0" y="58.4" text-anchor="middle" class="chart-val-label">$3.3k</text>
+    <text x="432.0" y="182" text-anchor="middle" class="chart-x-label">ago de 26</text>
+    <circle cx="564.0" cy="107.2" r="3.5" fill="var(--accent)"/>
+    <text x="564.0" y="97.2" text-anchor="middle" class="chart-val-label">$3.1k</text>
+    <text x="564.0" y="182" text-anchor="middle" class="chart-x-label">Hoy</text>
+  </svg>
+</div>
+
+</div><!-- /tab-resumen -->
+
+<div class="tab-panel" id="tab-activos" data-tab="activos" role="tabpanel">
+
 <h2 class="section-title">Señales de mercado</h2>
 <div class="signals-group">
   <div class="signals-group-title">📈 Acciones individuales</div>
@@ -662,6 +620,7 @@
     </div>
     <div class="asset-price num"></div>
     <div class="asset-change num"></div>
+    <div class="asset-holdings"><span class="asset-holdings-label">Tienes</span><span class="mono num asset-holdings-qty"></span></div>
     <div class="price-compare">
       <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num"></span></div>
       <span class="pc-arrow">→</span>
@@ -676,6 +635,36 @@
     <div class="asset-context"></div>
   </div>
 </template>
+
+<h2 class="section-title">En seguimiento — candidatas a comprar</h2>
+<div class="watch-grid mb">
+  <div class="watch-card asset-schd">
+    <div class="asset-header">
+      <div class="asset-name">
+        <div class="asset-icon" style="background:#f5c84222;color:#f5c842">S</div>
+        <div><div class="asset-ticker">SCHD</div><div class="asset-label">SCHD Div.</div></div>
+      </div>
+      <span class="signal-badge signal-wait">ESPERAR</span>
+    </div>
+    <div class="asset-price num">$33.55</div>
+    <div class="asset-change num pos">+1.0% <span class="asset-change-label">semana</span></div>
+    <div class="asset-context">SCHD subio 0.24% en la sesion y se mueve en linea con el rally amplio del mercado, por lo que conviene esperar una correccion antes de iniciar posicion y no perseguir el precio.</div>
+    <div class="watch-tag">👁 En observación — no posees este activo</div>
+  </div>
+  <div class="watch-card asset-vti">
+    <div class="asset-header">
+      <div class="asset-name">
+        <div class="asset-icon" style="background:#ff983822;color:#ff9838">V</div>
+        <div><div class="asset-ticker">VTI</div><div class="asset-label">VTI Total</div></div>
+      </div>
+      <span class="signal-badge signal-wait">ESPERAR</span>
+    </div>
+    <div class="asset-price num">$373.84</div>
+    <div class="asset-change num pos">+2.5% <span class="asset-change-label">semana</span></div>
+    <div class="asset-context">Total market USA, diversificacion maxima en un solo ETF</div>
+    <div class="watch-tag">👁 En observación — no posees este activo</div>
+  </div>
+</div>
 
 <h2 class="section-title">Rendimiento detallado</h2>
 <div class="pnl-grid mb">
@@ -731,48 +720,9 @@
   </div>
 </template>
 
-<h2 class="section-title">Asignación objetivo vs real<span class="info-icon" data-tooltip-key="risk_profile">ⓘ</span></h2>
-<div class="card mb">
-  <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
-  <div class="alloc-row">
-    <div class="alloc-label"><span class="comp-dot" style="background:#f7931a"></span>Bitcoin</div>
-    <div class="alloc-bars">
-      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:35.4%;background:#f7931a"></div><div class="alloc-bar-target" style="left:30%"></div></div>
-    </div>
-    <div class="alloc-nums mono num">35.4% <span class="text-muted">/ 30%</span></div>
-    <div class="alloc-gap mono num neg">-5.4pp</div>
-  </div>
-  <div class="alloc-row">
-    <div class="alloc-label"><span class="comp-dot" style="background:#00d4a0"></span>ETFs</div>
-    <div class="alloc-bars">
-      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:0%;background:#00d4a0"></div><div class="alloc-bar-target" style="left:30%"></div></div>
-    </div>
-    <div class="alloc-nums mono num">0% <span class="text-muted">/ 30%</span></div>
-    <div class="alloc-gap mono num pos">+30.0pp</div>
-  </div>
-  <div class="alloc-row">
-    <div class="alloc-label"><span class="comp-dot" style="background:#4d8fff"></span>Acciones indiv.</div>
-    <div class="alloc-bars">
-      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:21.7%;background:#4d8fff"></div><div class="alloc-bar-target" style="left:25%"></div></div>
-    </div>
-    <div class="alloc-nums mono num">21.7% <span class="text-muted">/ 25%</span></div>
-    <div class="alloc-gap mono num pos">+3.3pp</div>
-  </div>
-  <div class="alloc-row">
-    <div class="alloc-label"><span class="comp-dot" style="background:#8b6dff"></span>Altcoins (HOLD)</div>
-    <div class="alloc-bars">
-      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:42.9%;background:#8b6dff"></div><div class="alloc-bar-target" style="left:15%"></div></div>
-    </div>
-    <div class="alloc-nums mono num">42.9% <span class="text-muted">/ 15%</span></div>
-    <div class="alloc-gap mono num neg">-27.9pp</div>
-  </div>
-  <div class="alloc-hint">💡 Tu proxima inversion deberia priorizar <strong>ETFs</strong> (30.0 puntos por debajo del objetivo). Edita tus objetivos en portfolio.json → targets.</div>
-</div>
+</div><!-- /tab-activos -->
 
-<h2 class="section-title">Decisiones para este mes</h2>
-<div class="decision-card mb">
-  <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
-</div>
+<div class="tab-panel" id="tab-transacciones" data-tab="transacciones" role="tabpanel">
 
 <div class="three-col">
   <div class="card"><h3 class="section-title">DCA Tracker<span class="info-icon" data-tooltip-key="dca">ⓘ</span></h3>
@@ -818,6 +768,96 @@
     <div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div>
   </div></div>
 </div>
+
+</div><!-- /tab-transacciones -->
+
+<div class="tab-panel" id="tab-analisis" data-tab="analisis" role="tabpanel">
+
+<h2 class="section-title">Asignación objetivo vs real<span class="info-icon" data-tooltip-key="risk_profile">ⓘ</span></h2>
+<div class="card mb">
+  <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#f7931a"></span>Bitcoin</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:35.4%;background:#f7931a"></div><div class="alloc-bar-target" style="left:30%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">35.4% <span class="text-muted">/ 30%</span></div>
+    <div class="alloc-gap mono num neg">-5.4pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#00d4a0"></span>ETFs</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:0%;background:#00d4a0"></div><div class="alloc-bar-target" style="left:30%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">0% <span class="text-muted">/ 30%</span></div>
+    <div class="alloc-gap mono num pos">+30.0pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#4d8fff"></span>Acciones indiv.</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:21.7%;background:#4d8fff"></div><div class="alloc-bar-target" style="left:25%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">21.7% <span class="text-muted">/ 25%</span></div>
+    <div class="alloc-gap mono num pos">+3.3pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#8b6dff"></span>Altcoins (HOLD)</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:42.9%;background:#8b6dff"></div><div class="alloc-bar-target" style="left:15%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">42.9% <span class="text-muted">/ 15%</span></div>
+    <div class="alloc-gap mono num neg">-27.9pp</div>
+  </div>
+  <div class="alloc-hint">💡 Tu proxima inversion deberia priorizar <strong>ETFs</strong> (30.0 puntos por debajo del objetivo). Edita tus objetivos en portfolio.json → targets.</div>
+</div>
+
+<h2 class="section-title">Contexto macroeconómico</h2>
+<div class="card mb">
+  <div class="macro-grid">
+    <div class="macro-item"><div class="macro-item-label">USD/COP<span class="info-icon" data-tooltip-key="trm">ⓘ</span></div><div class="macro-item-value num">$3,230.44 COP</div><div class="macro-item-sub">tasa ARQ</div></div>
+    <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value num">4.25%-4.50%</div><div class="macro-item-sub">política</div></div>
+    <div class="macro-item"><div class="macro-item-label">BTC Dom.<span class="info-icon" data-tooltip-key="btc_dominance">ⓘ</span></div><div class="macro-item-value num">56.4%</div><div class="macro-item-sub">dominancia</div></div>
+    <div class="macro-item"><div class="macro-item-label">Fear & Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-item-value num">27</div><div class="macro-item-sub">Fear</div></div>
+  </div>
+  <div class="macro-narrative">El Banco de la Republica fijo la TRM de hoy en $3,230.44, el nivel mas alto en mas de una semana, tras subir 86.3 pesos frente al dia anterior. En cripto, el Fear and Greed Index se ubica en 27 (zona de miedo), mientras la dominancia de BTC en 56.4% confirma que el capital sigue rotando hacia el activo mas seguro del ecosistema.</div>
+</div>
+
+<h2 class="section-title">Simulador de conversión a pesos</h2>
+<div class="card mb">
+  <div class="cop-widget">
+    <div class="cop-header">
+      <div>
+        <div class="cop-current-rate">TRM actual: <span class="mono num" id="copBaseRate">$0</span> COP</div>
+        <div class="cop-sub">Desliza para simular distintos escenarios de tasa de cambio</div>
+      </div>
+      <button class="cop-reset" onclick="resetCopRate()">↺ Restablecer</button>
+    </div>
+    <input type="range" id="copSlider" class="cop-slider" min="2800" max="4500" step="1" value="3433">
+    <div class="cop-rate-display">
+      <span class="cop-rate-label">Tasa simulada:</span>
+      <span class="mono num cop-rate-value" id="copRateValue">$3,433.71</span>
+      <span class="cop-rate-diff" id="copRateDiff"></span>
+    </div>
+    <div class="cop-results">
+      <div class="cop-result-item">
+        <div class="cop-result-label">Total Portafolio (USD)</div>
+        <div class="mono num cop-result-value" id="copUsdVal">$0</div>
+      </div>
+      <div class="cop-result-arrow">→</div>
+      <div class="cop-result-item highlight">
+        <div class="cop-result-label">Equivalente en COP</div>
+        <div class="mono num cop-result-value" id="copValue">$0</div>
+      </div>
+    </div>
+    <div class="cop-breakdown">
+      <div class="cop-breakdown-item"><span>Crypto</span><span class="mono num" id="copCrypto">$0</span></div>
+      <div class="cop-breakdown-item"><span>Acciones</span><span class="mono num" id="copStocks">$0</span></div>
+      <div class="cop-breakdown-item"><span>Cash</span><span class="mono num" id="copCash">$0</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tab-analisis -->
 
 <footer>Market Intelligence v21 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · martes, 4 de agosto de 2026, 3:14 p. m.</footer>
 
@@ -1049,10 +1089,32 @@ function renderAssets() {
     deltaEl.textContent = (parseFloat(asset.delta) >= 0 ? '↑' : '↓') + ' $' + Math.abs(asset.delta);
     deltaEl.className = 'delta ' + (parseFloat(asset.delta) >= 0 ? 'pos' : 'neg');
 
+    const holding = EXISTING_ASSETS[asset.ticker.toLowerCase()];
+    if (holding) {
+      clone.querySelector('.asset-holdings-qty').textContent = formatQty(holding.qty);
+    } else {
+      clone.querySelector('.asset-holdings').style.display = 'none';
+    }
+
     clone.querySelector('.asset-context').textContent = asset.context;
 
     if (asset.type === 'stock') stocksContainer.appendChild(clone);
     else cryptoContainer.appendChild(clone);
+  });
+}
+
+function formatQty(qty) {
+  if (qty >= 1000) return qty.toLocaleString('es-CO', { maximumFractionDigits: 0 });
+  if (qty >= 1) return qty.toLocaleString('es-CO', { maximumFractionDigits: 4 });
+  return qty.toLocaleString('es-CO', { maximumFractionDigits: 6 });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === name));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const isActive = b.getAttribute('aria-controls') === 'tab-' + name;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
 }
 
@@ -1163,6 +1225,8 @@ function exportPDF() {
   };
   const el = document.body.cloneNode(true);
   const stickyClone = el.querySelector('.sticky-bar'); if (stickyClone) stickyClone.remove();
+  const tabsNavClone = el.querySelector('.tabs-nav'); if (tabsNavClone) tabsNavClone.remove();
+  el.querySelectorAll('.tab-panel').forEach(p => { p.style.display = 'block'; });
   el.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   html2pdf().set(opt).from(el).save().then(() => { btn.textContent = '⬇ PDF'; }).catch(() => { btn.textContent = '⬇ PDF'; });
 }
