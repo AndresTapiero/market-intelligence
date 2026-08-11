@@ -357,11 +357,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // === SUPABASE CONFIG ===
+// Credenciales públicas (anon key) — seguras por RLS en la base de datos
 const SUPABASE_URL = 'https://mglcfwkmwblihbpnjuwb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nbGNmd2ttd2JsaWhicG5qdXdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAyMDY0MDksImV4cCI6MjAzNTc4MjQwOX0.bBYDgKt0S3pKvI0-U5PzwRaHBn9GjNuW3MH7MvFzlXc';
-const USER_ID = '56272fef-8fd2-4adf-af86-ff9ed10cbed1';
 
 let supabase = null;
+let currentUser = null;
 
 // Inicializar Supabase
 async function initSupabase() {
@@ -370,46 +371,86 @@ async function initSupabase() {
   const { createClient } = window.supabase;
   supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  console.log('✅ Supabase conectado');
-  await loadSupabaseData();
+  console.log('✅ Supabase inicializado');
+
+  // Obtener sesión actual (si existe)
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    console.log('✅ Usuario autenticado:', currentUser.email);
+    await loadSupabaseData();
+  } else {
+    console.log('ℹ️ No hay sesión. Usa credenciales de prueba:');
+    console.log('   Email: andrestapiero@gmail.com');
+    console.log('   Contraseña: (ver Supabase)');
+    // Para desarrollo: autenticar con credenciales fijas
+    await autoLoginDev();
+  }
+
   return supabase;
 }
 
-// Cargar datos de Supabase
+// Login de desarrollo (solo para pruebas)
+async function autoLoginDev() {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: 'andrestapiero@gmail.com',
+      password: 'TestPassword123!' // Cambiar en producción
+    });
+
+    if (error) {
+      console.warn('⚠️ Login de desarrollo falló:', error.message);
+      console.log('💡 Para autenticación, primero registra el usuario en Supabase');
+      return;
+    }
+
+    currentUser = data.user;
+    console.log('✅ Autenticado como:', currentUser.email);
+    await loadSupabaseData();
+  } catch (err) {
+    console.warn('⚠️ Error en login:', err.message);
+  }
+}
+
+// Cargar datos de Supabase (RLS automáticamente filtra por usuario)
 async function loadSupabaseData() {
   try {
-    if (!supabase) return;
+    if (!supabase || !currentUser) return;
+
+    const userId = currentUser.id;
 
     const { data: journal, error: journalErr } = await supabase
       .from('inv_journal')
       .select('*')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .order('fecha', { ascending: false });
 
     const { data: exits, error: exitsErr } = await supabase
       .from('inv_journal_exits')
       .select('*')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .order('fecha_salida', { ascending: false });
 
     if (!journalErr && !exitsErr) {
       sessionStorage.setItem('supabase_journal', JSON.stringify(journal || []));
       sessionStorage.setItem('supabase_exits', JSON.stringify(exits || []));
-      console.log(`✅ Supabase: ${journal?.length || 0} compras, ${exits?.length || 0} ventas`);
+      console.log(`✅ Datos cargados: ${journal?.length || 0} compras, ${exits?.length || 0} ventas`);
     } else {
       console.warn('⚠️ Error cargando datos:', journalErr?.message || exitsErr?.message);
     }
   } catch (err) {
-    console.warn('⚠️ No se pudo conectar a Supabase:', err.message);
+    console.warn('⚠️ No se pudo cargar datos:', err.message);
   }
 }
 
-// Registrar compra en Supabase
+// Registrar compra en Supabase (RLS valida que sea el usuario actual)
 async function registerBuy(ticker, quantity, price, type, fundamento) {
-  if (!supabase) await initSupabase();
+  if (!supabase || !currentUser) {
+    throw new Error('No autenticado');
+  }
 
   const entry = {
-    user_id: USER_ID,
+    user_id: currentUser.id,
     fecha: new Date().toISOString().split('T')[0],
     ticker: ticker.toUpperCase(),
     categoria: 'satelite',
@@ -429,7 +470,7 @@ async function registerBuy(ticker, quantity, price, type, fundamento) {
       .select();
 
     if (error) throw error;
-    console.log('✅ Compra registrada en Supabase:', data);
+    console.log('✅ Compra registrada:', data);
     return { success: true, data };
   } catch (err) {
     console.warn('⚠️ Error registrando compra:', err.message);
@@ -437,14 +478,16 @@ async function registerBuy(ticker, quantity, price, type, fundamento) {
   }
 }
 
-// Registrar venta en Supabase
+// Registrar venta en Supabase (RLS valida que sea el usuario actual)
 async function registerSale(ticker, quantity, price, reason, observations) {
-  if (!supabase) await initSupabase();
+  if (!supabase || !currentUser) {
+    throw new Error('No autenticado');
+  }
 
   const montoBruto = quantity * price;
 
   const entry = {
-    user_id: USER_ID,
+    user_id: currentUser.id,
     fecha_salida: new Date().toISOString().split('T')[0],
     ticker: ticker.toUpperCase(),
     numero_acciones_vendidas: quantity,
@@ -464,7 +507,7 @@ async function registerSale(ticker, quantity, price, reason, observations) {
       .select();
 
     if (error) throw error;
-    console.log('✅ Venta registrada en Supabase:', data);
+    console.log('✅ Venta registrada:', data);
     return { success: true, data };
   } catch (err) {
     console.warn('⚠️ Error registrando venta:', err.message);
@@ -472,8 +515,41 @@ async function registerSale(ticker, quantity, price, reason, observations) {
   }
 }
 
+// Logout
+async function logout() {
+  if (supabase) {
+    await supabase.auth.signOut();
+    currentUser = null;
+    location.reload();
+  }
+}
+
+// Actualizar estado de autenticación en UI
+function updateAuthStatus() {
+  const statusEl = document.getElementById('authStatus');
+  if (!statusEl) return;
+
+  if (currentUser) {
+    statusEl.textContent = `👤 ${currentUser.email}`;
+    statusEl.style.cursor = 'pointer';
+    statusEl.onclick = logout;
+  } else {
+    statusEl.textContent = '⚠️ No autenticado';
+  }
+}
+
+// Interceptar después de login
+const originalInit = initSupabase;
+window.initSupabase = async function() {
+  await originalInit();
+  updateAuthStatus();
+};
+
 // Inicializar al cargar la página
-window.addEventListener('load', initSupabase);
+window.addEventListener('load', async () => {
+  await initSupabase();
+  updateAuthStatus();
+});
 </script>
 </head>
 <body>
@@ -491,6 +567,7 @@ window.addEventListener('load', initSupabase);
     <button class="buy-btn" onclick="openSellModal()">📤 Registrar venta</button>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
     <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
+    <span id="authStatus" style="font-size:11px; color:var(--text-muted); margin-left:16px;">⏳ Conectando...</span>
   </div>
 </div>
 
