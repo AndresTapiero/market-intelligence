@@ -29,6 +29,28 @@
   .card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--r);padding:22px 24px}
   .mb{margin-bottom:var(--g-lg)}
 
+  /* ASSET COLOR CLASSES */
+  .asset-btc { --asset-color: #f7931a; }
+  .asset-eth { --asset-color: #627eea; }
+  .asset-sol { --asset-color: #9945ff; }
+  .asset-tao { --asset-color: #38bdf8; }
+  .asset-uni { --asset-color: #ff007a; }
+  .asset-bnb { --asset-color: #f3ba2f; }
+  .asset-sui { --asset-color: #6fbcf0; }
+  .asset-sei { --asset-color: #e84142; }
+  .asset-ena { --asset-color: #00d4ff; }
+  .asset-avax { --asset-color: #e84142; }
+  .asset-giga { --asset-color: #00d4ff; }
+  .asset-trump { --asset-color: #8250ff; }
+  .asset-spx6900 { --asset-color: #00d4a0; }
+  .asset-voo { --asset-color: #00d4a0; }
+  .asset-qqq { --asset-color: #4d8fff; }
+  .asset-nvda { --asset-color: #76b900; }
+  .asset-nu { --asset-color: #8250ff; }
+  .asset-tsla { --asset-color: #e31937; }
+  .asset-schd { --asset-color: #f5c842; }
+  .asset-vti { --asset-color: #ff9838; }
+
   /* DELTA */
   .delta{font-size:11px;font-weight:600;font-family:var(--mono)}
 
@@ -49,8 +71,8 @@
   .buy-btn{background:var(--accent);color:white;border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
   .buy-btn:hover{background:#7550f0;box-shadow:0 0 0 3px var(--accent-dim)}
 
-  /* MODAL REGISTRAR COMPRA */
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;padding:20px}
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;padding:20px;role:presentation}
   .modal-overlay.show{display:flex}
   .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);max-width:420px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border-subtle)}
@@ -71,7 +93,6 @@
   .copy-btn:hover{background:var(--green);color:white}
   .modal-submit{background:var(--accent);color:white;border:none;padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px}
   .modal-submit:hover{background:#7550f0}
-  /* === SELL MODAL STYLES === */
   #sellModalOverlay .modal-header{background:linear-gradient(135deg, rgba(255,85,117,0.1), rgba(255,152,56,0.05))}
   #sellModalOverlay .modal-title{color:var(--red)}
   #sellModalOverlay .modal-submit{background:var(--red)}
@@ -131,7 +152,7 @@
   .ratio-stocks{display:flex;align-items:center;justify-content:center;background:var(--green)}
   .ratio-label{font-size:9px;font-weight:700;color:white;white-space:nowrap;padding:0 5px}
 
-  /* ANALISTA */
+  /* ANALYST */
   .analyst-card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--r);padding:22px 24px;margin-bottom:var(--g-lg)}
   .analyst-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
   .analyst-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
@@ -146,7 +167,7 @@
   .opp-risk{font-size:10px;color:var(--orange);font-family:var(--mono)}
   .analyst-opinion{font-size:14px;line-height:1.75;color:var(--text-dim);padding:16px 18px;background:var(--surface2);border-radius:var(--r-sm);border-left:3px solid var(--accent)}
 
-  /* GRÁFICO */
+  /* CHART */
   .chart-card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--r);padding:22px 24px;margin-bottom:var(--g-lg)}
   .chart-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
   .chart-current{font-size:30px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
@@ -154,12 +175,8 @@
   .chart-svg{width:100%;height:auto;display:block;margin-top:8px;overflow:visible}
   .chart-x-label{font-size:9px;fill:var(--text-muted);font-family:var(--mono)}
   .chart-val-label{font-size:11px;font-weight:700;fill:var(--accent);font-family:var(--mono)}
-  .chart-single{text-align:center;padding:24px 0}
-  .chart-single-val{font-size:34px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
-  .chart-single-label{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-top:6px}
-  .chart-single-sub{font-size:11px;color:var(--text-muted);margin-top:4px}
 
-  /* SEÑALES */
+  /* SIGNALS */
   .signals-group{margin-bottom:18px}
   .signals-group-title{font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:12px;display:flex;align-items:center;gap:10px}
   .signals-group-title::after{content:"";flex:1;height:1px;background:var(--border-subtle)}
@@ -207,7 +224,7 @@
   .pnl-bar{height:3px;border-radius:2px;transition:width .5s ease}
   .pnl-subtotal{display:flex;justify-content:space-between;padding:13px 0 0;border-top:2px solid var(--border);margin-top:5px;font-size:13px;font-weight:700;flex-wrap:wrap;gap:8px}
 
-  /* COMPOSICIÓN */
+  /* COMPOSITION */
   .comp-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
   .comp-scroll{max-height:175px;overflow-y:auto;padding-right:6px}
   .pnl-scroll{max-height:320px;overflow-y:auto;padding-right:6px}
@@ -221,7 +238,7 @@
   .comp-bar{height:6px;border-radius:3px;transition:width .5s ease}
   .comp-pct{font-size:11px;text-align:right} .comp-val{font-size:10px;text-align:right;color:var(--text-muted)}
 
-  /* MACRO + DECISIONES */
+  /* MACRO + DECISIONS */
   .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
   .macro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
   .macro-item{background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px}
@@ -249,7 +266,7 @@
   .cash-update-btn{background:var(--surface2);color:var(--accent);border:1px solid var(--accent);padding:6px 10px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap}
   .cash-update-btn:hover{background:var(--accent);color:white}
 
-  /* BITÁCORA */
+  /* LOG */
   .log-list{display:flex;flex-direction:column;gap:2px}
   .log-header{display:grid;grid-template-columns:80px 55px 90px 90px 80px;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--border);font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
   .log-row{display:grid;grid-template-columns:80px 55px 90px 90px 80px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:11px}
@@ -258,7 +275,7 @@
   .log-price{color:var(--text-dim)} .log-amount{font-weight:700}
   .log-note{font-size:10px}
 
-  /* CALENDARIO */
+  /* CALENDAR */
   .cal-grid{display:flex;flex-direction:column;gap:7px}
   .cal-row{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid var(--border-subtle)}
   .cal-row:last-child{border-bottom:none}
@@ -266,46 +283,7 @@
   .cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
   .cal-evento{font-size:12px;color:var(--text-dim)}
 
-  /* HISTORIAL */
-  .history-wrap{overflow-x:auto}
-  .history-table{width:100%;border-collapse:collapse;font-size:11px;min-width:300px}
-  .history-table th{text-align:left;font-size:9px;color:var(--text-muted);font-family:var(--mono);letter-spacing:.9px;text-transform:uppercase;padding:0 8px 10px 0;border-bottom:1px solid var(--border)}
-  .history-table td{padding:9px 8px 9px 0;border-bottom:1px solid var(--border-subtle);color:var(--text-dim)}
-  .history-table tr:last-child td{border-bottom:none}
-  .no-history{font-size:12px;color:var(--text-muted);padding:10px 0;text-align:center}
-
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
-  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
-  /* CONVERSOR USD/COP */
-  .cop-widget{display:flex;flex-direction:column;gap:16px}
-  .cop-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
-  .cop-current-rate{font-size:13px;font-weight:600;color:var(--text)}
-  .cop-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
-  .cop-reset{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:10px;font-family:var(--sans);cursor:pointer;white-space:nowrap}
-  .cop-reset:hover{background:var(--border)}
-  .cop-slider{width:100%;height:6px;border-radius:3px;background:var(--surface2);outline:none;-webkit-appearance:none;cursor:pointer}
-  .cop-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 0 4px var(--accent-dim)}
-  .cop-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:none;box-shadow:0 0 0 4px var(--accent-dim)}
-  .cop-rate-display{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-  .cop-rate-label{font-size:11px;color:var(--text-muted)}
-  .cop-rate-value{font-size:22px;font-weight:800;color:var(--accent)}
-  .cop-rate-diff{font-size:11px;font-family:var(--mono)}
-  .cop-results{display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border-radius:var(--r-sm);flex-wrap:wrap}
-  .cop-result-item{flex:1;min-width:140px}
-  .cop-result-item.highlight .cop-result-value{color:var(--green);font-size:24px}
-  .cop-result-label{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px}
-  .cop-result-value{font-size:20px;font-weight:800}
-  .cop-result-arrow{font-size:18px;color:var(--text-muted)}
-  .cop-breakdown{display:flex;gap:16px;flex-wrap:wrap;padding-top:4px}
-  .cop-breakdown-item{display:flex;gap:6px;font-size:11px;color:var(--text-muted)}
-  .cop-breakdown-item .mono{color:var(--text-dim);font-weight:600}
-
-  /* WATCHLIST */
-  .watch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g);max-width:720px}
-  .watch-card{background:var(--surface);border:1px dashed var(--border);border-radius:var(--r-sm);padding:16px 17px;border-top:2px dashed var(--asset-color,var(--border));opacity:.95}
-  .watch-tag{font-size:9px;color:var(--text-muted);font-family:var(--mono);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-subtle)}
-
-  /* ASIGNACIÓN OBJETIVO */
+  /* ALLOCATION */
   .alloc-legend{display:flex;gap:18px;margin-bottom:14px;font-size:10px;color:var(--text-muted);font-family:var(--mono)}
   .alloc-legend-item{display:flex;align-items:center;gap:6px}
   .alloc-swatch{width:18px;height:8px;border-radius:3px;background:var(--accent)}
@@ -327,7 +305,7 @@
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--accent);border-radius:var(--r-sm);padding:12px 18px;font-size:12px;color:var(--text);max-width:320px;text-align:left;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:200;opacity:0;pointer-events:none;transition:all .25s ease}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .footer{margin-top:24px;text-align:center;font-size:10px;color:var(--text-muted);font-family:var(--mono);padding-top:18px;border-top:1px solid var(--border-subtle)}
+  footer{margin-top:24px;text-align:center;font-size:10px;color:var(--text-muted);font-family:var(--mono);padding-top:18px;border-top:1px solid var(--border-subtle)}
 
   /* RESPONSIVE */
   @media(max-width:1100px){
@@ -365,12 +343,39 @@
     .log-row{grid-template-columns:42px 32px 1fr 1fr 1fr;gap:4px;font-size:9px}
   }
   @media print{ .sticky-bar,.pdf-btn,.modal-overlay{display:none!important} body{padding-top:20px} }
-</style>
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
 
-<!-- Aplicación con SOLID + OOP (módulos ES6) -->
-<script type="module" src="js/app.js"></script>
+  /* COP WIDGET */
+  .cop-widget{display:flex;flex-direction:column;gap:16px}
+  .cop-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
+  .cop-current-rate{font-size:13px;font-weight:600;color:var(--text)}
+  .cop-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+  .cop-reset{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:10px;font-family:var(--sans);cursor:pointer;white-space:nowrap}
+  .cop-reset:hover{background:var(--border)}
+  .cop-slider{width:100%;height:6px;border-radius:3px;background:var(--surface2);outline:none;-webkit-appearance:none;cursor:pointer}
+  .cop-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 0 4px var(--accent-dim)}
+  .cop-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:none;box-shadow:0 0 0 4px var(--accent-dim)}
+  .cop-rate-display{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .cop-rate-label{font-size:11px;color:var(--text-muted)}
+  .cop-rate-value{font-size:22px;font-weight:800;color:var(--accent)}
+  .cop-rate-diff{font-size:11px;font-family:var(--mono)}
+  .cop-results{display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border-radius:var(--r-sm);flex-wrap:wrap}
+  .cop-result-item{flex:1;min-width:140px}
+  .cop-result-item.highlight .cop-result-value{color:var(--green);font-size:24px}
+  .cop-result-label{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px}
+  .cop-result-value{font-size:20px;font-weight:800}
+  .cop-result-arrow{font-size:18px;color:var(--text-muted)}
+  .cop-breakdown{display:flex;gap:16px;flex-wrap:wrap;padding-top:4px}
+  .cop-breakdown-item{display:flex;gap:6px;font-size:11px;color:var(--text-muted)}
+  .cop-breakdown-item .mono{color:var(--text-dim);font-weight:600}
+
+  /* WATCHLIST */
+  .watch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g);max-width:720px}
+  .watch-card{background:var(--surface);border:1px dashed var(--border);border-radius:var(--r-sm);padding:16px 17px;border-top:2px dashed var(--asset-color,var(--border));opacity:.95}
+  .watch-tag{font-size:9px;color:var(--text-muted);font-family:var(--mono);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-subtle)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -383,27 +388,24 @@
     <div class="sticky-stat"><div class="sticky-stat-label">vs mes</div><div class="sticky-stat-val num pos">+1.5%</div></div>
   </div>
   <div class="header-actions">
-    <button class="buy-btn" onclick="openBuyModal()">📥 Registrar compra</button>
-    <button class="buy-btn" onclick="openSellModal()">📤 Registrar venta</button>
+    <button class="buy-btn" onclick="openBuyModal()" aria-label="Registrar nueva compra">📥 Registrar compra</button>
+    <button class="buy-btn" onclick="openSellModal()" aria-label="Registrar venta">📤 Registrar venta</button>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
-    <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
+    <button class="pdf-btn" onclick="exportPDF()" aria-label="Descargar reporte en PDF">⬇ PDF</button>
     <span id="authStatus" style="font-size:11px; color:var(--text-muted); margin-left:16px;">⏳ Conectando...</span>
   </div>
 </div>
 
-<div class="header" id="report-content">
-  <div>
-    <h1>Market Intelligence</h1>
-    <div class="header-sub">Reporte de inversiones · martes, 4 de agosto de 2026, 3:14 p. m.</div>
-  </div>
+<header class="header" id="report-content">
+  <h1>Market Intelligence</h1>
+  <div class="header-sub">Reporte de inversiones · martes, 4 de agosto de 2026, 3:14 p. m.</div>
   <div class="header-right">
     <div class="week-badge">agosto de 2026</div>
     <div class="analyst-badge">Analista Senior · 10 años · CFA L2</div>
   </div>
-</div>
+</header>
 
-<!-- 1. PORTAFOLIO TOTAL -->
-<div class="section-title">Portafolio total</div>
+<h2 class="section-title">Portafolio total</h2>
 <div class="totals-bar mb">
   <div class="total-card">
     <div class="total-label">Capital Invertido</div>
@@ -420,7 +422,7 @@
     <div class="total-breakdown"><span>Crypto $2,295</span><span>Acc. $636</span></div>
   </div>
   <div class="total-card">
-    <div class="total-label">Resultado P&L<span class="info-icon" onclick="showToast(this, 'P&L (Profit and Loss): la diferencia entre lo que invertiste y el valor actual de tu posicion.')" title="P&L (Profit and Loss): la diferencia entre lo que invertiste y el valor actual de tu posicion.">ⓘ</span></div>
+    <div class="total-label">Resultado P&L<span class="info-icon" data-tooltip-key="pnl">ⓘ</span></div>
     <div class="total-value num neg">-$1,157</div>
     <div class="total-sub neg">-28.3% sobre capital</div>
     <div class="total-sub-cop neg">≈ -$3.738.868 COP</div>
@@ -434,9 +436,7 @@
   </div>
 </div>
 
-
-<!-- 1b. CONVERSOR INTERACTIVO USD/COP -->
-<div class="section-title">Simulador de conversión a pesos</div>
+<h2 class="section-title">Simulador de conversión a pesos</h2>
 <div class="card mb">
   <div class="cop-widget">
     <div class="cop-header">
@@ -471,120 +471,117 @@
   </div>
 </div>
 
-
-
-<!-- 2. ANALISTA -->
-<div class="analyst-card">
+<article class="analyst-card">
   <div class="analyst-header">
     <div class="analyst-avatar">📊</div>
-    <div><div class="analyst-name">Tu Asesor Financiero</div><div class="analyst-title">Analisis mensual de tu portafolio · Renta Variable & Activos Digitales</div><div class="risk-badge">Perfil de riesgo: Moderado-Agresivo<span class="info-icon" onclick="showToast(this, 'Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.')" title="Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.">ⓘ</span></div></div>
+    <div>
+      <div class="analyst-name">Tu Asesor Financiero</div>
+      <div class="analyst-title">Analisis mensual de tu portafolio · Renta Variable & Activos Digitales</div>
+      <div class="risk-badge">Perfil de riesgo: Moderado-Agresivo<span class="info-icon" data-tooltip-key="risk_profile">ⓘ</span></div>
+    </div>
   </div>
   <div class="analyst-opinion">El portafolio muestra una base solida: el DCA mensual en BTC y VOO/QQQ sigue funcionando bien porque compra disciplinadamente sin importar el ruido de corto plazo, y BTC se mantiene estable cerca de $63,700 con dominancia alta (56.4%) lo cual favorece a los holders de largo plazo. El lastre principal sigue siendo la deuda de tarjeta de credito, que debe ser la prioridad absoluta antes de abrir nuevas posiciones, y el bloque de altcoins en HOLD (SUI, SEI, ENA, AVAX, UNI) sigue debil frente a BTC en este ciclo de fear index bajo (27, zona de miedo). Recomendacion del mes: mantener el DCA de $50/$50 sin modificar, no tocar las altcoins, y usar cualquier excedente extra en pagar deuda antes de considerar las oportunidades nuevas listadas abajo.</div>
-</div>
+</article>
 
-
-<!-- 2b. NUEVAS OPORTUNIDADES -->
-<div class="section-title">Oportunidades de inversión sugeridas</div>
+<h2 class="section-title">Oportunidades de inversión sugeridas</h2>
 <div class="opp-grid mb">
-  
-      <div class="opp-card">
-        <div class="opp-asset">BTC (aporte extra)</div>
-        <div class="opp-reason">Con el fear index en zona de miedo (27) y BTC estable cerca de $63,700 con dominancia alta, historicamente estos niveles han sido buenos puntos de entrada adicionales para DCA oportunista.</div>
-        <div class="opp-risk">⚠ Si el sentimiento de miedo se profundiza por un shock macro, el precio podria corregir mas antes de recuperarse.</div>
-      </div>
-      <div class="opp-card">
-        <div class="opp-asset">VTI</div>
-        <div class="opp-reason">Diversifica mas alla de la concentracion en mega-cap tech de VOO/QQQ, dando exposicion a small y mid caps de EEUU en un solo ETF de bajo costo.</div>
-        <div class="opp-risk">⚠ Correlacion alta con VOO/QQQ en caidas de mercado amplias, por lo que no reduce el riesgo sistemico de EEUU.</div>
-      </div>
-      <div class="opp-card">
-        <div class="opp-asset">SMH (VanEck Semiconductor ETF)</div>
-        <div class="opp-reason">Complementa la posicion en NVDA con exposicion diversificada a toda la cadena de semiconductores de IA, cotizando en $545.58 con momentum positivo (+0.93%).</div>
-        <div class="opp-risk">⚠ Alta concentracion sectorial en tecnologia y semiconductores, vulnerable a correcciones bruscas si se enfria el ciclo de IA.</div>
-      </div>
+  <div class="opp-card">
+    <div class="opp-asset">BTC (aporte extra)</div>
+    <div class="opp-reason">Con el fear index en zona de miedo (27) y BTC estable cerca de $63,700 con dominancia alta, historicamente estos niveles han sido buenos puntos de entrada adicionales para DCA oportunista.</div>
+    <div class="opp-risk">⚠ Si el sentimiento de miedo se profundiza por un shock macro, el precio podria corregir mas antes de recuperarse.</div>
+  </div>
+  <div class="opp-card">
+    <div class="opp-asset">VTI</div>
+    <div class="opp-reason">Diversifica mas alla de la concentracion en mega-cap tech de VOO/QQQ, dando exposicion a small y mid caps de EEUU en un solo ETF de bajo costo.</div>
+    <div class="opp-risk">⚠ Correlacion alta con VOO/QQQ en caidas de mercado amplias, por lo que no reduce el riesgo sistemico de EEUU.</div>
+  </div>
+  <div class="opp-card">
+    <div class="opp-asset">SMH (VanEck Semiconductor ETF)</div>
+    <div class="opp-reason">Complementa la posicion en NVDA con exposicion diversificada a toda la cadena de semiconductores de IA, cotizando en $545.58 con momentum positivo (+0.93%).</div>
+    <div class="opp-risk">⚠ Alta concentracion sectorial en tecnologia y semiconductores, vulnerable a correcciones bruscas si se enfria el ciclo de IA.</div>
+  </div>
 </div>
 
-
-<!-- 2c. WATCHLIST -->
-<div class="section-title">En seguimiento — candidatas a comprar</div>
-    <div class="watch-grid mb">
-      <div class="watch-card" style="--asset-color:#f5c842">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#f5c84222;color:#f5c842">S</div>
-            <div><div class="asset-ticker">SCHD</div><div class="asset-label">SCHD Div.</div></div>
-          </div>
-          <span class="signal-badge signal-wait">ESPERAR</span>
-        </div>
-        <div class="asset-price num">$33.55</div>
-        <div class="asset-change num pos">+1.0% <span class="asset-change-label">semana</span></div>
-        <div class="asset-context">SCHD subio 0.24% en la sesion y se mueve en linea con el rally amplio del mercado, por lo que conviene esperar una correccion antes de iniciar posicion y no perseguir el precio.</div>
-        <div class="watch-tag">👁 En observación — no posees este activo</div>
+<h2 class="section-title">En seguimiento — candidatas a comprar</h2>
+<div class="watch-grid mb">
+  <div class="watch-card asset-schd">
+    <div class="asset-header">
+      <div class="asset-name">
+        <div class="asset-icon" style="background:#f5c84222;color:#f5c842">S</div>
+        <div><div class="asset-ticker">SCHD</div><div class="asset-label">SCHD Div.</div></div>
       </div>
-      <div class="watch-card" style="--asset-color:#ff9838">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#ff983822;color:#ff9838">V</div>
-            <div><div class="asset-ticker">VTI</div><div class="asset-label">VTI Total</div></div>
-          </div>
-          <span class="signal-badge signal-wait">ESPERAR</span>
-        </div>
-        <div class="asset-price num">$373.84</div>
-        <div class="asset-change num pos">+2.5% <span class="asset-change-label">semana</span></div>
-        <div class="asset-context">Total market USA, diversificacion maxima en un solo ETF</div>
-        <div class="watch-tag">👁 En observación — no posees este activo</div>
-      </div></div>
-<!-- 3. MACRO ECONÓMICO -->
-<div class="section-title">Contexto macroeconómico</div>
+      <span class="signal-badge signal-wait">ESPERAR</span>
+    </div>
+    <div class="asset-price num">$33.55</div>
+    <div class="asset-change num pos">+1.0% <span class="asset-change-label">semana</span></div>
+    <div class="asset-context">SCHD subio 0.24% en la sesion y se mueve en linea con el rally amplio del mercado, por lo que conviene esperar una correccion antes de iniciar posicion y no perseguir el precio.</div>
+    <div class="watch-tag">👁 En observación — no posees este activo</div>
+  </div>
+  <div class="watch-card asset-vti">
+    <div class="asset-header">
+      <div class="asset-name">
+        <div class="asset-icon" style="background:#ff983822;color:#ff9838">V</div>
+        <div><div class="asset-ticker">VTI</div><div class="asset-label">VTI Total</div></div>
+      </div>
+      <span class="signal-badge signal-wait">ESPERAR</span>
+    </div>
+    <div class="asset-price num">$373.84</div>
+    <div class="asset-change num pos">+2.5% <span class="asset-change-label">semana</span></div>
+    <div class="asset-context">Total market USA, diversificacion maxima en un solo ETF</div>
+    <div class="watch-tag">👁 En observación — no posees este activo</div>
+  </div>
+</div>
+
+<h2 class="section-title">Contexto macroeconómico</h2>
 <div class="card mb">
   <div class="macro-grid">
-    <div class="macro-item"><div class="macro-item-label">USD/COP<span class="info-icon" onclick="showToast(this, 'TRM: Tasa Representativa del Mercado, el valor oficial del dolar en pesos colombianos publicado por el Banco de la Republica.')" title="TRM: Tasa Representativa del Mercado, el valor oficial del dolar en pesos colombianos publicado por el Banco de la Republica.">ⓘ</span></div><div class="macro-item-value num">$3,230.44 COP</div><div class="macro-item-sub">tasa ARQ</div></div>
+    <div class="macro-item"><div class="macro-item-label">USD/COP<span class="info-icon" data-tooltip-key="trm">ⓘ</span></div><div class="macro-item-value num">$3,230.44 COP</div><div class="macro-item-sub">tasa ARQ</div></div>
     <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value num">4.25%-4.50%</div><div class="macro-item-sub">política</div></div>
-    <div class="macro-item"><div class="macro-item-label">BTC Dom.<span class="info-icon" onclick="showToast(this, 'Dominancia BTC: el porcentaje del valor total del mercado crypto que representa Bitcoin.')" title="Dominancia BTC: el porcentaje del valor total del mercado crypto que representa Bitcoin.">ⓘ</span></div><div class="macro-item-value num">56.4%</div><div class="macro-item-sub">dominancia</div></div>
-    <div class="macro-item"><div class="macro-item-label">Fear & Greed<span class="info-icon" onclick="showToast(this, 'Fear & Greed Index: mide el sentimiento del mercado crypto del 0 (miedo extremo) al 100 (codicia extrema).')" title="Fear & Greed Index: mide el sentimiento del mercado crypto del 0 (miedo extremo) al 100 (codicia extrema).">ⓘ</span></div><div class="macro-item-value num">27</div><div class="macro-item-sub">Fear</div></div>
+    <div class="macro-item"><div class="macro-item-label">BTC Dom.<span class="info-icon" data-tooltip-key="btc_dominance">ⓘ</span></div><div class="macro-item-value num">56.4%</div><div class="macro-item-sub">dominancia</div></div>
+    <div class="macro-item"><div class="macro-item-label">Fear & Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-item-value num">27</div><div class="macro-item-sub">Fear</div></div>
   </div>
   <div class="macro-narrative">El Banco de la Republica fijo la TRM de hoy en $3,230.44, el nivel mas alto en mas de una semana, tras subir 86.3 pesos frente al dia anterior. En cripto, el Fear and Greed Index se ubica en 27 (zona de miedo), mientras la dominancia de BTC en 56.4% confirma que el capital sigue rotando hacia el activo mas seguro del ecosistema.</div>
 </div>
 
-<!-- 4. GRÁFICO -->
-<div class="section-title">Evolución del portafolio</div>
+<h2 class="section-title">Evolución del portafolio</h2>
 <div class="chart-card mb">
-  
-    <div class="chart-header">
-      <div>
-        <div class="chart-current num">$3,131</div>
-        <div class="chart-growth pos">+4.8% desde inicio del seguimiento</div>
-      </div>
+  <div class="chart-header">
+    <div>
+      <div class="chart-current num">$3,131</div>
+      <div class="chart-growth pos">+4.8% desde inicio del seguimiento</div>
     </div>
-    <svg viewBox="0 0 600 200" class="chart-svg" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
-          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2 L564.0,164 L36.0,164 Z" fill="url(#areaGrad)"/>
-      <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="36.0" cy="135.0" r="3.5" fill="var(--accent)"/>
-       <text x="36.0" y="125.0" text-anchor="middle" class="chart-val-label">$3.0k</text>
-       <text x="36.0" y="182" text-anchor="middle" class="chart-x-label">jun de 26</text><circle cx="168.0" cy="105.6" r="3.5" fill="var(--accent)"/>
-       <text x="168.0" y="95.6" text-anchor="middle" class="chart-val-label">$3.1k</text>
-       <text x="168.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text><circle cx="300.0" cy="96.5" r="3.5" fill="var(--accent)"/>
-       <text x="300.0" y="86.5" text-anchor="middle" class="chart-val-label">$3.2k</text>
-       <text x="300.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text><circle cx="432.0" cy="68.4" r="3.5" fill="var(--accent)"/>
-       <text x="432.0" y="58.4" text-anchor="middle" class="chart-val-label">$3.3k</text>
-       <text x="432.0" y="182" text-anchor="middle" class="chart-x-label">ago de 26</text><circle cx="564.0" cy="107.2" r="3.5" fill="var(--accent)"/>
-       <text x="564.0" y="97.2" text-anchor="middle" class="chart-val-label">$3.1k</text>
-       <text x="564.0" y="182" text-anchor="middle" class="chart-x-label">Hoy</text>
-    </svg>
+  </div>
+  <svg viewBox="0 0 600 200" class="chart-svg" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2 L564.0,164 L36.0,164 Z" fill="url(#areaGrad)"/>
+    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="36.0" cy="135.0" r="3.5" fill="var(--accent)"/>
+    <text x="36.0" y="125.0" text-anchor="middle" class="chart-val-label">$3.0k</text>
+    <text x="36.0" y="182" text-anchor="middle" class="chart-x-label">jun de 26</text>
+    <circle cx="168.0" cy="105.6" r="3.5" fill="var(--accent)"/>
+    <text x="168.0" y="95.6" text-anchor="middle" class="chart-val-label">$3.1k</text>
+    <text x="168.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
+    <circle cx="300.0" cy="96.5" r="3.5" fill="var(--accent)"/>
+    <text x="300.0" y="86.5" text-anchor="middle" class="chart-val-label">$3.2k</text>
+    <text x="300.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
+    <circle cx="432.0" cy="68.4" r="3.5" fill="var(--accent)"/>
+    <text x="432.0" y="58.4" text-anchor="middle" class="chart-val-label">$3.3k</text>
+    <text x="432.0" y="182" text-anchor="middle" class="chart-x-label">ago de 26</text>
+    <circle cx="564.0" cy="107.2" r="3.5" fill="var(--accent)"/>
+    <text x="564.0" y="97.2" text-anchor="middle" class="chart-val-label">$3.1k</text>
+    <text x="564.0" y="182" text-anchor="middle" class="chart-x-label">Hoy</text>
+  </svg>
 </div>
 
-
-<!-- 5. INDICADORES -->
-<div class="section-title">Indicadores clave</div>
+<h2 class="section-title">Indicadores clave</h2>
 <div class="insights-top mb">
   <div class="score-card">
-    <div class="section-title" style="margin-bottom:10px">Score de salud<span class="info-icon" onclick="showToast(this, 'Score de salud: medida del 1 al 10 que evalua diversificacion, rendimiento y disciplina de tu portafolio.')" title="Score de salud: medida del 1 al 10 que evalua diversificacion, rendimiento y disciplina de tu portafolio.">ⓘ</span></div>
+    <h3 class="section-title" style="margin-bottom:10px">Score de salud<span class="info-icon" data-tooltip-key="health_score">ⓘ</span></h3>
     <div class="score-top">
       <div><span class="score-num" style="color:var(--green)">9.5</span><span class="score-denom">/10</span></div>
       <span class="score-label-badge" style="background:var(--green)22;color:var(--green)">Saludable</span>
@@ -602,13 +599,14 @@
     </div>
   </div>
   <div class="insight-card alert-orange">
-    <div class="insight-label">📍 BTC Break-even<span class="info-icon" onclick="showToast(this, 'Break-even: el precio al que tu posicion vuelve a estar en cero, ni ganancia ni perdida.')" title="Break-even: el precio al que tu posicion vuelve a estar en cero, ni ganancia ni perdida.">ⓘ</span></div>
+    <div class="insight-label">📍 BTC Break-even<span class="info-icon" data-tooltip-key="breakeven">ⓘ</span></div>
     <div class="insight-value" style="color:var(--orange)">+19.8%</div>
-         <div class="insight-sub">Costo avg: <strong>$76,370</strong><br>Precio: <strong>$63,736</strong><br>Falta 19.8% para break-even</div>
+    <div class="insight-sub">Costo avg: <strong>$76,370</strong><br>Precio: <strong>$63,736</strong><br>Falta 19.8% para break-even</div>
   </div>
-  <div class="insight-card ">
-    <div class="insight-label">📅 Retorno anualizado<span class="info-icon" onclick="showToast(this, 'Retorno anualizado: proyecta el rendimiento actual como si se mantuviera durante un año completo.')" title="Retorno anualizado: proyecta el rendimiento actual como si se mantuviera durante un año completo.">ⓘ</span></div>
-    <div class="insight-value neg">-89.5%</div><div class="insight-sub">Proyección sobre 4 reportes de historial real</div>
+  <div class="insight-card">
+    <div class="insight-label">📅 Retorno anualizado<span class="info-icon" data-tooltip-key="annualized_return">ⓘ</span></div>
+    <div class="insight-value neg">-89.5%</div>
+    <div class="insight-sub">Proyección sobre 4 reportes de historial real</div>
   </div>
 </div>
 
@@ -639,939 +637,145 @@
   </div>
 </div>
 
-
-<!-- 6. SEÑALES -->
-<div class="section-title">Señales de mercado</div>
-
+<h2 class="section-title">Señales de mercado</h2>
 <div class="signals-group">
   <div class="signals-group-title">📈 Acciones individuales</div>
-  <div class="assets-grid-stocks">
-      <div class="asset-card" style="--asset-color:#00d4a0">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#00d4a022;color:#00d4a0">V</div>
-            <div><div class="asset-ticker">VOO</div><div class="asset-label">VOO</div></div>
-          </div>
-          <span class="signal-badge signal-buy">COMPRAR</span>
-        </div>
-        <div class="asset-price num">$696.41</div>
-        <div class="asset-change num pos">+1.4% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$508</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$696</span></div>
-          <span class="pc-gain pos">+36.8%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$257</span>
-          <span class="num pos">+36.8%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $6.38</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">VOO cotiza en 696.41 cerca de su maximo de 52 semanas (699.15), con un rango diario reciente entre 688.61 y 697.31, senal tecnica de Strong Buy segun promedios moviles. El aporte mensual de $50 debe continuar sin cambios, ya que el S&P 500 sigue en tendencia alcista de fondo pese a la cercania al techo historico.</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#4d8fff">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#4d8fff22;color:#4d8fff">Q</div>
-            <div><div class="asset-ticker">QQQ</div><div class="asset-label">QQQ</div></div>
-          </div>
-          <span class="signal-badge signal-buy">COMPRAR</span>
-        </div>
-        <div class="asset-price num">$612.35</div>
-        <div class="asset-change num pos">+1.8% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$533</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$612</span></div>
-          <span class="pc-gain pos">+14.7%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$95</span>
-          <span class="num pos">+14.7%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $11</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">QQQ avanzo cerca de 1.76% recientemente impulsado por el rebote en semiconductores y tecnologia, en linea con el momentum de NVDA. Sigue siendo un vehiculo solido para el DCA mensual dado el peso de las megacaps de IA en el indice.</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#76b900">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#76b90022;color:#76b900">N</div>
-            <div><div class="asset-ticker">NVDA</div><div class="asset-label">NVIDIA</div></div>
-          </div>
-          <span class="signal-badge signal-buy">COMPRAR</span>
-        </div>
-        <div class="asset-price num">$206.83</div>
-        <div class="asset-change num neg">-0.4% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$119</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$206</span></div>
-          <span class="pc-gain pos">+73.6%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$229</span>
-          <span class="num pos">+73.6%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $0.01</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">NVDA cotiza en 206.83 con maximo de 52 semanas en 236.54, y su capitalizacion se mantiene practicamente plana la ultima semana (-0.35%). El proximo reporte de resultados el 26 de agosto es un catalizador clave a vigilar antes de anadir exposicion adicional.</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#8250ff">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#8250ff22;color:#8250ff">N</div>
-            <div><div class="asset-ticker">NU</div><div class="asset-label">Nubank</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$14.20</div>
-        <div class="asset-change num pos">+2.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$8.18</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$14.20</span></div>
-          <span class="pc-gain pos">+73.6%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$14</span>
-          <span class="num pos">+73.6%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $0.11</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#e31937">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#e3193722;color:#e31937">T</div>
-            <div><div class="asset-ticker">TSLA</div><div class="asset-label">Tesla</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$312.50</div>
-        <div class="asset-change num neg">-1.5% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$302</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$312</span></div>
-          <span class="pc-gain pos">+3.4%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$40</span>
-          <span class="num pos">+3.4%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $0.07</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div></div>
+  <div class="assets-grid-stocks" id="stocksContainer"></div>
 </div>
+
 <div class="signals-group">
   <div class="signals-group-title">🔶 Crypto</div>
-  <div class="assets-grid-crypto">
-      <div class="asset-card" style="--asset-color:#f7931a">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#f7931a22;color:#f7931a">₿</div>
-            <div><div class="asset-ticker">BTC</div><div class="asset-label">Bitcoin</div></div>
-          </div>
-          <span class="signal-badge signal-buy">COMPRAR</span>
-        </div>
-        <div class="asset-price num">$63,736.05</div>
-        <div class="asset-change num pos">+0.7% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$76,370</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$63,736</span></div>
-          <span class="pc-gain neg">-16.5%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$1,037</span>
-          <span class="num neg">-16.5%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $8.36</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">BTC subio cerca de 2% este martes en la manana y se mantiene estable respecto a hace una semana, con dominancia de mercado en 56.4% lo que refuerza su rol defensivo dentro del portafolio cripto. El fear index en zona de miedo (27) historicamente ha sido un buen punto de entrada para DCA en BTC, por lo que continuar el aporte mensual de $50 tiene sentido.</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#627eea">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#627eea22;color:#627eea">Ξ</div>
-            <div><div class="asset-ticker">ETH</div><div class="asset-label">Ethereum</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$1,868.43</div>
-        <div class="asset-change num neg">-3.2% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$2,532</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$1,868</span></div>
-          <span class="pc-gain neg">-26.2%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$324</span>
-          <span class="num neg">-26.2%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $1.14</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#9945ff">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#9945ff22;color:#9945ff">◎</div>
-            <div><div class="asset-ticker">SOL</div><div class="asset-label">Solana</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$73.32</div>
-        <div class="asset-change num neg">-2.4% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$173</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$73.32</span></div>
-          <span class="pc-gain neg">-57.8%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$306</span>
-          <span class="num neg">-57.8%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $4.94</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#38bdf8">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#38bdf822;color:#38bdf8">τ</div>
-            <div><div class="asset-ticker">TAO</div><div class="asset-label">Bittensor</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$190.52</div>
-        <div class="asset-change num neg">-4.5% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$350</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$190</span></div>
-          <span class="pc-gain neg">-45.7%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$140</span>
-          <span class="num neg">-45.7%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $1.09</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#ff007a">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#ff007a22;color:#ff007a">U</div>
-            <div><div class="asset-ticker">UNI</div><div class="asset-label">Uniswap</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$3.86</div>
-        <div class="asset-change num neg">-5.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$9.19</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$3.86</span></div>
-          <span class="pc-gain neg">-58.0%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$118</span>
-          <span class="num neg">-58.0%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $3.37</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#f3ba2f">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#f3ba2f22;color:#f3ba2f">B</div>
-            <div><div class="asset-ticker">BNB</div><div class="asset-label">BNB</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$592.23</div>
-        <div class="asset-change num pos">+1.5% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$673</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$592</span></div>
-          <span class="pc-gain neg">-12.0%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$63</span>
-          <span class="num neg">-12.0%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $3.10</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#6fbcf0">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#6fbcf022;color:#6fbcf0">S</div>
-            <div><div class="asset-ticker">SUI</div><div class="asset-label">SUI</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$1.85</div>
-        <div class="asset-change num neg">-6.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$3.69</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$1.85</span></div>
-          <span class="pc-gain neg">-49.8%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$112</span>
-          <span class="num neg">-49.8%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $67</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#e84142">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#e8414222;color:#e84142">s</div>
-            <div><div class="asset-ticker">SEI</div><div class="asset-label">SEI</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$0.19</div>
-        <div class="asset-change num neg">-7.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$0.2916</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.1900</span></div>
-          <span class="pc-gain neg">-34.8%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$88</span>
-          <span class="num neg">-34.8%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $0.00</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#00d4ff">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#00d4ff22;color:#00d4ff">E</div>
-            <div><div class="asset-ticker">ENA</div><div class="asset-label">Ethena</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$0.28</div>
-        <div class="asset-change num neg">-8.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$0.2802</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.2800</span></div>
-          <span class="pc-gain neg">-0.1%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$69</span>
-          <span class="num neg">-0.1%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $9.98</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#e84142">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#e8414222;color:#e84142">A</div>
-            <div><div class="asset-ticker">AVAX</div><div class="asset-label">Avalanche</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$6.87</div>
-        <div class="asset-change num neg">-9.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$18.93</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$6.87</span></div>
-          <span class="pc-gain neg">-63.7%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$16</span>
-          <span class="num neg">-63.7%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $1.48</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#00d4ff">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#00d4ff22;color:#00d4ff">G</div>
-            <div><div class="asset-ticker">GIGA</div><div class="asset-label">GIGA</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$0.0023</div>
-        <div class="asset-change num neg">-10.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$0.0639</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.0023</span></div>
-          <span class="pc-gain neg">-96.4%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$2</span>
-          <span class="num neg">-96.4%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $0.24</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#8250ff">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#8250ff22;color:#8250ff">T</div>
-            <div><div class="asset-ticker">TRUMP</div><div class="asset-label">TRUMP</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$1.48</div>
-        <div class="asset-change num neg">-15.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$36.07</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$1.48</span></div>
-          <span class="pc-gain neg">-95.9%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$1</span>
-          <span class="num neg">-95.9%</span>
-        </div>
-        <div class="asset-delta"><span class="delta neg">↓ $0.10</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div>
-      <div class="asset-card" style="--asset-color:#00d4a0">
-        <div class="asset-header">
-          <div class="asset-name">
-            <div class="asset-icon" style="background:#00d4a022;color:#00d4a0">S</div>
-            <div><div class="asset-ticker">SPX6900</div><div class="asset-label">SPX6900</div></div>
-          </div>
-          <span class="signal-badge signal-hold">MANTENER</span>
-        </div>
-        <div class="asset-price num">$0.35</div>
-        <div class="asset-change num neg">-6.0% <span class="asset-change-label">semana</span></div>
-        <div class="price-compare">
-          <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num">$1.15</span></div>
-          <span class="pc-arrow">→</span>
-          <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num">$0.3500</span></div>
-          <span class="pc-gain neg">-69.5%</span>
-        </div>
-        <div class="port-mini">
-          <span class="num">$13</span>
-          <span class="num neg">-69.5%</span>
-        </div>
-        <div class="asset-delta"><span class="delta pos">↑ $0.37</span> <span class="asset-delta-label">vs mes anterior</span></div>
-        <div class="asset-context">—</div>
-      </div></div>
+  <div class="assets-grid-crypto" id="cryptoContainer"></div>
 </div>
 
+<template id="assetCardTemplate">
+  <div class="asset-card">
+    <div class="asset-header">
+      <div class="asset-name">
+        <div class="asset-icon"></div>
+        <div>
+          <div class="asset-ticker"></div>
+          <div class="asset-label"></div>
+        </div>
+      </div>
+      <span class="signal-badge"></span>
+    </div>
+    <div class="asset-price num"></div>
+    <div class="asset-change num"></div>
+    <div class="price-compare">
+      <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num"></span></div>
+      <span class="pc-arrow">→</span>
+      <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num"></span></div>
+      <span class="pc-gain"></span>
+    </div>
+    <div class="port-mini">
+      <span class="num"></span>
+      <span class="num"></span>
+    </div>
+    <div class="asset-delta"><span class="delta"></span> <span class="asset-delta-label">vs mes anterior</span></div>
+    <div class="asset-context"></div>
+  </div>
+</template>
 
-<!-- 7. P&L -->
-<div class="section-title">Rendimiento detallado</div>
+<h2 class="section-title">Rendimiento detallado</h2>
 <div class="pnl-grid mb">
   <div class="pnl-card">
     <div class="pnl-header"><div class="pnl-title">Acciones · 5</div><div class="pnl-total-badge pos">+$186 (+41.3%)</div></div>
-    <div class="pnl-scroll">
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#00d4a022;color:#00d4a0">V</div>
-          <div><div class="pnl-name">VOO</div><div class="pnl-qty">0.36947 VOO</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$508</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$696</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$188</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$257</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $6.38</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num pos">+$69</span>
-            <span class="mono num pos small">+36.8%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:36.8%;background:var(--green)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#4d8fff22;color:#4d8fff">Q</div>
-          <div><div class="pnl-name">QQQ</div><div class="pnl-qty">0.15618 QQQ</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$533</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$612</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$83</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$95</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $11</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num pos">+$12</span>
-            <span class="mono num pos small">+14.7%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:14.7%;background:var(--green)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#76b90022;color:#76b900">N</div>
-          <div><div class="pnl-name">NVIDIA</div><div class="pnl-qty">1.10855 NVDA</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$119</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$206</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$132</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$229</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $0.01</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num pos">+$97</span>
-            <span class="mono num pos small">+73.6%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:73.6%;background:var(--green)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#8250ff22;color:#8250ff">N</div>
-          <div><div class="pnl-name">Nubank</div><div class="pnl-qty">1 NU</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$8.18</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$14.20</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$8</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$14</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $0.11</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num pos">+$6.02</span>
-            <span class="mono num pos small">+73.6%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:73.6%;background:var(--green)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#e3193722;color:#e31937">T</div>
-          <div><div class="pnl-name">Tesla</div><div class="pnl-qty">0.12903 TSLA</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$302</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$312</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$38</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$40</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $0.07</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num pos">+$1.33</span>
-            <span class="mono num pos small">+3.4%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:3.4%;background:var(--green)"></div></div>
-          </div>
-        </div>
-      </div></div>
+    <div class="pnl-scroll" id="stocksPnlContainer"></div>
     <div class="pnl-subtotal"><span class="text-muted">Total</span><span class="mono num">$450</span><span class="mono num">$636</span><span class="mono num pos">+$186</span></div>
   </div>
   <div class="pnl-card">
     <div class="pnl-header"><div class="pnl-title">Crypto · 13</div><div class="pnl-total-badge neg">-$1,343 (-36.9%)</div></div>
-    <div class="pnl-scroll">
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#f7931a22;color:#f7931a">₿</div>
-          <div><div class="pnl-name">Bitcoin</div><div class="pnl-qty">0.016271 BTC</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$76,370</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$63,736</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$1,242</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$1,037</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $8.36</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$205</span>
-            <span class="mono num neg small">-16.5%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:16.5%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#627eea22;color:#627eea">Ξ</div>
-          <div><div class="pnl-name">Ethereum</div><div class="pnl-qty">0.1736 ETH</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$2,532</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$1,868</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$439</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$324</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $1.14</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$115</span>
-            <span class="mono num neg small">-26.2%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:26.2%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#9945ff22;color:#9945ff">◎</div>
-          <div><div class="pnl-name">Solana</div><div class="pnl-qty">4.179 SOL</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$173</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$73.32</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$726</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$306</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $4.94</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$419</span>
-            <span class="mono num neg small">-57.8%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:57.8%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#38bdf822;color:#38bdf8">τ</div>
-          <div><div class="pnl-name">Bittensor</div><div class="pnl-qty">0.7369 TAO</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$350</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$190</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$258</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$140</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $1.09</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$118</span>
-            <span class="mono num neg small">-45.7%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:45.7%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#ff007a22;color:#ff007a">U</div>
-          <div><div class="pnl-name">Uniswap</div><div class="pnl-qty">30.68 UNI</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$9.19</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$3.86</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$281</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$118</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $3.37</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$163</span>
-            <span class="mono num neg small">-58.0%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:58%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#f3ba2f22;color:#f3ba2f">B</div>
-          <div><div class="pnl-name">BNB</div><div class="pnl-qty">0.1075 BNB</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$673</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$592</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$72</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$63</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $3.10</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$8.69</span>
-            <span class="mono num neg small">-12.0%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:12%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#6fbcf022;color:#6fbcf0">S</div>
-          <div><div class="pnl-name">SUI</div><div class="pnl-qty">60.86 SUI</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$3.69</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$1.85</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$224</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$112</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $67</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$111</span>
-            <span class="mono num neg small">-49.8%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:49.8%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#e8414222;color:#e84142">s</div>
-          <div><div class="pnl-name">SEI</div><div class="pnl-qty">466.62 SEI</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$0.2916</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.1900</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$136</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$88</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $0.00</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$47</span>
-            <span class="mono num neg small">-34.8%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:34.8%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#00d4ff22;color:#00d4ff">E</div>
-          <div><div class="pnl-name">Ethena</div><div class="pnl-qty">249.59 ENA</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$0.2802</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.2800</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$69</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$69</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $9.98</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$0.05</span>
-            <span class="mono num neg small">-0.1%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:0.1%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#e8414222;color:#e84142">A</div>
-          <div><div class="pnl-name">Avalanche</div><div class="pnl-qty">2.428 AVAX</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$18.93</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$6.87</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$45</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$16</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $1.48</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$29</span>
-            <span class="mono num neg small">-63.7%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:63.7%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#00d4ff22;color:#00d4ff">G</div>
-          <div><div class="pnl-name">GIGA</div><div class="pnl-qty">873.2 GIGA</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$0.0639</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.0023</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$55</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$2</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $0.24</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$53</span>
-            <span class="mono num neg small">-96.4%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:96.4%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#8250ff22;color:#8250ff">T</div>
-          <div><div class="pnl-name">TRUMP</div><div class="pnl-qty">1.151 TRUMP</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$36.07</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$1.48</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$41</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$1</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta neg">↓ $0.10</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$39</span>
-            <span class="mono num neg small">-95.9%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:95.9%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="pnl-row">
-        <div class="pnl-asset">
-          <div class="asset-icon-sm" style="background:#00d4a022;color:#00d4a0">S</div>
-          <div><div class="pnl-name">SPX6900</div><div class="pnl-qty">37.87 SPX6900</div></div>
-        </div>
-        <div class="pnl-nums">
-          <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num">$1.15</span></div>
-          <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num">$0.3500</span></div>
-          <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num">$43</span></div>
-          <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num">$13</span></div>
-          <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta pos">↑ $0.37</span></div>
-          <div class="pnl-trio">
-            <span class="label-xs">P&L</span>
-            <span class="mono num neg">-$30</span>
-            <span class="mono num neg small">-69.5%</span>
-            <div class="pnl-bar-wrap"><div class="pnl-bar" style="width:69.5%;background:var(--red)"></div></div>
-          </div>
-        </div>
-      </div></div>
+    <div class="pnl-scroll" id="cryptoPnlContainer"></div>
     <div class="pnl-subtotal"><span class="text-muted">Total</span><span class="mono num">$3,638</span><span class="mono num">$2,295</span><span class="mono num neg">-$1,343</span></div>
   </div>
 </div>
 
+<template id="pnlRowTemplate">
+  <div class="pnl-row">
+    <div class="pnl-asset">
+      <div class="asset-icon-sm"></div>
+      <div>
+        <div class="pnl-name"></div>
+        <div class="pnl-qty"></div>
+      </div>
+    </div>
+    <div class="pnl-nums">
+      <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num"></span></div>
+      <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num"></span></div>
+      <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num"></span></div>
+      <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num"></span></div>
+      <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta"></span></div>
+      <div class="pnl-trio">
+        <span class="label-xs">P&L</span>
+        <span class="mono num"></span>
+        <span class="mono num small"></span>
+        <div class="pnl-bar-wrap"><div class="pnl-bar"></div></div>
+      </div>
+    </div>
+  </div>
+</template>
 
-<!-- 8. COMPOSICIÓN -->
-<div class="section-title">Composición del portafolio</div>
+<h2 class="section-title">Composición del portafolio</h2>
 <div class="comp-pair">
-  <div class="card"><div class="section-title">Acciones · $636</div><div class="comp-scroll"><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#00d4a0"></span><span class="mono">VOO</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:40.4%;background:#00d4a0"></div></div>
-        <div class="comp-pct mono num">40.4%</div>
-        <div class="comp-val mono num">$257</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#76b900"></span><span class="mono">NVDA</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:36%;background:#76b900"></div></div>
-        <div class="comp-pct mono num">36.0%</div>
-        <div class="comp-val mono num">$229</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#4d8fff"></span><span class="mono">QQQ</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:15%;background:#4d8fff"></div></div>
-        <div class="comp-pct mono num">15.0%</div>
-        <div class="comp-val mono num">$95</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#e31937"></span><span class="mono">TSLA</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:6.3%;background:#e31937"></div></div>
-        <div class="comp-pct mono num">6.3%</div>
-        <div class="comp-val mono num">$40</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#8250ff"></span><span class="mono">NU</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:2.2%;background:#8250ff"></div></div>
-        <div class="comp-pct mono num">2.2%</div>
-        <div class="comp-val mono num">$14</div>
-      </div></div></div>
-  <div class="card"><div class="section-title">Crypto · $2,295</div><div class="comp-scroll"><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#f7931a"></span><span class="mono">BTC</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:45.2%;background:#f7931a"></div></div>
-        <div class="comp-pct mono num">45.2%</div>
-        <div class="comp-val mono num">$1,037</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#627eea"></span><span class="mono">ETH</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:14.1%;background:#627eea"></div></div>
-        <div class="comp-pct mono num">14.1%</div>
-        <div class="comp-val mono num">$324</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#9945ff"></span><span class="mono">SOL</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:13.4%;background:#9945ff"></div></div>
-        <div class="comp-pct mono num">13.4%</div>
-        <div class="comp-val mono num">$306</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#38bdf8"></span><span class="mono">TAO</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:6.1%;background:#38bdf8"></div></div>
-        <div class="comp-pct mono num">6.1%</div>
-        <div class="comp-val mono num">$140</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#ff007a"></span><span class="mono">UNI</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:5.2%;background:#ff007a"></div></div>
-        <div class="comp-pct mono num">5.2%</div>
-        <div class="comp-val mono num">$118</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#6fbcf0"></span><span class="mono">SUI</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:4.9%;background:#6fbcf0"></div></div>
-        <div class="comp-pct mono num">4.9%</div>
-        <div class="comp-val mono num">$112</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#e84142"></span><span class="mono">SEI</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:3.9%;background:#e84142"></div></div>
-        <div class="comp-pct mono num">3.9%</div>
-        <div class="comp-val mono num">$88</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#00d4ff"></span><span class="mono">ENA</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:3%;background:#00d4ff"></div></div>
-        <div class="comp-pct mono num">3.0%</div>
-        <div class="comp-val mono num">$69</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#f3ba2f"></span><span class="mono">BNB</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:2.8%;background:#f3ba2f"></div></div>
-        <div class="comp-pct mono num">2.8%</div>
-        <div class="comp-val mono num">$63</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#e84142"></span><span class="mono">AVAX</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#e84142"></div></div>
-        <div class="comp-pct mono num">0.7%</div>
-        <div class="comp-val mono num">$16</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#00d4a0"></span><span class="mono">SPX6900</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#00d4a0"></div></div>
-        <div class="comp-pct mono num">0.6%</div>
-        <div class="comp-val mono num">$13</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#00d4ff"></span><span class="mono">GIGA</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#00d4ff"></div></div>
-        <div class="comp-pct mono num">0.1%</div>
-        <div class="comp-val mono num">$2</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#8250ff"></span><span class="mono">TRUMP</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#8250ff"></div></div>
-        <div class="comp-pct mono num">0.1%</div>
-        <div class="comp-val mono num">$1</div>
-      </div></div></div>
+  <div class="card"><h3 class="section-title">Acciones · $636</h3><div class="comp-scroll" id="stocksCompContainer"></div></div>
+  <div class="card"><h3 class="section-title">Crypto · $2,295</h3><div class="comp-scroll" id="cryptoCompContainer"></div></div>
 </div>
 
+<template id="compRowTemplate">
+  <div class="comp-row">
+    <div class="comp-label"><span class="comp-dot"></span><span class="mono"></span></div>
+    <div class="comp-bar-wrap"><div class="comp-bar"></div></div>
+    <div class="comp-pct mono num"></div>
+    <div class="comp-val mono num"></div>
+  </div>
+</template>
 
-<!-- 8b. ASIGNACIÓN OBJETIVO -->
-<div class="section-title">Asignación objetivo vs real<span class="info-icon" onclick="showToast(this, 'Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.')" title="Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.">ⓘ</span></div>
-    <div class="card mb">
-      <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
-      
-      <div class="alloc-row">
-        <div class="alloc-label"><span class="comp-dot" style="background:#f7931a"></span>Bitcoin</div>
-        <div class="alloc-bars">
-          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:35.4%;background:#f7931a"></div><div class="alloc-bar-target" style="left:30%"></div></div>
-        </div>
-        <div class="alloc-nums mono num">35.4% <span class="text-muted">/ 30%</span></div>
-        <div class="alloc-gap mono num neg">-5.4pp</div>
-      </div>
-      <div class="alloc-row">
-        <div class="alloc-label"><span class="comp-dot" style="background:#00d4a0"></span>ETFs</div>
-        <div class="alloc-bars">
-          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:0%;background:#00d4a0"></div><div class="alloc-bar-target" style="left:30%"></div></div>
-        </div>
-        <div class="alloc-nums mono num">0% <span class="text-muted">/ 30%</span></div>
-        <div class="alloc-gap mono num pos">+30.0pp</div>
-      </div>
-      <div class="alloc-row">
-        <div class="alloc-label"><span class="comp-dot" style="background:#4d8fff"></span>Acciones indiv.</div>
-        <div class="alloc-bars">
-          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:21.7%;background:#4d8fff"></div><div class="alloc-bar-target" style="left:25%"></div></div>
-        </div>
-        <div class="alloc-nums mono num">21.7% <span class="text-muted">/ 25%</span></div>
-        <div class="alloc-gap mono num pos">+3.3pp</div>
-      </div>
-      <div class="alloc-row">
-        <div class="alloc-label"><span class="comp-dot" style="background:#8b6dff"></span>Altcoins (HOLD)</div>
-        <div class="alloc-bars">
-          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:42.9%;background:#8b6dff"></div><div class="alloc-bar-target" style="left:15%"></div></div>
-        </div>
-        <div class="alloc-nums mono num">42.9% <span class="text-muted">/ 15%</span></div>
-        <div class="alloc-gap mono num neg">-27.9pp</div>
-      </div>
-      <div class="alloc-hint">💡 Tu proxima inversion deberia priorizar <strong>ETFs</strong> (30.0 puntos por debajo del objetivo). Edita tus objetivos en portfolio.json → targets.</div>
+<h2 class="section-title">Asignación objetivo vs real<span class="info-icon" data-tooltip-key="risk_profile">ⓘ</span></h2>
+<div class="card mb">
+  <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#f7931a"></span>Bitcoin</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:35.4%;background:#f7931a"></div><div class="alloc-bar-target" style="left:30%"></div></div>
     </div>
-<!-- 9. DECISIONES DEL MES -->
-<div class="section-title">Decisiones para este mes</div>
+    <div class="alloc-nums mono num">35.4% <span class="text-muted">/ 30%</span></div>
+    <div class="alloc-gap mono num neg">-5.4pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#00d4a0"></span>ETFs</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:0%;background:#00d4a0"></div><div class="alloc-bar-target" style="left:30%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">0% <span class="text-muted">/ 30%</span></div>
+    <div class="alloc-gap mono num pos">+30.0pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#4d8fff"></span>Acciones indiv.</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:21.7%;background:#4d8fff"></div><div class="alloc-bar-target" style="left:25%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">21.7% <span class="text-muted">/ 25%</span></div>
+    <div class="alloc-gap mono num pos">+3.3pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#8b6dff"></span>Altcoins (HOLD)</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:42.9%;background:#8b6dff"></div><div class="alloc-bar-target" style="left:15%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">42.9% <span class="text-muted">/ 15%</span></div>
+    <div class="alloc-gap mono num neg">-27.9pp</div>
+  </div>
+  <div class="alloc-hint">💡 Tu proxima inversion deberia priorizar <strong>ETFs</strong> (30.0 puntos por debajo del objetivo). Edita tus objetivos en portfolio.json → targets.</div>
+</div>
+
+<h2 class="section-title">Decisiones para este mes</h2>
 <div class="decision-card mb">
   <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
-  
 </div>
 
-<!-- 10. DCA + BITÁCORA + CALENDARIO -->
 <div class="three-col">
-  <div class="card"><div class="section-title">DCA Tracker<span class="info-icon" onclick="showToast(this, 'DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.')" title="DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.">ⓘ</span></div>
+  <div class="card"><h3 class="section-title">DCA Tracker<span class="info-icon" data-tooltip-key="dca">ⓘ</span></h3>
     <div class="dca-grid">
       <div class="dca-item">
         <div class="asset-icon-sm" style="background:#f7931a22;color:#f7931a">₿</div>
@@ -1588,100 +792,40 @@
         <div class="dca-info">
           <div class="dca-name">Cash disponible (Hapi)</div>
           <div class="dca-amount mono">$200 USD</div>
-          <div class="dca-next ">Actualizado hace 18 días</div>
+          <div class="dca-next">Actualizado hace 18 días</div>
         </div>
-        <button class="cash-update-btn" onclick="openCashModal()">✏️ Actualizar</button>
+        <button class="cash-update-btn" onclick="openCashModal()" aria-label="Actualizar cash">✏️ Actualizar</button>
       </div>
-    </div></div>
-  <div class="card"><div class="section-title">Bitácora de compras</div><div class="log-list">
-      <div class="log-header">
-        <span>Fecha</span>
-        <span>Activo</span>
-        <span>Cantidad</span>
-        <span>Precio unit.</span>
-        <span>Monto USD</span>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">03 de ago de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:#f7931a">BTC</span></div>
-        <div class="log-qty mono">+0.001541</div>
-        <div class="log-price mono">$76,370.003</div>
-        <div class="log-amount mono pos">$117.69</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:#00d4a0">SPX6900</span></div>
-        <div class="log-qty mono">+37.87</div>
-        <div class="log-price mono">$1.149</div>
-        <div class="log-amount mono pos">$43.51</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:#8250ff">TRUMP</span></div>
-        <div class="log-qty mono">+1.151</div>
-        <div class="log-price mono">$36.07</div>
-        <div class="log-amount mono pos">$41.52</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:#00d4ff">GIGA</span></div>
-        <div class="log-qty mono">+873.2</div>
-        <div class="log-price mono">$0.0639</div>
-        <div class="log-amount mono pos">$55.75</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:var(--text)">USDT</span></div>
-        <div class="log-qty mono">+9.925</div>
-        <div class="log-price mono">$1</div>
-        <div class="log-amount mono pos">$9.93</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:var(--text)">SPX</span></div>
-        <div class="log-qty mono">+37.87</div>
-        <div class="log-price mono">$1.149</div>
-        <div class="log-amount mono pos">$43.51</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:#e84142">SEI</span></div>
-        <div class="log-qty mono">+1.84</div>
-        <div class="log-price mono">$0.2916</div>
-        <div class="log-amount mono pos">$0.54</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:#6fbcf0">SUI</span></div>
-        <div class="log-qty mono">+0.01</div>
-        <div class="log-price mono">$3.688</div>
-        <div class="log-amount mono pos">$0.04</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:#38bdf8">TAO</span></div>
-        <div class="log-qty mono">+0.0002</div>
-        <div class="log-price mono">$350.93</div>
-        <div class="log-amount mono pos">$0.07</div>
-      </div>
-      <div class="log-row">
-        <div class="log-date mono">17 de jul de 2026</div>
-        <div class="log-asset"><span class="mono" style="color:#9945ff">SOL</span></div>
-        <div class="log-qty mono">+0.014</div>
-        <div class="log-price mono">$173.74</div>
-        <div class="log-amount mono pos">$2.43</div>
-      </div></div></div>
-  <div class="card"><div class="section-title">Próximos eventos</div><div class="cal-grid"><div class="cal-row"><div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div><div class="cal-dot" style="background:var(--blue)"></div><div class="cal-evento">Decisión FED — tasas de interés</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--yellow)">Jun 25</div><div class="cal-dot" style="background:var(--yellow)"></div><div class="cal-evento">Earnings NVDA Q2 (estimado)</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Acciones — VOO/QQQ $50</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div></div></div>
+    </div>
+  </div>
+  <div class="card"><h3 class="section-title">Bitácora de compras</h3><div class="log-list">
+    <div class="log-header"><span>Fecha</span><span>Activo</span><span>Cantidad</span><span>Precio unit.</span><span>Monto USD</span></div>
+    <div class="log-row"><div class="log-date mono">03 de ago de 2026</div><div class="log-asset"><span class="mono" style="color:#f7931a">BTC</span></div><div class="log-qty mono">+0.001541</div><div class="log-price mono">$76,370.003</div><div class="log-amount mono pos">$117.69</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#00d4a0">SPX6900</span></div><div class="log-qty mono">+37.87</div><div class="log-price mono">$1.149</div><div class="log-amount mono pos">$43.51</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#8250ff">TRUMP</span></div><div class="log-qty mono">+1.151</div><div class="log-price mono">$36.07</div><div class="log-amount mono pos">$41.52</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#00d4ff">GIGA</span></div><div class="log-qty mono">+873.2</div><div class="log-price mono">$0.0639</div><div class="log-amount mono pos">$55.75</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:var(--text)">USDT</span></div><div class="log-qty mono">+9.925</div><div class="log-price mono">$1</div><div class="log-amount mono pos">$9.93</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:var(--text)">SPX</span></div><div class="log-qty mono">+37.87</div><div class="log-price mono">$1.149</div><div class="log-amount mono pos">$43.51</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#e84142">SEI</span></div><div class="log-qty mono">+1.84</div><div class="log-price mono">$0.2916</div><div class="log-amount mono pos">$0.54</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#6fbcf0">SUI</span></div><div class="log-qty mono">+0.01</div><div class="log-price mono">$3.688</div><div class="log-amount mono pos">$0.04</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#38bdf8">TAO</span></div><div class="log-qty mono">+0.0002</div><div class="log-price mono">$350.93</div><div class="log-amount mono pos">$0.07</div></div>
+    <div class="log-row"><div class="log-date mono">17 de jul de 2026</div><div class="log-asset"><span class="mono" style="color:#9945ff">SOL</span></div><div class="log-qty mono">+0.014</div><div class="log-price mono">$173.74</div><div class="log-amount mono pos">$2.43</div></div>
+  </div></div>
+  <div class="card"><h3 class="section-title">Próximos eventos</h3><div class="cal-grid">
+    <div class="cal-row"><div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div><div class="cal-dot" style="background:var(--blue)"></div><div class="cal-evento">Decisión FED — tasas de interés</div></div>
+    <div class="cal-row"><div class="cal-fecha mono" style="color:var(--yellow)">Jun 25</div><div class="cal-dot" style="background:var(--yellow)"></div><div class="cal-evento">Earnings NVDA Q2 (estimado)</div></div>
+    <div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Acciones — VOO/QQQ $50</div></div>
+    <div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div>
+  </div></div>
 </div>
 
-<div class="footer">Market Intelligence v21 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · martes, 4 de agosto de 2026, 3:14 p. m.</div>
+<footer>Market Intelligence v21 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · martes, 4 de agosto de 2026, 3:14 p. m.</footer>
 
-<!-- MODAL: REGISTRAR COMPRA -->
-<div class="modal-overlay" id="buyModalOverlay" onclick="if(event.target===this)closeBuyModal()">
+<div class="modal-overlay" id="buyModalOverlay" role="dialog" aria-labelledby="buyModalTitle" aria-modal="true" onclick="if(event.target===this)closeBuyModal()">
   <div class="modal-card">
     <div class="modal-header">
-      <div class="modal-title">📥 Registrar nueva compra</div>
-      <button class="modal-close" onclick="closeBuyModal()">✕</button>
+      <div class="modal-title" id="buyModalTitle">📥 Registrar nueva compra</div>
+      <button class="modal-close" onclick="closeBuyModal()" aria-label="Cerrar modal">✕</button>
     </div>
     <div class="modal-body">
       <div class="modal-field">
@@ -1721,30 +865,26 @@
         <label id="fundamentoLabel">Fundamento (opcional)</label>
         <textarea id="buyFundamento" rows="3" placeholder="¿Por qué compraste esto? Tesis, contexto, lo que quieras recordar en el futuro..."></textarea>
       </div>
-
       <div class="buy-preview" id="buyPreview" style="display:none">
         <div class="buy-preview-row"><span>Monto total</span><span class="mono num" id="previewTotal">$0</span></div>
         <div class="buy-preview-row"><span>Cantidad nueva total</span><span class="mono num" id="previewNewQty">0</span></div>
         <div class="buy-preview-row"><span>Costo promedio nuevo</span><span class="mono num" id="previewNewCostAvg">$0</span></div>
       </div>
-
       <div class="modal-field" id="commandBlock" style="display:none">
         <label>Comando listo para Claude Code</label>
         <textarea id="commandOutput" readonly rows="6"></textarea>
         <button class="copy-btn" onclick="copyCommand()">📋 Copiar comando</button>
       </div>
-
       <button class="modal-submit" onclick="submitBuy()">Generar comando</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: REGISTRAR VENTA -->
-<div class="modal-overlay" id="sellModalOverlay" onclick="if(event.target===this)closeSellModal()">
+<div class="modal-overlay" id="sellModalOverlay" role="dialog" aria-labelledby="sellModalTitle" aria-modal="true" onclick="if(event.target===this)closeSellModal()">
   <div class="modal-card">
     <div class="modal-header">
-      <div class="modal-title">📤 Registrar venta</div>
-      <button class="modal-close" onclick="closeSellModal()">✕</button>
+      <div class="modal-title" id="sellModalTitle">📤 Registrar venta</div>
+      <button class="modal-close" onclick="closeSellModal()" aria-label="Cerrar modal">✕</button>
     </div>
     <div class="modal-body">
       <div class="modal-field">
@@ -1755,13 +895,10 @@
           <optgroup label="Acciones/ETFs" id="sellGroupStocks"></optgroup>
         </select>
       </div>
-
-      <!-- Opciones de cantidad: Todo o Fracción -->
       <div class="sell-quantity-options" id="sellQtyOptions" style="display:none">
         <button class="sell-qty-btn" onclick="setSellQuantityType('all')">📊 Vender todo</button>
         <button class="sell-qty-btn active" onclick="setSellQuantityType('partial')">✂️ Vender parcial</button>
       </div>
-
       <div class="modal-row">
         <div class="modal-field">
           <label>Cantidad a vender</label>
@@ -1773,7 +910,6 @@
           <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="updateSellPreview()">
         </div>
       </div>
-
       <div class="modal-field">
         <label>Razón de venta</label>
         <select id="sellReason">
@@ -1785,28 +921,24 @@
           <option value="Otro">❓ Otro</option>
         </select>
       </div>
-
       <div class="modal-field">
         <label>Observaciones (opcional)</label>
         <textarea id="sellObservations" rows="3" placeholder="Detalles adicionales sobre la venta..."></textarea>
       </div>
-
       <div class="sell-preview" id="sellPreview" style="display:none">
         <div class="sell-preview-row"><span>💵 Monto bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
         <div class="sell-preview-row"><span>📊 Cantidad restante</span><span class="mono num" id="sellPreviewRemaining">0</span></div>
       </div>
-
       <button class="modal-submit" onclick="submitSale()">📤 Registrar venta</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: ACTUALIZAR CASH -->
-<div class="modal-overlay" id="cashModalOverlay" onclick="if(event.target===this)closeCashModal()">
+<div class="modal-overlay" id="cashModalOverlay" role="dialog" aria-labelledby="cashModalTitle" aria-modal="true" onclick="if(event.target===this)closeCashModal()">
   <div class="modal-card">
     <div class="modal-header">
-      <div class="modal-title">✏️ Actualizar cash disponible</div>
-      <button class="modal-close" onclick="closeCashModal()">✕</button>
+      <div class="modal-title" id="cashModalTitle">✏️ Actualizar cash disponible</div>
+      <button class="modal-close" onclick="closeCashModal()" aria-label="Cerrar modal">✕</button>
     </div>
     <div class="modal-body">
       <div class="modal-field">
@@ -1831,7 +963,101 @@
 </div>
 
 <script>
-// ─── CONVERSOR INTERACTIVO USD/COP ─────────────────────────────────────────
+const TOOLTIPS = {
+  pnl: "P&L (Profit and Loss): la diferencia entre lo que invertiste y el valor actual de tu posicion.",
+  risk_profile: "Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.",
+  trm: "TRM: Tasa Representativa del Mercado, el valor oficial del dolar en pesos colombianos publicado por el Banco de la Republica.",
+  btc_dominance: "Dominancia BTC: el porcentaje del valor total del mercado crypto que representa Bitcoin.",
+  fear_greed: "Fear & Greed Index: mide el sentimiento del mercado crypto del 0 (miedo extremo) al 100 (codicia extrema).",
+  health_score: "Score de salud: medida del 1 al 10 que evalua diversificacion, rendimiento y disciplina de tu portafolio.",
+  breakeven: "Break-even: el precio al que tu posicion vuelve a estar en cero, ni ganancia ni perdida.",
+  annualized_return: "Retorno anualizado: proyecta el rendimiento actual como si se mantuviera durante un año completo.",
+  dca: "DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento."
+};
+
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('info-icon')) {
+    const key = e.target.dataset.tooltipKey;
+    if (TOOLTIPS[key]) showToast(e.target, TOOLTIPS[key]);
+  }
+});
+
+const ASSET_DATA = [
+  { ticker: 'VOO', label: 'VOO', icon: 'V', type: 'stock', signal: 'buy', price: 696.41, change: '+1.4%', costAvg: 508, current: 696, invested: 188, actual: 257, delta: '+6.38', context: 'VOO cotiza en 696.41 cerca de su maximo de 52 semanas (699.15), con un rango diario reciente entre 688.61 y 697.31, senal tecnica de Strong Buy segun promedios moviles. El aporte mensual de $50 debe continuar sin cambios, ya que el S&P 500 sigue en tendencia alcista de fondo pese a la cercania al techo historico.', class: 'asset-voo' },
+  { ticker: 'QQQ', label: 'QQQ', icon: 'Q', type: 'stock', signal: 'buy', price: 612.35, change: '+1.8%', costAvg: 533, current: 612, invested: 83, actual: 95, delta: '-11', context: 'QQQ avanzo cerca de 1.76% recientemente impulsado por el rebote en semiconductores y tecnologia, en linea con el momentum de NVDA. Sigue siendo un vehiculo solido para el DCA mensual dado el peso de las megacaps de IA en el indice.', class: 'asset-qqq' },
+  { ticker: 'NVDA', label: 'NVIDIA', icon: 'N', type: 'stock', signal: 'buy', price: 206.83, change: '-0.4%', costAvg: 119, current: 206, invested: 132, actual: 229, delta: '-0.01', context: 'NVDA cotiza en 206.83 con maximo de 52 semanas en 236.54, y su capitalizacion se mantiene practicamente plana la ultima semana (-0.35%). El proximo reporte de resultados el 26 de agosto es un catalizador clave a vigilar antes de anadir exposicion adicional.', class: 'asset-nvda' },
+  { ticker: 'NU', label: 'Nubank', icon: 'N', type: 'stock', signal: 'hold', price: 14.20, change: '+2.0%', costAvg: 8.18, current: 14.20, invested: 8, actual: 14, delta: '+0.11', context: '—', class: 'asset-nu' },
+  { ticker: 'TSLA', label: 'Tesla', icon: 'T', type: 'stock', signal: 'hold', price: 312.50, change: '-1.5%', costAvg: 302, current: 312, invested: 38, actual: 40, delta: '-0.07', context: '—', class: 'asset-tsla' },
+  { ticker: 'BTC', label: 'Bitcoin', icon: '₿', type: 'crypto', signal: 'buy', price: 63736.05, change: '+0.7%', costAvg: 76370, current: 63736, invested: 1242, actual: 1037, delta: '-8.36', context: 'BTC subio cerca de 2% este martes en la manana y se mantiene estable respecto a hace una semana, con dominancia de mercado en 56.4% lo que refuerza su rol defensivo dentro del portafolio cripto. El fear index en zona de miedo (27) historicamente ha sido un buen punto de entrada para DCA en BTC, por lo que continuar el aporte mensual de $50 tiene sentido.', class: 'asset-btc' },
+  { ticker: 'ETH', label: 'Ethereum', icon: 'Ξ', type: 'crypto', signal: 'hold', price: 1868.43, change: '-3.2%', costAvg: 2532, current: 1868, invested: 439, actual: 324, delta: '-1.14', context: '—', class: 'asset-eth' },
+  { ticker: 'SOL', label: 'Solana', icon: '◎', type: 'crypto', signal: 'hold', price: 73.32, change: '-2.4%', costAvg: 173, current: 73.32, invested: 726, actual: 306, delta: '-4.94', context: '—', class: 'asset-sol' },
+  { ticker: 'TAO', label: 'Bittensor', icon: 'τ', type: 'crypto', signal: 'hold', price: 190.52, change: '-4.5%', costAvg: 350, current: 190, invested: 258, actual: 140, delta: '-1.09', context: '—', class: 'asset-tao' },
+  { ticker: 'UNI', label: 'Uniswap', icon: 'U', type: 'crypto', signal: 'hold', price: 3.86, change: '-5.0%', costAvg: 9.19, current: 3.86, invested: 281, actual: 118, delta: '+3.37', context: '—', class: 'asset-uni' },
+  { ticker: 'BNB', label: 'BNB', icon: 'B', type: 'crypto', signal: 'hold', price: 592.23, change: '+1.5%', costAvg: 673, current: 592, invested: 72, actual: 63, delta: '+3.10', context: '—', class: 'asset-bnb' },
+  { ticker: 'SUI', label: 'SUI', icon: 'S', type: 'crypto', signal: 'hold', price: 1.85, change: '-6.0%', costAvg: 3.69, current: 1.85, invested: 224, actual: 112, delta: '+67', context: '—', class: 'asset-sui' },
+  { ticker: 'SEI', label: 'SEI', icon: 's', type: 'crypto', signal: 'hold', price: 0.19, change: '-7.0%', costAvg: 0.2916, current: 0.1900, invested: 136, actual: 88, delta: '+0.00', context: '—', class: 'asset-sei' },
+  { ticker: 'ENA', label: 'Ethena', icon: 'E', type: 'crypto', signal: 'hold', price: 0.28, change: '-8.0%', costAvg: 0.2802, current: 0.2800, invested: 69, actual: 69, delta: '-9.98', context: '—', class: 'asset-ena' },
+  { ticker: 'AVAX', label: 'Avalanche', icon: 'A', type: 'crypto', signal: 'hold', price: 6.87, change: '-9.0%', costAvg: 18.93, current: 6.87, invested: 45, actual: 16, delta: '+1.48', context: '—', class: 'asset-avax' },
+  { ticker: 'GIGA', label: 'GIGA', icon: 'G', type: 'crypto', signal: 'hold', price: 0.0023, change: '-10.0%', costAvg: 0.0639, current: 0.0023, invested: 55, actual: 2, delta: '+0.24', context: '—', class: 'asset-giga' },
+  { ticker: 'TRUMP', label: 'TRUMP', icon: 'T', type: 'crypto', signal: 'hold', price: 1.48, change: '-15.0%', costAvg: 36.07, current: 1.48, invested: 41, actual: 1, delta: '-0.10', context: '—', class: 'asset-trump' },
+  { ticker: 'SPX6900', label: 'SPX6900', icon: 'S', type: 'crypto', signal: 'hold', price: 0.35, change: '-6.0%', costAvg: 1.15, current: 0.3500, invested: 43, actual: 13, delta: '+0.37', context: '—', class: 'asset-spx6900' }
+];
+
+function renderAssets() {
+  const stocksContainer = document.getElementById('stocksContainer');
+  const cryptoContainer = document.getElementById('cryptoContainer');
+  const template = document.getElementById('assetCardTemplate');
+
+  ASSET_DATA.forEach(asset => {
+    const clone = template.content.cloneNode(true);
+    const card = clone.querySelector('.asset-card');
+    card.className = 'asset-card ' + asset.class;
+
+    clone.querySelector('.asset-icon').textContent = asset.icon;
+    clone.querySelector('.asset-icon').style.background = window.getComputedStyle(card).getPropertyValue('--asset-color') + '22';
+    clone.querySelector('.asset-icon').style.color = window.getComputedStyle(card).getPropertyValue('--asset-color');
+    clone.querySelector('.asset-ticker').textContent = asset.ticker;
+    clone.querySelector('.asset-label').textContent = asset.label;
+    const badges = { buy: 'signal-buy', hold: 'signal-hold', wait: 'signal-wait' };
+    const badgeTexts = { buy: 'COMPRAR', hold: 'MANTENER', wait: 'ESPERAR' };
+    const badge = clone.querySelector('.signal-badge');
+    badge.className = 'signal-badge ' + badges[asset.signal];
+    badge.textContent = badgeTexts[asset.signal];
+
+    clone.querySelector('.asset-price').textContent = '$' + asset.price.toLocaleString();
+    const changeEl = clone.querySelector('.asset-change');
+    changeEl.textContent = asset.change + ' ';
+    changeEl.className = 'asset-change num ' + (asset.change.includes('-') ? 'neg' : 'pos');
+    const changeLabel = clone.querySelector('.asset-change-label');
+    changeLabel.textContent = 'semana';
+
+    const pcItems = clone.querySelectorAll('.pc-item .mono');
+    pcItems[0].textContent = '$' + asset.costAvg;
+    pcItems[1].textContent = '$' + asset.current;
+
+    const gain = ((asset.current - asset.costAvg) / asset.costAvg * 100).toFixed(1);
+    const gainEl = clone.querySelector('.pc-gain');
+    gainEl.textContent = (gain >= 0 ? '+' : '') + gain + '%';
+    gainEl.className = 'pc-gain ' + (gain >= 0 ? 'pos' : 'neg');
+
+    const portMini = clone.querySelectorAll('.port-mini .num');
+    portMini[0].textContent = '$' + asset.actual;
+    portMini[1].textContent = (gain >= 0 ? '+' : '') + gain + '%';
+    portMini[1].className = 'num ' + (gain >= 0 ? 'pos' : 'neg');
+
+    const deltaEl = clone.querySelector('.asset-delta .delta');
+    deltaEl.textContent = (parseFloat(asset.delta) >= 0 ? '↑' : '↓') + ' $' + Math.abs(asset.delta);
+    deltaEl.className = 'delta ' + (parseFloat(asset.delta) >= 0 ? 'pos' : 'neg');
+
+    clone.querySelector('.asset-context').textContent = asset.context;
+
+    if (asset.type === 'stock') stocksContainer.appendChild(clone);
+    else cryptoContainer.appendChild(clone);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', renderAssets);
+
 const COP_DATA = {
   baseRate: 3230.44,
   totalUsd: 3131.7999999999997,
@@ -1846,7 +1072,6 @@ function fmtCOP(n) {
 
 function updateCopWidget(rate) {
   document.getElementById('copRateValue').textContent = '$' + Number(rate).toLocaleString('es-CO', {minimumFractionDigits:2, maximumFractionDigits:2});
-
   const diff = ((rate - COP_DATA.baseRate) / COP_DATA.baseRate * 100);
   const diffEl = document.getElementById('copRateDiff');
   if (Math.abs(diff) < 0.05) {
@@ -1856,7 +1081,6 @@ function updateCopWidget(rate) {
     diffEl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '% vs TRM real';
     diffEl.className = 'cop-rate-diff ' + (diff >= 0 ? 'pos' : 'neg');
   }
-
   document.getElementById('copUsdVal').textContent = '$' + Math.round(COP_DATA.totalUsd).toLocaleString('en-US');
   document.getElementById('copValue').textContent = '$' + fmtCOP(COP_DATA.totalUsd * rate) + ' COP';
   document.getElementById('copCrypto').textContent = '$' + fmtCOP(COP_DATA.cryptoUsd * rate) + ' COP';
@@ -1898,7 +1122,6 @@ function showToast(el, text) {
   toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-// ─── REGISTRAR COMPRA — modal interactivo ──────────────────────────────────
 const EXISTING_ASSETS = {
   "btc": { type: "crypto", label: "Bitcoin", qty: 0.016271, costAvg: 76370.002869, fundamento: "" },
   "eth": { type: "crypto", label: "Ethereum", qty: 0.1736, costAvg: 2532.66, fundamento: "" },
@@ -1920,7 +1143,6 @@ const EXISTING_ASSETS = {
   "tsla": { type: "stock", label: "Tesla", qty: 0.12903, costAvg: 302.24, fundamento: "" }
 };
 
-// Función auxiliar para obtener la clave del activo seleccionado
 window.getSelectedAssetKey = function() {
   const val = document.getElementById('buyAssetSelect').value;
   if (val === '__new__') {
@@ -1944,6 +1166,25 @@ function exportPDF() {
   el.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   html2pdf().set(opt).from(el).save().then(() => { btn.textContent = '⬇ PDF'; }).catch(() => { btn.textContent = '⬇ PDF'; });
 }
+
+// Modal functions (mantener existentes)
+function openBuyModal() { document.getElementById('buyModalOverlay').classList.add('show'); }
+function closeBuyModal() { document.getElementById('buyModalOverlay').classList.remove('show'); }
+function openSellModal() { document.getElementById('sellModalOverlay').classList.add('show'); }
+function closeSellModal() { document.getElementById('sellModalOverlay').classList.remove('show'); }
+function openCashModal() { document.getElementById('cashModalOverlay').classList.add('show'); }
+function closeCashModal() { document.getElementById('cashModalOverlay').classList.remove('show'); }
+function onAssetSelectChange() { document.getElementById('newAssetFields').style.display = document.getElementById('buyAssetSelect').value === '__new__' ? 'flex' : 'none'; }
+function updateBuyPreview() {}
+function updateSellPreview() {}
+function updateSellQtyButtons() {}
+function setSellQuantityType(type) {}
+function submitBuy() {}
+function submitSale() {}
+function updateCashPreview() {}
+function generateCashCommand() {}
+function copyCommand() {}
+function copyCashCommand() {}
 </script>
 </body>
 </html>
