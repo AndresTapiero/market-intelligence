@@ -1,134 +1,131 @@
-# 📊 Market Intelligence — Análisis Semanal de Portafolio
+# Market Intelligence
 
-Corre cada lunes automáticamente, consulta el mercado en tiempo real con IA y genera un reporte HTML con señales de inversión personalizadas para tu portafolio.
+Tu sistema de inversiones personal. Portafolio híbrido (crypto + acciones), análisis automático, diario de decisiones con auditoría.
 
----
-
-## 🚀 Instalación (una sola vez)
-
-### 1. Prerrequisitos
-
-Verifica que tienes Node.js instalado:
-```bash
-node --version   # debe mostrar v18 o superior
-```
-
-Si no lo tienes: https://nodejs.org/en/download
-
-### 2. Instalar dependencias
-
-```bash
-cd market-intelligence
-npm install
-```
-
-### 3. Configurar tu API Key de Anthropic
-
-Abre tu terminal y agrega esto a `~/.zshrc` (Mac) o `~/.bash_profile`:
-
-```bash
-export ANTHROPIC_API_KEY="sk-ant-api03-tu-key-aqui"
-```
-
-Luego recarga:
-```bash
-source ~/.zshrc
-```
-
-Puedes obtener tu API key en: https://console.anthropic.com/settings/keys
-
-### 4. Configurar el cron job (tarea semanal automática)
-
-```bash
-bash setup-cron.sh
-```
-
-Esto configura el script para correr **cada lunes a las 7:00 AM** automáticamente.
+**Status:** ✅ v22 — Diario de inversiones conectado a Supabase + 4 pestañas navegables + registro de ventas
 
 ---
 
-## ▶️ Uso manual
-
-Para correr el análisis ahora mismo:
+## 🎯 En 30 segundos
 
 ```bash
-node analyze.js
+# 1. Edita portfolio.json (cantidades + costo promedio)
+# 2. node regenerate.js
+# 3. Abre reports/report-YYYY-WXX.html en navegador
 ```
 
-El reporte se abre automáticamente en tu navegador y se guarda en `reports/`.
+**4 Pestañas:**
+- 📊 **Dashboard** — Resumen ejecutivo
+- 📓 **Diario** — Tus posiciones discretas (NVDA/TSLA/NU) con tesis
+- 💰 **DCA** — Inversión automática (Bitcoin/VOO/QQQ)
+- 🔍 **Análisis** — Asignación objetivo vs real
 
 ---
 
-## 📁 Estructura del proyecto
+## 🏗️ Stack
+
+| Capa | Tech | Propósito |
+|------|------|----------|
+| **UI** | HTML + JS vanilla | 4 pestañas sin dependencias |
+| **Datos locales** | portfolio.json (Git) | Cantidades + costo, auditado |
+| **Datos cloud** | Supabase (PostgreSQL) | inv_journal (compras), inv_journal_exits (ventas) |
+| **Lógica** | Node.js | regenerate.js, register-exit.js, dca-log.js |
+| **CI** | GitHub Actions | Análisis semanal + regenerar HTML |
+
+---
+
+## 📊 Estructura
 
 ```
 market-intelligence/
-├── analyze.js          # Script principal — llama la API y orquesta todo
-├── generate-report.js  # Genera el HTML del dashboard
-├── history.js          # Guarda historial semana a semana (JSON local)
-├── setup-cron.sh       # Configura la tarea automática semanal
-├── package.json
-├── README.md
+├── portfolio.json              ← Fuente única de verdad (qty + costo)
+├── history.json                ← Análisis semanal (1 entry/semana)
+├── dca-log.json                ← Bitácora DCA
 │
-├── reports/            # Reportes históricos (se crean automáticamente)
-│   ├── report-2026-W24.html
-│   ├── report-2026-W25.html
-│   └── ...
+├── generate-report.js          ← HTML generador (4 pestañas)
+├── regenerate.js               ← Orquesta todo
+├── register-exit.js            ← Registra ventas
+├── supabase-client.js          ← Client Supabase
 │
-├── latest-report.html  # Siempre el reporte más reciente
-├── history.json        # Historial de señales (se crea automáticamente)
-└── logs/
-    └── cron.log        # Log de ejecuciones del cron
+├── .env                        ← SUPABASE_URL + SERVICE_ROLE_KEY (.gitignore)
+├── reports/                    ← HTML semanal (no versionar)
+│
+└── docs/
+    ├── ARCHITECTURE.md         ← Conceptual: dónde va cada dato
+    ├── WORKFLOW.md             ← Práctico: compra/venta/DCA
+    └── STACK.md                ← Técnico: flujos de datos
 ```
 
 ---
 
-## 🔧 Personalización
+## 🚀 Operación
 
-Para actualizar tu portafolio (cuando cambien tus posiciones), edita el objeto `PORTFOLIO` al inicio de `analyze.js`:
-
-```js
-const PORTFOLIO = {
-  crypto: {
-    btc: { qty: 0.01303, costAvg: 82716 },  // ← actualiza qty y costo
-    eth: { qty: 0.1733 },
-  },
-  stocks: {
-    voo:  { val: 244.79, gainPct: 30 },     // ← actualiza tras cada DCA
-    // ...
-  },
-  debt: {
-    davivienda: 1559681,                     // ← actualiza mensualmente
-    rappi: 3580796,
-  },
-  // ...
-};
-```
-
----
-
-## 📋 Ver logs del cron
+### Compra discrecional (NVDA/TSLA/NU)
 
 ```bash
-npm run logs
-# o
-tail -f logs/cron.log
+# 1. Edita portfolio.json
+# 2. node regenerate.js
+# 3. (OPC) node register-entry.js TICKER  (registra tesis en Supabase)
+# 4. git add . && git commit && git push
 ```
 
----
-
-## ❌ Eliminar el cron job
+### DCA automático (Bitcoin/VOO)
 
 ```bash
-crontab -e
-# Borra la línea que contiene "market-intelligence"
+# 1. Broker compra automático
+# 2. Edita portfolio.json
+# 3. git add . && git commit (dca-log.js autogenera entrada)
+```
+
+### Venta (NEW)
+
+```bash
+# node register-exit.js TICKER
+# → Prompts: cantidad, precio, razón, observaciones
+# → Inserta en inv_journal_exits (Supabase)
+# → Actualiza portfolio.json automático
+# git add . && git commit
 ```
 
 ---
 
-## 💡 Notas
+## 🔐 Seguridad
 
-- El historial se guarda en `history.json` y se muestra en el dashboard (últimas 8 semanas)
-- Cada reporte queda guardado en `reports/` con el label de semana (ej: `report-2026-W24.html`)
-- `latest-report.html` siempre apunta al más reciente para acceso rápido
-- El cron requiere que el Mac esté encendido a las 7 AM del lunes — si está apagado, corre manualmente con `node analyze.js`
+- **portfolio.json** → ✅ En git (decisiones auditadas)
+- **.env** → ❌ .gitignore (credenciales locales)
+- **Supabase secrets** → ✅ GitHub Actions
+- **RLS** → ✅ Configurado (solo tu user_id)
+
+---
+
+## 📚 Documentación
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** — Qué guardar dónde (conceptual)
+- **[WORKFLOW.md](./WORKFLOW.md)** — Cómo operar (práctico)
+- **[STACK.md](./STACK.md)** — Flujos de datos (técnico)
+
+👉 **Si vas a operar hoy:** [WORKFLOW.md](./WORKFLOW.md)  
+👉 **Si quieres entender:** [ARCHITECTURE.md](./ARCHITECTURE.md)  
+👉 **Si quieres profundizar:** [STACK.md](./STACK.md)
+
+---
+
+## ✅ Implementado
+
+- Portfolio híbrido (crypto + acciones + DCA)
+- 3 posiciones en Supabase (NVDA/TSLA/NU)
+- 4 pestañas navegables
+- Registro de ventas (register-exit.js)
+- Análisis semanal automático
+
+---
+
+## 🔨 Por hacer
+
+- Tabla `inv_journal_exits` en Supabase
+- Visualización de ventas en pestaña "Diario"
+- Script `register-entry.js` (compra discrecional)
+
+---
+
+**Última actualización:** 2026-08-11 | **Build:** v22
