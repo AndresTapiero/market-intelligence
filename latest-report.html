@@ -354,28 +354,126 @@
   }
   @media print{ .sticky-bar,.pdf-btn,.modal-overlay{display:none!important} body{padding-top:20px} }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// Cargar datos de Supabase cuando se abre el dashboard
-(async function loadSupabaseData() {
+// === SUPABASE CONFIG ===
+const SUPABASE_URL = 'https://mglcfwkmwblihbpnjuwb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nbGNmd2ttd2JsaWhicG5qdXdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAyMDY0MDksImV4cCI6MjAzNTc4MjQwOX0.bBYDgKt0S3pKvI0-U5PzwRaHBn9GjNuW3MH7MvFzlXc';
+const USER_ID = '56272fef-8fd2-4adf-af86-ff9ed10cbed1';
+
+let supabase = null;
+
+// Inicializar Supabase
+async function initSupabase() {
+  if (supabase) return supabase;
+
+  const { createClient } = window.supabase;
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  console.log('✅ Supabase conectado');
+  await loadSupabaseData();
+  return supabase;
+}
+
+// Cargar datos de Supabase
+async function loadSupabaseData() {
   try {
-    // Intenta cargar desde un endpoint API (si estás usando dev-server)
-    const journalRes = await fetch('/api/journal').catch(() => null);
-    const exitsRes = await fetch('/api/exits').catch(() => null);
+    if (!supabase) return;
 
-    if (journalRes?.ok && exitsRes?.ok) {
-      const journalData = await journalRes.json();
-      const exitsData = await exitsRes.json();
+    const { data: journal, error: journalErr } = await supabase
+      .from('inv_journal')
+      .select('*')
+      .eq('user_id', USER_ID)
+      .order('fecha', { ascending: false });
 
-      // Guardar en sessionStorage para acceso posterior
-      sessionStorage.setItem('supabase_journal', JSON.stringify(journalData));
-      sessionStorage.setItem('supabase_exits', JSON.stringify(exitsData));
+    const { data: exits, error: exitsErr } = await supabase
+      .from('inv_journal_exits')
+      .select('*')
+      .eq('user_id', USER_ID)
+      .order('fecha_salida', { ascending: false });
 
-      console.log("✅ Datos de Supabase cargados desde API");
+    if (!journalErr && !exitsErr) {
+      sessionStorage.setItem('supabase_journal', JSON.stringify(journal || []));
+      sessionStorage.setItem('supabase_exits', JSON.stringify(exits || []));
+      console.log(`✅ Supabase: ${journal?.length || 0} compras, ${exits?.length || 0} ventas`);
+    } else {
+      console.warn('⚠️ Error cargando datos:', journalErr?.message || exitsErr?.message);
     }
   } catch (err) {
-    console.warn("⚠️ No se pudieron cargar datos de Supabase desde API");
+    console.warn('⚠️ No se pudo conectar a Supabase:', err.message);
   }
-})();
+}
+
+// Registrar compra en Supabase
+async function registerBuy(ticker, quantity, price, type, fundamento) {
+  if (!supabase) await initSupabase();
+
+  const entry = {
+    user_id: USER_ID,
+    fecha: new Date().toISOString().split('T')[0],
+    ticker: ticker.toUpperCase(),
+    categoria: 'satelite',
+    inversion_monto: quantity * price,
+    numero_acciones: quantity,
+    precio_entrada: price,
+    tesis_inversion: fundamento,
+    fuentes_valoracion: null,
+    precio_objetivo: null,
+    margen_seguridad_pct: null
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from('inv_journal')
+      .insert([entry])
+      .select();
+
+    if (error) throw error;
+    console.log('✅ Compra registrada en Supabase:', data);
+    return { success: true, data };
+  } catch (err) {
+    console.warn('⚠️ Error registrando compra:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+// Registrar venta en Supabase
+async function registerSale(ticker, quantity, price, reason, observations) {
+  if (!supabase) await initSupabase();
+
+  const montoBruto = quantity * price;
+
+  const entry = {
+    user_id: USER_ID,
+    fecha_salida: new Date().toISOString().split('T')[0],
+    ticker: ticker.toUpperCase(),
+    numero_acciones_vendidas: quantity,
+    precio_salida: price,
+    monto_bruto: montoBruto,
+    costo_base: 0,
+    ganancia_bruta: 0,
+    ganancia_pct: 0,
+    razon_venta: reason || 'Otro',
+    observaciones: observations
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from('inv_journal_exits')
+      .insert([entry])
+      .select();
+
+    if (error) throw error;
+    console.log('✅ Venta registrada en Supabase:', data);
+    return { success: true, data };
+  } catch (err) {
+    console.warn('⚠️ Error registrando venta:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+// Inicializar al cargar la página
+window.addEventListener('load', initSupabase);
 </script>
 </head>
 <body>
@@ -390,6 +488,7 @@
   </div>
   <div class="header-actions">
     <button class="buy-btn" onclick="openBuyModal()">📥 Registrar compra</button>
+    <button class="buy-btn" onclick="openSellModal()">📤 Registrar venta</button>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
     <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
   </div>
@@ -1743,6 +1842,58 @@
   </div>
 </div>
 
+<!-- MODAL: REGISTRAR VENTA -->
+<div class="modal-overlay" id="sellModalOverlay" onclick="if(event.target===this)closeSellModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">📤 Registrar venta</div>
+      <button class="modal-close" onclick="closeSellModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Activo a vender</label>
+        <select id="sellAssetSelect">
+          <option value="">Selecciona un activo...</option>
+          <optgroup label="Crypto" id="sellGroupCrypto"></optgroup>
+          <optgroup label="Acciones/ETFs" id="sellGroupStocks"></optgroup>
+        </select>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Cantidad vendida</label>
+          <input type="number" id="sellQty" placeholder="0.00" step="any" oninput="updateSellPreview()">
+        </div>
+        <div class="modal-field">
+          <label>Precio unitario (USD)</label>
+          <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="updateSellPreview()">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Razón de venta</label>
+        <select id="sellReason">
+          <option value="Toma de ganancias">Toma de ganancias</option>
+          <option value="Stop loss">Stop loss</option>
+          <option value="Rebalanceo">Rebalanceo</option>
+          <option value="Necesidad de fondos">Necesidad de fondos</option>
+          <option value="Cambio de estrategia">Cambio de estrategia</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Observaciones (opcional)</label>
+        <textarea id="sellObservations" rows="3" placeholder="Detalles adicionales sobre la venta..."></textarea>
+      </div>
+
+      <div class="buy-preview" id="sellPreview" style="display:none">
+        <div class="buy-preview-row"><span>Monto bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
+        <div class="buy-preview-row"><span>Cantidad restante</span><span class="mono num" id="sellPreviewRemaining">0</span></div>
+      </div>
+
+      <button class="modal-submit" onclick="submitSale()">Registrar venta</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: ACTUALIZAR CASH -->
 <div class="modal-overlay" id="cashModalOverlay" onclick="if(event.target===this)closeCashModal()">
   <div class="modal-card">
@@ -1939,68 +2090,36 @@ function updateBuyPreview() {
   preview.style.display = 'flex';
 }
 
-function generateCommand() {
+async function generateCommand() {
   const key = getSelectedAssetKey();
   const qty = parseFloat(document.getElementById('buyQty').value) || 0;
   const price = parseFloat(document.getElementById('buyPrice').value) || 0;
-  const date = document.getElementById('buyDate').value;
-  const newType = document.getElementById('buyNewType').value;
   const fundamento = document.getElementById('buyFundamento').value.trim();
 
   if (!key || qty <= 0 || price <= 0) {
-    alert('Completa el activo, la cantidad y el precio antes de generar el comando.');
+    alert('Completa el activo, la cantidad y el precio.');
     return;
   }
 
-  const existing = EXISTING_ASSETS[key];
-  const oldQty = existing ? existing.qty : 0;
-  const oldCostAvg = existing ? existing.costAvg : 0;
-  const newQty = +(oldQty + qty).toFixed(8);
-  const newCostAvg = +(((oldQty * oldCostAvg) + (qty * price)) / newQty).toFixed(6);
-  const total = (qty * price).toFixed(2);
-  const isCrypto = existing ? existing.type === 'crypto' : newType === 'crypto';
-  const qtyField = isCrypto ? 'qty' : 'shares';
-  const section = isCrypto ? 'crypto' : 'stocks';
+  // Enviar a Supabase
+  const btn = document.querySelector('.modal-submit');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Registrando...';
+  btn.disabled = true;
 
-  var lines = [];
-  if (existing) {
-    lines.push('En ~/Documents/Personal/market-intelligence/portfolio.json, dentro de "' + section + '" -> "' + key + '", actualiza:');
-    lines.push('  ' + qtyField + ': ' + newQty);
-    lines.push('  costAvg: ' + newCostAvg);
-    if (fundamento) lines.push('  fundamento: "' + fundamento.replace(/"/g, '\"') + '"');
-    lines.push('');
-    lines.push('Esto refleja una compra de ' + qty + ' unidades a $' + price + ' c/u (total $' + total + ') el ' + date + '.');
-    if (fundamento) lines.push('Fundamento de esta compra: ' + fundamento);
-    lines.push('');
-    lines.push('Luego ejecuta: node regenerate.js (para validar sin gastar API)');
-    lines.push('');
-    lines.push('Si todo se ve bien, haz:');
-    lines.push('git add .');
-    lines.push('git commit -m "portfolio: compra ' + key.toUpperCase() + ' ' + date + '"');
-    lines.push('git push');
+  const result = await registerBuy(key, qty, price, 'stocks', fundamento);
+
+  if (result.success) {
+    btn.textContent = '✅ Registrado en Supabase';
+    setTimeout(() => {
+      closeBuyModal();
+      location.reload();
+    }, 1500);
   } else {
-    lines.push('En ~/Documents/Personal/market-intelligence/portfolio.json, agrega este NUEVO activo dentro de "' + section + '":');
-    lines.push('');
-    lines.push('  "' + key + '": {');
-    lines.push('    "' + qtyField + '": ' + qty + ',');
-    if (newType !== 'crypto') lines.push('    "cat": "' + newType + '",');
-    lines.push('    "costAvg": ' + price + (fundamento ? ',' : ''));
-    if (fundamento) lines.push('    "fundamento": "' + fundamento.replace(/"/g, '\"') + '"');
-    lines.push('  }');
-    lines.push('');
-    lines.push('Esto registra tu primera compra: ' + qty + ' unidades a $' + price + ' c/u (total $' + total + ') el ' + date + '.');
-    if (fundamento) lines.push('Fundamento de esta compra: ' + fundamento);
-    lines.push('');
-    lines.push('Luego ejecuta: node regenerate.js (para validar sin gastar API)');
-    lines.push('');
-    lines.push('Si todo se ve bien, haz:');
-    lines.push('git add .');
-    lines.push('git commit -m "portfolio: nueva posicion ' + key.toUpperCase() + '"');
-    lines.push('git push');
+    alert('❌ Error: ' + result.error);
+    btn.textContent = originalText;
+    btn.disabled = false;
   }
-
-  document.getElementById('commandOutput').value = lines.join(String.fromCharCode(10));
-  document.getElementById('commandBlock').style.display = 'flex';
 }
 
 function copyCommand() {
@@ -2012,6 +2131,93 @@ function copyCommand() {
     btn.textContent = '✅ Copiado';
     setTimeout(() => { btn.textContent = original; }, 2000);
   });
+}
+
+// ─── REGISTRAR VENTA — modal interactivo ───────────────────────────────────
+function openSellModal() {
+  const selectEl = document.getElementById('sellAssetSelect');
+  const cryptoGroup = document.getElementById('sellGroupCrypto');
+  const stocksGroup = document.getElementById('sellGroupStocks');
+  cryptoGroup.innerHTML = '';
+  stocksGroup.innerHTML = '';
+
+  Object.entries(EXISTING_ASSETS).forEach(([key, a]) => {
+    if (a.qty <= 0) return; // No mostrar posiciones vendidas
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = a.label + ' (' + key.toUpperCase() + ') - ' + a.qty.toFixed(a.qty < 1 ? 8 : 2) + ' unidades';
+    if (a.type === 'crypto') cryptoGroup.appendChild(opt);
+    else stocksGroup.appendChild(opt);
+  });
+
+  document.getElementById('sellQty').value = '';
+  document.getElementById('sellPrice').value = '';
+  document.getElementById('sellReason').value = 'Toma de ganancias';
+  document.getElementById('sellObservations').value = '';
+  document.getElementById('sellPreview').style.display = 'none';
+  document.getElementById('sellModalOverlay').classList.add('show');
+}
+
+function closeSellModal() {
+  document.getElementById('sellModalOverlay').classList.remove('show');
+}
+
+function updateSellPreview() {
+  const key = document.getElementById('sellAssetSelect').value;
+  const qty = parseFloat(document.getElementById('sellQty').value) || 0;
+  const price = parseFloat(document.getElementById('sellPrice').value) || 0;
+  const preview = document.getElementById('sellPreview');
+
+  if (!key || qty <= 0 || price <= 0) { preview.style.display = 'none'; return; }
+
+  const asset = EXISTING_ASSETS[key];
+  if (!asset || asset.qty < qty) { preview.style.display = 'none'; return; }
+
+  const montoBruto = qty * price;
+  const remaining = asset.qty - qty;
+
+  document.getElementById('sellPreviewTotal').textContent = '$' + montoBruto.toLocaleString('en-US', {maximumFractionDigits:2});
+  document.getElementById('sellPreviewRemaining').textContent = remaining.toFixed(remaining < 1 ? 8 : 6).replace(/0+$/,'').replace(/.$/,'');
+  preview.style.display = 'flex';
+}
+
+async function submitSale() {
+  const key = document.getElementById('sellAssetSelect').value;
+  const qty = parseFloat(document.getElementById('sellQty').value) || 0;
+  const price = parseFloat(document.getElementById('sellPrice').value) || 0;
+  const reason = document.getElementById('sellReason').value;
+  const observations = document.getElementById('sellObservations').value.trim();
+
+  if (!key || qty <= 0 || price <= 0) {
+    alert('Completa el activo, la cantidad y el precio.');
+    return;
+  }
+
+  const asset = EXISTING_ASSETS[key];
+  if (asset.qty < qty) {
+    alert('No tienes suficientes unidades. Tienes: ' + asset.qty.toFixed(8));
+    return;
+  }
+
+  // Enviar a Supabase
+  const btn = document.querySelector('#sellModalOverlay .modal-submit');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Registrando...';
+  btn.disabled = true;
+
+  const result = await registerSale(key, qty, price, reason, observations);
+
+  if (result.success) {
+    btn.textContent = '✅ Venta registrada';
+    setTimeout(() => {
+      closeSellModal();
+      location.reload();
+    }, 1500);
+  } else {
+    alert('❌ Error: ' + result.error);
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
 
 // ─── ACTUALIZAR CASH — modal interactivo ───────────────────────────────────
