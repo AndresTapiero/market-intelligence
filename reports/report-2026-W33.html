@@ -2,7 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#8b6dff">
+<meta name="description" content="Portafolio híbrido (crypto + acciones), análisis automático, diario de decisiones con auditoría">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Market Intel">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b6dff' width='192' height='192' rx='44'/><text x='96' y='96' font-size='120' fill='white' text-anchor='middle' dominant-baseline='middle'>📊</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b6dff' width='192' height='192' rx='44'/><text x='96' y='96' font-size='120' fill='white' text-anchor='middle' dominant-baseline='middle'>📊</text></svg>">
+<link rel="manifest" href="./manifest.json">
 <title>Market Intelligence · agosto de 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -300,6 +308,13 @@
   .journal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--g)}
   .journal-card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--r);padding:20px 22px}
   .journal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+
+  /* POSICIÓN DESTACADA - CANTIDAD ACTUAL */
+  .journal-position-highlight{display:flex;align-items:center;gap:16px;padding:16px 14px;background:linear-gradient(135deg,var(--accent-dim),transparent);border-radius:var(--r-sm);margin-bottom:14px;border:1px solid rgba(139,109,255,.2)}
+  .journal-qty-big{font-size:32px;font-weight:800;font-family:var(--mono);line-height:1;min-width:80px}
+  .journal-qty-label{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
+  .journal-sell-btn{background:var(--red-dim);color:var(--red);border:1px solid var(--red);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
+  .journal-sell-btn:hover{background:var(--red);color:white}
   .journal-ticker-group{display:flex;align-items:center;gap:9px}
   .journal-ticker{font-size:17px;font-weight:800;font-family:var(--mono)}
   .journal-cat-badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:5px;text-transform:uppercase;font-family:var(--mono)}
@@ -405,7 +420,7 @@
 <div class="header" id="report-content">
   <div>
     <h1>Market Intelligence</h1>
-    <div class="header-sub">Reporte de inversiones · lunes, 10 de agosto de 2026, 10:17 p. m.</div>
+    <div class="header-sub">Reporte de inversiones · lunes, 10 de agosto de 2026, 10:37 p. m.</div>
   </div>
   <div class="header-right">
     <div class="week-badge">agosto de 2026</div>
@@ -1209,10 +1224,19 @@
           </div>
           <div class="journal-status"><span class="label-xs">P&L actual</span><span class="mono num neg">-86.7%</span></div>
         </div>
+
+        <!-- CANTIDAD VISIBLE -->
+        <div class="journal-position-highlight">
+          <div class="journal-qty-big">0.12903000</div>
+          <div class="journal-qty-label">acciones</div>
+          <button class="journal-sell-btn" onclick="openSellModal('TSLA', 0.12903)">📤 Vender</button>
+        </div>
+
         <div class="journal-nums">
-          <div class="journal-num-item"><span class="label-xs">Fecha</span><span class="mono">2025-06-09</span></div>
+          <div class="journal-num-item"><span class="label-xs">Fecha compra</span><span class="mono">2025-06-09</span></div>
           <div class="journal-num-item"><span class="label-xs">Invertido</span><span class="mono num">$39.00</span></div>
           <div class="journal-num-item"><span class="label-xs">Precio entrada</span><span class="mono num">$302.24</span></div>
+          <div class="journal-num-item"><span class="label-xs">Cantidad inicial</span><span class="mono num">0.12903000</span></div>
           
           
         </div>
@@ -1231,10 +1255,19 @@
           </div>
           <div class="journal-status"><span class="label-xs">P&L actual</span><span class="mono num pos">+92.5%</span></div>
         </div>
+
+        <!-- CANTIDAD VISIBLE -->
+        <div class="journal-position-highlight">
+          <div class="journal-qty-big">1.11</div>
+          <div class="journal-qty-label">acciones</div>
+          <button class="journal-sell-btn" onclick="openSellModal('NVDA', 1.10855)">📤 Vender</button>
+        </div>
+
         <div class="journal-nums">
-          <div class="journal-num-item"><span class="label-xs">Fecha</span><span class="mono">2025-01-28</span></div>
+          <div class="journal-num-item"><span class="label-xs">Fecha compra</span><span class="mono">2025-01-28</span></div>
           <div class="journal-num-item"><span class="label-xs">Invertido</span><span class="mono num">$132.04</span></div>
           <div class="journal-num-item"><span class="label-xs">Precio entrada</span><span class="mono num">$119.11</span></div>
+          <div class="journal-num-item"><span class="label-xs">Cantidad inicial</span><span class="mono num">1.11</span></div>
           
           
         </div>
@@ -1253,10 +1286,19 @@
           </div>
           <div class="journal-status"><span class="label-xs">P&L actual</span><span class="mono num pos">+73.6%</span></div>
         </div>
+
+        <!-- CANTIDAD VISIBLE -->
+        <div class="journal-position-highlight">
+          <div class="journal-qty-big">1.00</div>
+          <div class="journal-qty-label">acciones</div>
+          <button class="journal-sell-btn" onclick="openSellModal('NU', 1)">📤 Vender</button>
+        </div>
+
         <div class="journal-nums">
-          <div class="journal-num-item"><span class="label-xs">Fecha</span><span class="mono">2023-12-07</span></div>
+          <div class="journal-num-item"><span class="label-xs">Fecha compra</span><span class="mono">2023-12-07</span></div>
           <div class="journal-num-item"><span class="label-xs">Invertido</span><span class="mono num">$8.18</span></div>
           <div class="journal-num-item"><span class="label-xs">Precio entrada</span><span class="mono num">$8.18</span></div>
+          <div class="journal-num-item"><span class="label-xs">Cantidad inicial</span><span class="mono num">1.00</span></div>
           
           
         </div>
@@ -1791,7 +1833,68 @@
 
 </div><!-- FIN TAB DETALLE -->
 
-<div class="footer">Market Intelligence v22 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · lunes, 10 de agosto de 2026, 10:17 p. m.</div>
+<div class="footer">Market Intelligence v22 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · lunes, 10 de agosto de 2026, 10:37 p. m.</div>
+
+<!-- MODAL: REGISTRAR VENTA -->
+<div class="modal-overlay" id="sellModalOverlay" onclick="if(event.target===this)closeSellModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">📤 Vender <span id="sellTicker">NVDA</span></div>
+      <button class="modal-close" onclick="closeSellModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:12px 14px;background:var(--surface2);border-radius:8px;margin-bottom:12px;border-left:3px solid var(--blue)">
+        <div class="label-xs">Tienes en portafolio</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);margin-top:4px" id="sellCurrentQty">1.5</div>
+      </div>
+
+      <div class="modal-field">
+        <label>¿Cuánto vendes?</label>
+        <input type="number" id="sellQty" placeholder="0.00" step="any" oninput="updateSellPreview()" min="0">
+      </div>
+
+      <div class="modal-field">
+        <label>¿A qué precio por unidad?</label>
+        <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="updateSellPreview()" min="0">
+      </div>
+
+      <div class="modal-field">
+        <label>Razón de venta</label>
+        <select id="sellReason">
+          <option value="1">Toma de ganancias</option>
+          <option value="2">Stop loss</option>
+          <option value="3">Rebalanceo</option>
+          <option value="4">Liquidez</option>
+          <option value="5">Cambio de tesis</option>
+          <option value="6">Otro</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label>Observaciones (opcional)</label>
+        <textarea id="sellObs" placeholder="Tus notas sobre esta venta..." style="min-height:60px"></textarea>
+      </div>
+
+      <div class="buy-preview" id="sellPreview" style="display:none">
+        <div class="buy-preview-row">
+          <span>Monto bruto:</span>
+          <span class="num" id="sellMontoValue">$0.00</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:8px">
+          ⚠️ Debes ejecutar el comando en terminal para completar
+        </div>
+      </div>
+
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;margin-top:12px;border-left:3px solid var(--accent)">
+        <div class="label-xs">📋 Para registrar en Supabase, abre terminal y ejecuta:</div>
+        <div style="font-family:var(--mono);font-size:11px;margin-top:6px;padding:8px;background:var(--surface);border-radius:4px;color:var(--accent);word-break:break-all">
+          node register-exit.js <span id="sellTickerCmd">NVDA</span>
+        </div>
+        <button class="copy-btn" onclick="copySellCommand()" style="margin-top:8px;width:100%">📋 Copiar comando</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: REGISTRAR COMPRA -->
 <div class="modal-overlay" id="buyModalOverlay" onclick="if(event.target===this)closeBuyModal()">
@@ -1990,6 +2093,59 @@ function openBuyModal() {
   });
   document.getElementById('buyDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('buyModalOverlay').classList.add('show');
+}
+
+// VENTA
+function openSellModal(ticker, currentQty) {
+  const tickerUpper = ticker.toUpperCase();
+  document.getElementById('sellTicker').textContent = tickerUpper;
+  document.getElementById('sellTickerCmd').textContent = tickerUpper;
+  document.getElementById('sellCurrentQty').textContent = currentQty.toFixed(currentQty < 1 ? 8 : 2);
+  document.getElementById('sellQty').value = '';
+  document.getElementById('sellPrice').value = '';
+  document.getElementById('sellReason').value = '1';
+  document.getElementById('sellObs').value = '';
+  document.getElementById('sellPreview').style.display = 'none';
+  document.getElementById('sellQty').max = currentQty;
+  document.getElementById('sellModalOverlay').classList.add('show');
+  document.getElementById('sellQty').focus();
+}
+
+function closeSellModal() {
+  document.getElementById('sellModalOverlay').classList.remove('show');
+  document.getElementById('sellPreview').style.display = 'none';
+}
+
+function updateSellPreview() {
+  const qty = parseFloat(document.getElementById('sellQty').value) || 0;
+  const price = parseFloat(document.getElementById('sellPrice').value) || 0;
+  const maxQty = parseFloat(document.getElementById('sellQty').max) || 0;
+
+  if (qty > 0 && qty <= maxQty && price > 0) {
+    const montoBruto = qty * price;
+    document.getElementById('sellMontoValue').textContent = '$' + montoBruto.toFixed(2);
+    document.getElementById('sellPreview').style.display = 'flex';
+  } else {
+    document.getElementById('sellPreview').style.display = 'none';
+  }
+}
+
+function copySellCommand() {
+  const ticker = document.getElementById('sellTicker').textContent.toLowerCase();
+  const lines = [
+    'Ejecuta en tu terminal:',
+    '',
+    'node register-exit.js ' + ticker.toUpperCase(),
+    '',
+    'Luego responde a los prompts:'
+  ];
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const original = btn.textContent;
+    btn.textContent = '✅ Comando copiado';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  });
 }
 
 function closeBuyModal() {
@@ -2210,6 +2366,13 @@ function exportPDF() {
   const stickyClone = el.querySelector('.sticky-bar'); if (stickyClone) stickyClone.remove();
   el.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   html2pdf().set(opt).from(el).save().then(() => { btn.textContent = '⬇ PDF'; }).catch(() => { btn.textContent = '⬇ PDF'; });
+}
+
+// PWA: Registra service worker para offline support
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => console.log('Service Worker registrado ✅'))
+    .catch(err => console.log('Service Worker error:', err));
 }
 </script>
 </body>

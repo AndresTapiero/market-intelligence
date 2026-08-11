@@ -636,6 +636,10 @@ export function generateHTML(data, history, portfolio) {
           </div>
         </div>` : "";
 
+      // Cantidad actual del activo
+      const currentQty = liveAsset?.qty || liveAsset?.shares || 0;
+      const qtyLabel = portfolio.crypto?.[tickerLower] ? "unidades" : "acciones";
+
       return `
       <div class="journal-card">
         <div class="journal-header">
@@ -645,10 +649,19 @@ export function generateHTML(data, history, portfolio) {
           </div>
           ${statusHtml}
         </div>
+
+        <!-- CANTIDAD VISIBLE -->
+        <div class="journal-position-highlight">
+          <div class="journal-qty-big">${currentQty > 0 ? currentQty.toFixed(currentQty < 1 ? 8 : 2) : '0'}</div>
+          <div class="journal-qty-label">${qtyLabel}</div>
+          ${currentQty > 0 ? `<button class="journal-sell-btn" onclick="openSellModal('${e.ticker}', ${currentQty})">📤 Vender</button>` : '<span class="text-muted">Vendida</span>'}
+        </div>
+
         <div class="journal-nums">
-          <div class="journal-num-item"><span class="label-xs">Fecha</span><span class="mono">${e.fecha}</span></div>
+          <div class="journal-num-item"><span class="label-xs">Fecha compra</span><span class="mono">${e.fecha}</span></div>
           <div class="journal-num-item"><span class="label-xs">Invertido</span><span class="mono num">$${Number(e.inversion_monto).toFixed(2)}</span></div>
           <div class="journal-num-item"><span class="label-xs">Precio entrada</span><span class="mono num">$${Number(e.precio_entrada).toFixed(2)}</span></div>
+          <div class="journal-num-item"><span class="label-xs">Cantidad inicial</span><span class="mono num">${Number(e.numero_acciones).toFixed(currentQty < 1 ? 8 : 2)}</span></div>
           ${e.precio_objetivo ? `<div class="journal-num-item"><span class="label-xs">Precio objetivo</span><span class="mono num">$${Number(e.precio_objetivo).toFixed(2)}</span></div>` : ""}
           ${e.margen_seguridad_pct != null ? `<div class="journal-num-item"><span class="label-xs">Margen seguridad</span><span class="mono num ${cls(e.margen_seguridad_pct)}">${pct(e.margen_seguridad_pct)}</span></div>` : ""}
         </div>
@@ -992,6 +1005,13 @@ export function generateHTML(data, history, portfolio) {
   .journal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--g)}
   .journal-card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--r);padding:20px 22px}
   .journal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+
+  /* POSICIÓN DESTACADA - CANTIDAD ACTUAL */
+  .journal-position-highlight{display:flex;align-items:center;gap:16px;padding:16px 14px;background:linear-gradient(135deg,var(--accent-dim),transparent);border-radius:var(--r-sm);margin-bottom:14px;border:1px solid rgba(139,109,255,.2)}
+  .journal-qty-big{font-size:32px;font-weight:800;font-family:var(--mono);line-height:1;min-width:80px}
+  .journal-qty-label{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
+  .journal-sell-btn{background:var(--red-dim);color:var(--red);border:1px solid var(--red);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
+  .journal-sell-btn:hover{background:var(--red);color:white}
   .journal-ticker-group{display:flex;align-items:center;gap:9px}
   .journal-ticker{font-size:17px;font-weight:800;font-family:var(--mono)}
   .journal-cat-badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:5px;text-transform:uppercase;font-family:var(--mono)}
@@ -1376,6 +1396,67 @@ ${allocationSection()}
 
 <div class="footer">Market Intelligence ${BUILD_VERSION} (${BUILD_DATE}) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · ${now}</div>
 
+<!-- MODAL: REGISTRAR VENTA -->
+<div class="modal-overlay" id="sellModalOverlay" onclick="if(event.target===this)closeSellModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">📤 Vender <span id="sellTicker">NVDA</span></div>
+      <button class="modal-close" onclick="closeSellModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:12px 14px;background:var(--surface2);border-radius:8px;margin-bottom:12px;border-left:3px solid var(--blue)">
+        <div class="label-xs">Tienes en portafolio</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);margin-top:4px" id="sellCurrentQty">1.5</div>
+      </div>
+
+      <div class="modal-field">
+        <label>¿Cuánto vendes?</label>
+        <input type="number" id="sellQty" placeholder="0.00" step="any" oninput="updateSellPreview()" min="0">
+      </div>
+
+      <div class="modal-field">
+        <label>¿A qué precio por unidad?</label>
+        <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="updateSellPreview()" min="0">
+      </div>
+
+      <div class="modal-field">
+        <label>Razón de venta</label>
+        <select id="sellReason">
+          <option value="1">Toma de ganancias</option>
+          <option value="2">Stop loss</option>
+          <option value="3">Rebalanceo</option>
+          <option value="4">Liquidez</option>
+          <option value="5">Cambio de tesis</option>
+          <option value="6">Otro</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label>Observaciones (opcional)</label>
+        <textarea id="sellObs" placeholder="Tus notas sobre esta venta..." style="min-height:60px"></textarea>
+      </div>
+
+      <div class="buy-preview" id="sellPreview" style="display:none">
+        <div class="buy-preview-row">
+          <span>Monto bruto:</span>
+          <span class="num" id="sellMontoValue">$0.00</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:8px">
+          ⚠️ Debes ejecutar el comando en terminal para completar
+        </div>
+      </div>
+
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;margin-top:12px;border-left:3px solid var(--accent)">
+        <div class="label-xs">📋 Para registrar en Supabase, abre terminal y ejecuta:</div>
+        <div style="font-family:var(--mono);font-size:11px;margin-top:6px;padding:8px;background:var(--surface);border-radius:4px;color:var(--accent);word-break:break-all">
+          node register-exit.js <span id="sellTickerCmd">NVDA</span>
+        </div>
+        <button class="copy-btn" onclick="copySellCommand()" style="margin-top:8px;width:100%">📋 Copiar comando</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: REGISTRAR COMPRA -->
 <div class="modal-overlay" id="buyModalOverlay" onclick="if(event.target===this)closeBuyModal()">
   <div class="modal-card">
@@ -1557,6 +1638,59 @@ function openBuyModal() {
   });
   document.getElementById('buyDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('buyModalOverlay').classList.add('show');
+}
+
+// VENTA
+function openSellModal(ticker, currentQty) {
+  const tickerUpper = ticker.toUpperCase();
+  document.getElementById('sellTicker').textContent = tickerUpper;
+  document.getElementById('sellTickerCmd').textContent = tickerUpper;
+  document.getElementById('sellCurrentQty').textContent = currentQty.toFixed(currentQty < 1 ? 8 : 2);
+  document.getElementById('sellQty').value = '';
+  document.getElementById('sellPrice').value = '';
+  document.getElementById('sellReason').value = '1';
+  document.getElementById('sellObs').value = '';
+  document.getElementById('sellPreview').style.display = 'none';
+  document.getElementById('sellQty').max = currentQty;
+  document.getElementById('sellModalOverlay').classList.add('show');
+  document.getElementById('sellQty').focus();
+}
+
+function closeSellModal() {
+  document.getElementById('sellModalOverlay').classList.remove('show');
+  document.getElementById('sellPreview').style.display = 'none';
+}
+
+function updateSellPreview() {
+  const qty = parseFloat(document.getElementById('sellQty').value) || 0;
+  const price = parseFloat(document.getElementById('sellPrice').value) || 0;
+  const maxQty = parseFloat(document.getElementById('sellQty').max) || 0;
+
+  if (qty > 0 && qty <= maxQty && price > 0) {
+    const montoBruto = qty * price;
+    document.getElementById('sellMontoValue').textContent = '$' + montoBruto.toFixed(2);
+    document.getElementById('sellPreview').style.display = 'flex';
+  } else {
+    document.getElementById('sellPreview').style.display = 'none';
+  }
+}
+
+function copySellCommand() {
+  const ticker = document.getElementById('sellTicker').textContent.toLowerCase();
+  const lines = [
+    'Ejecuta en tu terminal:',
+    '',
+    'node register-exit.js ' + ticker.toUpperCase(),
+    '',
+    'Luego responde a los prompts:'
+  ];
+  const text = lines.join('\\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const original = btn.textContent;
+    btn.textContent = '✅ Comando copiado';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  });
 }
 
 function closeBuyModal() {
