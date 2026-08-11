@@ -686,7 +686,15 @@ export function generateHTML(data, history, portfolio) {
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#8b6dff">
+<meta name="description" content="Portafolio híbrido (crypto + acciones), análisis automático, diario de decisiones con auditoría">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Market Intel">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b6dff' width='192' height='192' rx='44'/><text x='96' y='96' font-size='120' fill='white' text-anchor='middle' dominant-baseline='middle'>📊</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b6dff' width='192' height='192' rx='44'/><text x='96' y='96' font-size='120' fill='white' text-anchor='middle' dominant-baseline='middle'>📊</text></svg>">
+<link rel="manifest" href="./manifest.json">
 <title>Market Intelligence · ${getMonthLabel()}</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -1769,6 +1777,13 @@ function exportPDF() {
   const stickyClone = el.querySelector('.sticky-bar'); if (stickyClone) stickyClone.remove();
   el.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   html2pdf().set(opt).from(el).save().then(() => { btn.textContent = '⬇ PDF'; }).catch(() => { btn.textContent = '⬇ PDF'; });
+}
+
+// PWA: Registra service worker para offline support
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => console.log('Service Worker registrado ✅'))
+    .catch(err => console.log('Service Worker error:', err));
 }
 </script>
 </body>
