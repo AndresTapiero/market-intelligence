@@ -354,6 +354,29 @@
   }
   @media print{ .sticky-bar,.pdf-btn,.modal-overlay{display:none!important} body{padding-top:20px} }
 </style>
+<script>
+// Cargar datos de Supabase cuando se abre el dashboard
+(async function loadSupabaseData() {
+  try {
+    // Intenta cargar desde un endpoint API (si estás usando dev-server)
+    const journalRes = await fetch('/api/journal').catch(() => null);
+    const exitsRes = await fetch('/api/exits').catch(() => null);
+
+    if (journalRes?.ok && exitsRes?.ok) {
+      const journalData = await journalRes.json();
+      const exitsData = await exitsRes.json();
+
+      // Guardar en sessionStorage para acceso posterior
+      sessionStorage.setItem('supabase_journal', JSON.stringify(journalData));
+      sessionStorage.setItem('supabase_exits', JSON.stringify(exitsData));
+
+      console.log("✅ Datos de Supabase cargados desde API");
+    }
+  } catch (err) {
+    console.warn("⚠️ No se pudieron cargar datos de Supabase desde API");
+  }
+})();
+</script>
 </head>
 <body>
 

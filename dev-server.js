@@ -21,15 +21,21 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const PORT = 3000;
 
 let insertExitEntry = null;
+let loadJournalEntries = null;
+let loadExitEntries = null;
 
 // Cargar Supabase si está disponible
 try {
   const supabase = await import("./supabase-client.js");
   insertExitEntry = supabase.insertExitEntry;
+  loadJournalEntries = supabase.loadJournalEntries;
+  loadExitEntries = supabase.loadExitEntries;
   console.log("✅ Supabase integrado");
 } catch (err) {
   console.warn("⚠️  Supabase no disponible — solo portfolio.json será actualizado");
   insertExitEntry = async () => ({ id: "local-" + Date.now() });
+  loadJournalEntries = async () => [];
+  loadExitEntries = async () => [];
 }
 
 function loadPortfolio() {
@@ -161,6 +167,32 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: err.message }));
       }
     });
+    return;
+  }
+
+  // API: Cargar journal de Supabase
+  if (req.method === "GET" && req.url === "/api/journal") {
+    try {
+      const entries = await loadJournalEntries();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(entries || []));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // API: Cargar exits de Supabase
+  if (req.method === "GET" && req.url === "/api/exits") {
+    try {
+      const entries = await loadExitEntries();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(entries || []));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
     return;
   }
 
