@@ -654,7 +654,7 @@ export function generateHTML(data, history, portfolio) {
         <div class="journal-position-highlight">
           <div class="journal-qty-big">${currentQty > 0 ? currentQty.toFixed(currentQty < 1 ? 8 : 2) : '0'}</div>
           <div class="journal-qty-label">${qtyLabel}</div>
-          ${currentQty > 0 ? `<button class="journal-sell-btn" onclick="openSellModal('${e.ticker}', ${currentQty})">📤 Vender</button>` : '<span class="text-muted">Vendida</span>'}
+          ${currentQty > 0 ? `<span class="text-muted">disponible para vender</span>` : '<span class="text-muted">Vendida</span>'}
         </div>
 
         <div class="journal-nums">
@@ -761,6 +761,8 @@ export function generateHTML(data, history, portfolio) {
   .refresh-btn:hover{background:var(--green);color:white}
   .buy-btn{background:var(--accent);color:white;border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
   .buy-btn:hover{background:#7550f0;box-shadow:0 0 0 3px var(--accent-dim)}
+  .sell-btn{background:var(--red-dim);color:var(--red);border:1px solid var(--red);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
+  .sell-btn:hover{background:var(--red);color:white}
 
   /* MODAL REGISTRAR COMPRA */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;padding:20px}
@@ -1109,6 +1111,7 @@ export function generateHTML(data, history, portfolio) {
   </div>
   <div class="header-actions">
     <button class="buy-btn" onclick="openBuyModal()">📥 Registrar compra</button>
+    <button class="sell-btn" onclick="openSellModal()">📤 Registrar venta</button>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
     <button class="pdf-btn" onclick="exportPDF()">⬇ PDF</button>
   </div>
@@ -1400,59 +1403,64 @@ ${allocationSection()}
 <div class="modal-overlay" id="sellModalOverlay" onclick="if(event.target===this)closeSellModal()">
   <div class="modal-card">
     <div class="modal-header">
-      <div class="modal-title">📤 Vender <span id="sellTicker">NVDA</span></div>
+      <div class="modal-title">📤 Registrar venta</div>
       <button class="modal-close" onclick="closeSellModal()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="modal-field">
+        <label>Activo</label>
+        <select id="sellAssetSelect" onchange="onSellAssetChange()">
+          <option value="">Selecciona un activo...</option>
+          <optgroup label="Crypto" id="sellGroupCrypto"></optgroup>
+          <optgroup label="Acciones/ETFs" id="sellGroupStocks"></optgroup>
+        </select>
+      </div>
+
       <div style="padding:12px 14px;background:var(--surface2);border-radius:8px;margin-bottom:12px;border-left:3px solid var(--blue)">
-        <div class="label-xs">Tienes en portafolio</div>
-        <div style="font-size:20px;font-weight:700;font-family:var(--mono);margin-top:4px" id="sellCurrentQty">1.5</div>
+        <div class="label-xs">Tienes disponible</div>
+        <div style="font-size:24px;font-weight:700;font-family:var(--mono);margin-top:4px" id="sellCurrentQty">—</div>
       </div>
 
-      <div class="modal-field">
-        <label>¿Cuánto vendes?</label>
-        <input type="number" id="sellQty" placeholder="0.00" step="any" oninput="updateSellPreview()" min="0">
-      </div>
-
-      <div class="modal-field">
-        <label>¿A qué precio por unidad?</label>
-        <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="updateSellPreview()" min="0">
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>¿Cuánto vendes?</label>
+          <input type="number" id="sellQty" placeholder="0.00" step="any" oninput="updateSellPreview()" min="0">
+        </div>
+        <div class="modal-field">
+          <label>¿A qué precio?</label>
+          <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="updateSellPreview()" min="0">
+        </div>
       </div>
 
       <div class="modal-field">
         <label>Razón de venta</label>
         <select id="sellReason">
-          <option value="1">Toma de ganancias</option>
-          <option value="2">Stop loss</option>
-          <option value="3">Rebalanceo</option>
-          <option value="4">Liquidez</option>
-          <option value="5">Cambio de tesis</option>
-          <option value="6">Otro</option>
+          <option value="Toma de ganancias">Toma de ganancias</option>
+          <option value="Stop loss">Stop loss</option>
+          <option value="Rebalanceo">Rebalanceo</option>
+          <option value="Liquidez">Liquidez</option>
+          <option value="Cambio de tesis">Cambio de tesis</option>
+          <option value="Otro">Otro</option>
         </select>
       </div>
 
       <div class="modal-field">
         <label>Observaciones (opcional)</label>
-        <textarea id="sellObs" placeholder="Tus notas sobre esta venta..." style="min-height:60px"></textarea>
+        <textarea id="sellObs" placeholder="Tus notas..." style="min-height:50px"></textarea>
       </div>
 
-      <div class="buy-preview" id="sellPreview" style="display:none">
+      <div class="buy-preview" id="sellPreview" style="display:none;flex-direction:column">
         <div class="buy-preview-row">
           <span>Monto bruto:</span>
           <span class="num" id="sellMontoValue">$0.00</span>
         </div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:8px">
-          ⚠️ Debes ejecutar el comando en terminal para completar
+        <div class="buy-preview-row">
+          <span>Ganancia/Pérdida:</span>
+          <span class="num" id="sellGainValue" style="color:var(--green)">+$0.00</span>
         </div>
       </div>
 
-      <div style="background:var(--surface2);border-radius:8px;padding:14px;margin-top:12px;border-left:3px solid var(--accent)">
-        <div class="label-xs">📋 Para registrar en Supabase, abre terminal y ejecuta:</div>
-        <div style="font-family:var(--mono);font-size:11px;margin-top:6px;padding:8px;background:var(--surface);border-radius:4px;color:var(--accent);word-break:break-all">
-          node register-exit.js <span id="sellTickerCmd">NVDA</span>
-        </div>
-        <button class="copy-btn" onclick="copySellCommand()" style="margin-top:8px;width:100%">📋 Copiar comando</button>
-      </div>
+      <button class="modal-submit" onclick="submitSellTransaction()" style="width:100%;margin-top:8px">Registrar venta</button>
     </div>
   </div>
 </div>
@@ -1641,56 +1649,127 @@ function openBuyModal() {
 }
 
 // VENTA
-function openSellModal(ticker, currentQty) {
-  const tickerUpper = ticker.toUpperCase();
-  document.getElementById('sellTicker').textContent = tickerUpper;
-  document.getElementById('sellTickerCmd').textContent = tickerUpper;
-  document.getElementById('sellCurrentQty').textContent = currentQty.toFixed(currentQty < 1 ? 8 : 2);
+function openSellModal() {
+  const EXISTING_ASSETS = EXISTING_ASSETS_DATA || {};
+  const cryptoGroup = document.getElementById('sellGroupCrypto');
+  const stocksGroup = document.getElementById('sellGroupStocks');
+
+  cryptoGroup.innerHTML = '';
+  stocksGroup.innerHTML = '';
+
+  Object.keys(EXISTING_ASSETS).forEach(key => {
+    const a = EXISTING_ASSETS[key];
+    if (a.qty <= 0) return; // No mostrar posiciones vendidas
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = `${key.toUpperCase()} (${a.qty.toFixed(a.qty < 1 ? 8 : 2)})`;
+    if (a.type === 'crypto') cryptoGroup.appendChild(opt);
+    else stocksGroup.appendChild(opt);
+  });
+
+  document.getElementById('sellAssetSelect').value = '';
   document.getElementById('sellQty').value = '';
   document.getElementById('sellPrice').value = '';
-  document.getElementById('sellReason').value = '1';
+  document.getElementById('sellReason').value = 'Toma de ganancias';
   document.getElementById('sellObs').value = '';
   document.getElementById('sellPreview').style.display = 'none';
-  document.getElementById('sellQty').max = currentQty;
   document.getElementById('sellModalOverlay').classList.add('show');
-  document.getElementById('sellQty').focus();
+  document.getElementById('sellAssetSelect').focus();
+}
+
+function onSellAssetChange() {
+  const val = document.getElementById('sellAssetSelect').value;
+  const EXISTING_ASSETS = EXISTING_ASSETS_DATA || {};
+  if (val && EXISTING_ASSETS[val]) {
+    const a = EXISTING_ASSETS[val];
+    document.getElementById('sellCurrentQty').textContent = a.qty.toFixed(a.qty < 1 ? 8 : 2);
+    document.getElementById('sellQty').max = a.qty;
+    document.getElementById('sellQty').value = '';
+    document.getElementById('sellPrice').value = '';
+    document.getElementById('sellPreview').style.display = 'none';
+  } else {
+    document.getElementById('sellCurrentQty').textContent = '—';
+    document.getElementById('sellQty').value = '';
+    document.getElementById('sellPrice').value = '';
+  }
+  updateSellPreview();
 }
 
 function closeSellModal() {
   document.getElementById('sellModalOverlay').classList.remove('show');
-  document.getElementById('sellPreview').style.display = 'none';
 }
 
 function updateSellPreview() {
+  const val = document.getElementById('sellAssetSelect').value;
   const qty = parseFloat(document.getElementById('sellQty').value) || 0;
   const price = parseFloat(document.getElementById('sellPrice').value) || 0;
-  const maxQty = parseFloat(document.getElementById('sellQty').max) || 0;
+  const EXISTING_ASSETS = EXISTING_ASSETS_DATA || {};
+  const asset = val ? EXISTING_ASSETS[val] : null;
 
-  if (qty > 0 && qty <= maxQty && price > 0) {
+  if (asset && qty > 0 && qty <= asset.qty && price > 0) {
     const montoBruto = qty * price;
+    const costoBase = qty * asset.costAvg;
+    const ganancia = montoBruto - costoBase;
+
     document.getElementById('sellMontoValue').textContent = '$' + montoBruto.toFixed(2);
+    const gainEl = document.getElementById('sellGainValue');
+    gainEl.textContent = (ganancia >= 0 ? '+' : '') + '$' + ganancia.toFixed(2);
+    gainEl.style.color = ganancia >= 0 ? 'var(--green)' : 'var(--red)';
     document.getElementById('sellPreview').style.display = 'flex';
   } else {
     document.getElementById('sellPreview').style.display = 'none';
   }
 }
 
-function copySellCommand() {
-  const ticker = document.getElementById('sellTicker').textContent.toLowerCase();
-  const lines = [
-    'Ejecuta en tu terminal:',
-    '',
-    'node register-exit.js ' + ticker.toUpperCase(),
-    '',
-    'Luego responde a los prompts:'
-  ];
-  const text = lines.join('\\n');
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = event.target;
-    const original = btn.textContent;
-    btn.textContent = '✅ Comando copiado';
-    setTimeout(() => { btn.textContent = original; }, 2000);
-  });
+async function submitSellTransaction() {
+  const val = document.getElementById('sellAssetSelect').value;
+  const qty = parseFloat(document.getElementById('sellQty').value) || 0;
+  const price = parseFloat(document.getElementById('sellPrice').value) || 0;
+  const reason = document.getElementById('sellReason').value;
+  const obs = document.getElementById('sellObs').value;
+  const EXISTING_ASSETS = EXISTING_ASSETS_DATA || {};
+  const asset = val ? EXISTING_ASSETS[val] : null;
+
+  if (!val || !asset || qty <= 0 || qty > asset.qty || price <= 0) {
+    alert('Completa los datos correctamente');
+    return;
+  }
+
+  const btn = event.target;
+  btn.textContent = '⏳ Registrando...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch('/api/register-exit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ticker: val,
+        quantity: qty,
+        price: price,
+        reason: reason,
+        observations: obs || null
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert('Error: ' + result.error);
+      btn.textContent = 'Registrar venta';
+      btn.disabled = false;
+      return;
+    }
+
+    alert(`✅ Venta registrada!\n\n${qty} ${val.toUpperCase()} a $${price}\nGanancia: ${result.ganancia_pct}%\n\nSaldo nuevo: ${result.nuevo_saldo.toFixed(result.nuevo_saldo < 1 ? 8 : 2)}`);
+    closeSellModal();
+    location.reload(); // Recarga para ver cambios actualizados
+
+  } catch (err) {
+    alert('Error: ' + err.message);
+    btn.textContent = 'Registrar venta';
+    btn.disabled = false;
+  }
 }
 
 function closeBuyModal() {
