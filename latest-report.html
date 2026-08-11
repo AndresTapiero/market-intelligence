@@ -91,6 +91,19 @@
   .sell-btn{background:transparent;color:var(--red);border:1px solid var(--red);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
   .sell-btn:hover{background:var(--red);color:white;box-shadow:0 0 0 3px var(--red-dim)}
 
+  /* REGISTRAR — un solo boton con selector Compra/Venta que cambia de color y texto */
+  .reg-control{display:flex;align-items:center;gap:6px}
+  .reg-toggle{display:inline-flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:2px}
+  .reg-toggle-btn{background:none;border:none;border-radius:6px;color:var(--text-muted);font-family:var(--sans);font-size:10px;font-weight:600;padding:5px 10px;cursor:pointer;white-space:nowrap;transition:all .15s}
+  .reg-toggle-btn:hover{color:var(--text-dim)}
+  .reg-toggle-btn.active[data-action="buy"]{background:var(--accent);color:white}
+  .reg-toggle-btn.active[data-action="sell"]{background:var(--red);color:white}
+  .reg-submit-btn{border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
+  .reg-submit-btn.is-buy{background:var(--accent);color:white}
+  .reg-submit-btn.is-buy:hover{background:#7550f0;box-shadow:0 0 0 3px var(--accent-dim)}
+  .reg-submit-btn.is-sell{background:var(--red);color:white;border-color:var(--red)}
+  .reg-submit-btn.is-sell:hover{background:#e03e58;box-shadow:0 0 0 3px var(--red-dim)}
+
   /* MODAL */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;padding:20px;role:presentation}
   .modal-overlay.show{display:flex}
@@ -430,8 +443,13 @@
     <div class="sticky-stat"><div class="sticky-stat-label">vs mes</div><div class="sticky-stat-val num pos">+1.5%</div></div>
   </div>
   <div class="header-actions">
-    <button class="buy-btn" onclick="openBuyModal()" aria-label="Registrar nueva compra">📥 Registrar compra</button>
-    <button class="sell-btn" onclick="openSellModal()" aria-label="Registrar venta">📤 Registrar venta</button>
+    <div class="reg-control">
+      <div class="reg-toggle" role="group" aria-label="Tipo de movimiento a registrar">
+        <button type="button" class="reg-toggle-btn active" data-action="buy" onclick="setRegAction('buy')" aria-pressed="true">Compra</button>
+        <button type="button" class="reg-toggle-btn" data-action="sell" onclick="setRegAction('sell')" aria-pressed="false">Venta</button>
+      </div>
+      <button class="reg-submit-btn is-buy" id="regSubmitBtn" onclick="openRegModal()" aria-label="Registrar movimiento">📥 Registrar compra</button>
+    </div>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
     <button class="pdf-btn" onclick="exportPDF()" aria-label="Descargar reporte en PDF">⬇ PDF</button>
     <span id="authStatus" style="font-size:11px; color:var(--text-muted); margin-left:16px;">⏳ Conectando...</span>
@@ -1217,6 +1235,31 @@ document.addEventListener('DOMContentLoaded', function() {
   const select = document.getElementById('logMonthFilter');
   if (select) filterLogByMonth(select.value);
 });
+
+let regAction = 'buy';
+function setRegAction(action) {
+  regAction = action;
+  document.querySelectorAll('.reg-toggle-btn').forEach(b => {
+    const isActive = b.dataset.action === action;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+  const btn = document.getElementById('regSubmitBtn');
+  if (action === 'buy') {
+    btn.textContent = '📥 Registrar compra';
+    btn.className = 'reg-submit-btn is-buy';
+    btn.setAttribute('aria-label', 'Registrar nueva compra');
+  } else {
+    btn.textContent = '📤 Registrar venta';
+    btn.className = 'reg-submit-btn is-sell';
+    btn.setAttribute('aria-label', 'Registrar venta');
+  }
+  measureStickyHeights();
+}
+
+function openRegModal() {
+  if (regAction === 'buy') openBuyModal(); else openSellModal();
+}
 
 function measureStickyHeights() {
   const stickyBar = document.querySelector('.sticky-bar');
