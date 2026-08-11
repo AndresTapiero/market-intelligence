@@ -71,6 +71,18 @@
   .copy-btn:hover{background:var(--green);color:white}
   .modal-submit{background:var(--accent);color:white;border:none;padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px}
   .modal-submit:hover{background:#7550f0}
+  /* === SELL MODAL STYLES === */
+  #sellModalOverlay .modal-header{background:linear-gradient(135deg, rgba(255,85,117,0.1), rgba(255,152,56,0.05))}
+  #sellModalOverlay .modal-title{color:var(--red)}
+  #sellModalOverlay .modal-submit{background:var(--red)}
+  #sellModalOverlay .modal-submit:hover{background:#ff3d5b}
+  .sell-preview{background:rgba(255,85,117,0.08);border-radius:var(--r-sm);padding:12px 14px;display:flex;flex-direction:column;gap:6px;border-left:3px solid var(--red)}
+  .sell-preview-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)}
+  .sell-preview-row .num{font-weight:700;color:var(--red)}
+  .sell-quantity-options{display:flex;gap:8px;margin:8px 0}
+  .sell-qty-btn{flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:8px;background:transparent;color:var(--text);cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+  .sell-qty-btn:hover{border-color:var(--red);color:var(--red)}
+  .sell-qty-btn.active{background:var(--red);border-color:var(--red);color:white}
   @media(max-width:480px){.modal-row{grid-template-columns:1fr}}
 
   /* HEADER */
@@ -1922,44 +1934,54 @@ window.addEventListener('load', async () => {
     <div class="modal-body">
       <div class="modal-field">
         <label>Activo a vender</label>
-        <select id="sellAssetSelect">
+        <select id="sellAssetSelect" onchange="updateSellQtyButtons()">
           <option value="">Selecciona un activo...</option>
           <optgroup label="Crypto" id="sellGroupCrypto"></optgroup>
           <optgroup label="Acciones/ETFs" id="sellGroupStocks"></optgroup>
         </select>
       </div>
+
+      <!-- Opciones de cantidad: Todo o Fracción -->
+      <div class="sell-quantity-options" id="sellQtyOptions" style="display:none">
+        <button class="sell-qty-btn" onclick="setSellQuantityType('all')">📊 Vender todo</button>
+        <button class="sell-qty-btn active" onclick="setSellQuantityType('partial')">✂️ Vender parcial</button>
+      </div>
+
       <div class="modal-row">
         <div class="modal-field">
-          <label>Cantidad vendida</label>
+          <label>Cantidad a vender</label>
           <input type="number" id="sellQty" placeholder="0.00" step="any" oninput="updateSellPreview()">
+          <div style="font-size:10px; color:var(--text-muted); margin-top:4px;" id="sellQtyHint"></div>
         </div>
         <div class="modal-field">
           <label>Precio unitario (USD)</label>
           <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="updateSellPreview()">
         </div>
       </div>
+
       <div class="modal-field">
         <label>Razón de venta</label>
         <select id="sellReason">
-          <option value="Toma de ganancias">Toma de ganancias</option>
-          <option value="Stop loss">Stop loss</option>
-          <option value="Rebalanceo">Rebalanceo</option>
-          <option value="Necesidad de fondos">Necesidad de fondos</option>
-          <option value="Cambio de estrategia">Cambio de estrategia</option>
-          <option value="Otro">Otro</option>
+          <option value="Toma de ganancias">✅ Toma de ganancias</option>
+          <option value="Stop loss">⛔ Stop loss</option>
+          <option value="Rebalanceo">⚖️ Rebalanceo</option>
+          <option value="Necesidad de fondos">💰 Necesidad de fondos</option>
+          <option value="Cambio de estrategia">📈 Cambio de estrategia</option>
+          <option value="Otro">❓ Otro</option>
         </select>
       </div>
+
       <div class="modal-field">
         <label>Observaciones (opcional)</label>
         <textarea id="sellObservations" rows="3" placeholder="Detalles adicionales sobre la venta..."></textarea>
       </div>
 
-      <div class="buy-preview" id="sellPreview" style="display:none">
-        <div class="buy-preview-row"><span>Monto bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
-        <div class="buy-preview-row"><span>Cantidad restante</span><span class="mono num" id="sellPreviewRemaining">0</span></div>
+      <div class="sell-preview" id="sellPreview" style="display:none">
+        <div class="sell-preview-row"><span>💵 Monto bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
+        <div class="sell-preview-row"><span>📊 Cantidad restante</span><span class="mono num" id="sellPreviewRemaining">0</span></div>
       </div>
 
-      <button class="modal-submit" onclick="submitSale()">Registrar venta</button>
+      <button class="modal-submit" onclick="submitSale()">📤 Registrar venta</button>
     </div>
   </div>
 </div>
@@ -2204,6 +2226,54 @@ function copyCommand() {
 }
 
 // ─── REGISTRAR VENTA — modal interactivo ───────────────────────────────────
+let sellQuantityType = 'partial'; // 'all' o 'partial'
+
+function setSellQuantityType(type) {
+  sellQuantityType = type;
+  const allBtn = document.querySelector('.sell-qty-btn:nth-child(1)');
+  const partialBtn = document.querySelector('.sell-qty-btn:nth-child(2)');
+
+  if (type === 'all') {
+    allBtn.classList.add('active');
+    partialBtn.classList.remove('active');
+    // Llenar cantidad automáticamente
+    const key = document.getElementById('sellAssetSelect').value;
+    if (key) {
+      const asset = EXISTING_ASSETS[key];
+      document.getElementById('sellQty').value = asset.qty;
+      updateSellPreview();
+    }
+  } else {
+    partialBtn.classList.add('active');
+    allBtn.classList.remove('active');
+    document.getElementById('sellQty').value = '';
+    document.getElementById('sellPreview').style.display = 'none';
+  }
+}
+
+function updateSellQtyButtons() {
+  const key = document.getElementById('sellAssetSelect').value;
+  const qtyOptionsEl = document.getElementById('sellQtyOptions');
+
+  if (key) {
+    qtyOptionsEl.style.display = 'flex';
+    const asset = EXISTING_ASSETS[key];
+    const hint = document.getElementById('sellQtyHint');
+    hint.textContent = 'Tienes: ' + asset.qty.toFixed(asset.qty < 1 ? 8 : 2) + ' unidades';
+
+    // Resetear a parcial
+    sellQuantityType = 'partial';
+    document.querySelectorAll('.sell-qty-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === 1);
+    });
+  } else {
+    qtyOptionsEl.style.display = 'none';
+  }
+
+  document.getElementById('sellQty').value = '';
+  document.getElementById('sellPreview').style.display = 'none';
+}
+
 function openSellModal() {
   const selectEl = document.getElementById('sellAssetSelect');
   const cryptoGroup = document.getElementById('sellGroupCrypto');
