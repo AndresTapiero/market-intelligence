@@ -22,7 +22,9 @@
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--text);font-family:var(--sans);padding:24px;padding-top:124px;min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
 
-  /* TABS NAV — segmented control fijo, un solo acento (patron fintech dark-mode) */
+  /* TABS NAV — segmented control fijo, un solo acento (patron fintech dark-mode).
+     top/padding-top del body se recalculan en JS (measureStickyHeights) porque
+     la barra superior puede crecer a 2 lineas en pantallas angostas. */
   .tabs-nav-wrap{position:fixed;top:53px;left:0;right:0;z-index:99;background:rgba(10,12,16,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);padding:10px 24px}
   .tabs-nav{display:inline-flex;gap:2px;background:var(--surface2);border:1px solid var(--border-subtle);border-radius:10px;padding:3px;max-width:100%;overflow-x:auto}
   .tab-btn{background:none;border:none;border-radius:7px;color:var(--text-muted);font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px}
@@ -71,7 +73,7 @@
   .delta{font-size:11px;font-weight:600;font-family:var(--mono)}
 
   /* STICKY */
-  .sticky-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,12,16,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-subtle);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .sticky-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,12,16,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-subtle);padding:12px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;row-gap:10px}
   .sticky-logo{font-size:14px;font-weight:800;letter-spacing:-.4px;white-space:nowrap}
   .sticky-logo span{color:var(--accent)}
   .build-tag{font-size:8px;font-weight:600;color:var(--text-muted)!important;background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:6px;font-family:var(--mono);vertical-align:middle}
@@ -81,7 +83,7 @@
   .sticky-stat-val{font-size:14px;font-weight:700;font-family:var(--mono);line-height:1.1}
   .pdf-btn{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
   .pdf-btn:hover{background:var(--accent);color:white}
-  .header-actions{display:flex;gap:8px;align-items:center}
+  .header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
   .refresh-btn{background:var(--green-dim);color:var(--green);border:1px solid var(--green);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
   .refresh-btn:hover{background:var(--green);color:white}
   .buy-btn{background:var(--accent);color:white;border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
@@ -351,8 +353,7 @@
     .three-col{grid-template-columns:1fr}
   }
   @media(max-width:768px){
-    body{padding:14px;padding-top:132px}
-    .tabs-nav-wrap{top:90px}
+    body{padding:14px}
     .totals-bar{grid-template-columns:1fr 1fr}
     .insights-mid{grid-template-columns:1fr 1fr}
     .pnl-grid{grid-template-columns:1fr}
@@ -364,10 +365,11 @@
     .total-value{font-size:22px} .total-card.highlight .total-value{font-size:24px}
     .header h1{font-size:20px}
     .sticky-stats{gap:14px}
+    .tabs-nav{display:grid;grid-template-columns:1fr 1fr;width:100%}
+    .tab-btn{justify-content:center}
   }
   @media(max-width:480px){
-    body{padding:12px;padding-top:128px}
-    .tabs-nav-wrap{top:86px}
+    body{padding:12px}
     .totals-bar{grid-template-columns:1fr 1fr}
     .assets-grid-crypto{grid-template-columns:1fr 1fr}
     .assets-grid-stocks{grid-template-columns:1fr 1fr}
@@ -484,6 +486,41 @@
   </div>
 </div>
 
+<h2 class="section-title">Evolución del portafolio</h2>
+<div class="chart-card mb">
+  <div class="chart-header">
+    <div>
+      <div class="chart-current num">$3,131</div>
+      <div class="chart-growth pos">+4.8% desde inicio del seguimiento</div>
+    </div>
+  </div>
+  <svg viewBox="0 0 600 200" class="chart-svg" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2 L564.0,164 L36.0,164 Z" fill="url(#areaGrad)"/>
+    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="36.0" cy="135.0" r="3.5" fill="var(--accent)"/>
+    <text x="36.0" y="125.0" text-anchor="middle" class="chart-val-label">$3.0k</text>
+    <text x="36.0" y="182" text-anchor="middle" class="chart-x-label">jun de 26</text>
+    <circle cx="168.0" cy="105.6" r="3.5" fill="var(--accent)"/>
+    <text x="168.0" y="95.6" text-anchor="middle" class="chart-val-label">$3.1k</text>
+    <text x="168.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
+    <circle cx="300.0" cy="96.5" r="3.5" fill="var(--accent)"/>
+    <text x="300.0" y="86.5" text-anchor="middle" class="chart-val-label">$3.2k</text>
+    <text x="300.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
+    <circle cx="432.0" cy="68.4" r="3.5" fill="var(--accent)"/>
+    <text x="432.0" y="58.4" text-anchor="middle" class="chart-val-label">$3.3k</text>
+    <text x="432.0" y="182" text-anchor="middle" class="chart-x-label">ago de 26</text>
+    <circle cx="564.0" cy="107.2" r="3.5" fill="var(--accent)"/>
+    <text x="564.0" y="97.2" text-anchor="middle" class="chart-val-label">$3.1k</text>
+    <text x="564.0" y="182" text-anchor="middle" class="chart-x-label">Hoy</text>
+  </svg>
+</div>
+
 <h2 class="section-title">Indicadores clave</h2>
 <div class="insights-top mb">
   <div class="score-card">
@@ -580,40 +617,6 @@
   </div>
 </div>
 
-<h2 class="section-title">Evolución del portafolio</h2>
-<div class="chart-card mb">
-  <div class="chart-header">
-    <div>
-      <div class="chart-current num">$3,131</div>
-      <div class="chart-growth pos">+4.8% desde inicio del seguimiento</div>
-    </div>
-  </div>
-  <svg viewBox="0 0 600 200" class="chart-svg" preserveAspectRatio="xMidYMid meet">
-    <defs>
-      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
-        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2 L564.0,164 L36.0,164 Z" fill="url(#areaGrad)"/>
-    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="36.0" cy="135.0" r="3.5" fill="var(--accent)"/>
-    <text x="36.0" y="125.0" text-anchor="middle" class="chart-val-label">$3.0k</text>
-    <text x="36.0" y="182" text-anchor="middle" class="chart-x-label">jun de 26</text>
-    <circle cx="168.0" cy="105.6" r="3.5" fill="var(--accent)"/>
-    <text x="168.0" y="95.6" text-anchor="middle" class="chart-val-label">$3.1k</text>
-    <text x="168.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
-    <circle cx="300.0" cy="96.5" r="3.5" fill="var(--accent)"/>
-    <text x="300.0" y="86.5" text-anchor="middle" class="chart-val-label">$3.2k</text>
-    <text x="300.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
-    <circle cx="432.0" cy="68.4" r="3.5" fill="var(--accent)"/>
-    <text x="432.0" y="58.4" text-anchor="middle" class="chart-val-label">$3.3k</text>
-    <text x="432.0" y="182" text-anchor="middle" class="chart-x-label">ago de 26</text>
-    <circle cx="564.0" cy="107.2" r="3.5" fill="var(--accent)"/>
-    <text x="564.0" y="97.2" text-anchor="middle" class="chart-val-label">$3.1k</text>
-    <text x="564.0" y="182" text-anchor="middle" class="chart-x-label">Hoy</text>
-  </svg>
-</div>
 
 </div><!-- /tab-resumen -->
 
@@ -1210,6 +1213,22 @@ document.addEventListener('DOMContentLoaded', function() {
   if (select) filterLogByMonth(select.value);
 });
 
+function measureStickyHeights() {
+  const stickyBar = document.querySelector('.sticky-bar');
+  const tabsWrap = document.querySelector('.tabs-nav-wrap');
+  if (!stickyBar || !tabsWrap) return;
+  const stickyH = stickyBar.offsetHeight;
+  tabsWrap.style.top = stickyH + 'px';
+  document.body.style.paddingTop = (stickyH + tabsWrap.offsetHeight + 16) + 'px';
+}
+
+window.addEventListener('load', measureStickyHeights);
+window.addEventListener('resize', () => {
+  clearTimeout(window._stickyResizeT);
+  window._stickyResizeT = setTimeout(measureStickyHeights, 120);
+});
+document.addEventListener('DOMContentLoaded', measureStickyHeights);
+
 function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === name));
   document.querySelectorAll('.tab-btn').forEach(b => {
@@ -1327,6 +1346,7 @@ function exportPDF() {
   const el = document.body.cloneNode(true);
   const stickyClone = el.querySelector('.sticky-bar'); if (stickyClone) stickyClone.remove();
   const tabsNavClone = el.querySelector('.tabs-nav-wrap'); if (tabsNavClone) tabsNavClone.remove();
+  el.style.paddingTop = '20px';
   el.querySelectorAll('.tab-panel').forEach(p => { p.style.display = 'block'; });
   el.querySelectorAll('.modal-overlay').forEach(m => m.remove());
   html2pdf().set(opt).from(el).save().then(() => { btn.textContent = '⬇ PDF'; }).catch(() => { btn.textContent = '⬇ PDF'; });
