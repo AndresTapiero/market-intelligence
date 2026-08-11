@@ -344,7 +344,12 @@
 
   footer{margin-top:24px;text-align:center;font-size:10px;color:var(--text-muted);font-family:var(--mono);padding-top:18px;border-top:1px solid var(--border-subtle)}
 
-  /* RESPONSIVE */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
+  .three-col{display:grid;grid-template-columns:1fr 1.4fr;gap:var(--g);margin-bottom:var(--g-lg)}
+  .three-col-stack{display:flex;flex-direction:column;gap:var(--g)}
+
+  /* RESPONSIVE — estas reglas deben ir DESPUES de .two-col/.three-col arriba para
+     poder sobreescribirlas por orden de cascada (misma especificidad = gana la ultima). */
   @media(max-width:1100px){
     .assets-grid-crypto{grid-template-columns:repeat(4,1fr)}
     .assets-grid-stocks{grid-template-columns:repeat(3,1fr)}
@@ -382,8 +387,6 @@
     .log-row{grid-template-columns:42px 32px 1fr 1fr 1fr;gap:4px;font-size:9px}
   }
   @media print{ .sticky-bar,.pdf-btn,.modal-overlay{display:none!important} body{padding-top:20px} }
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
-  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
 
   /* COP WIDGET */
   .cop-widget{display:flex;flex-direction:column;gap:16px}
@@ -779,6 +782,7 @@
       </div>
     </div>
   </div>
+  <div class="three-col-stack">
   <div class="card">
     <div class="log-card-header">
       <h3 class="section-title" style="margin-bottom:0">Bitácora de compras</h3>
@@ -810,6 +814,7 @@
     <div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Acciones — VOO/QQQ $50</div></div>
     <div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div>
   </div></div>
+  </div><!-- /three-col-stack -->
 </div>
 
 </div><!-- /tab-transacciones -->
