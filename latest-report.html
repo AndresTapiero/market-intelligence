@@ -213,6 +213,14 @@
   .asset-holdings-label{font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;font-size:9px}
   .asset-holdings-qty{color:var(--text-dim);font-weight:600}
   .decision-empty{font-size:12px;line-height:1.65;color:var(--text-dim)}
+  .margin-safety{padding:8px 10px;background:var(--surface2);border-radius:6px;margin-bottom:9px;border-left:2px solid var(--border)}
+  .margin-safety-label{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);margin-bottom:3px}
+  .margin-safety-value{font-size:13px;font-weight:700;font-family:var(--mono)}
+  .margin-safety-tag{font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--green-dim);color:var(--green);margin-left:4px;vertical-align:middle}
+  .decalogo-item{padding:12px 0;border-bottom:1px solid var(--border-subtle);font-size:12px;line-height:1.6;color:var(--text-dim)}
+  .decalogo-item:last-of-type{border-bottom:none}
+  .decalogo-item strong{color:var(--text)}
+  .decalogo-footer{margin-top:8px;padding:12px 14px;background:var(--surface2);border-radius:var(--r-sm);border-left:3px solid var(--accent);font-size:12px;line-height:1.6;color:var(--text-dim);font-style:italic}
   .asset-price{font-size:19px;font-weight:700;font-family:var(--mono);letter-spacing:-.4px;margin-bottom:4px}
   .asset-change{font-size:11px;font-family:var(--mono);margin-bottom:9px}
   .asset-change-label{color:var(--text-muted);font-size:9px}
@@ -648,6 +656,10 @@
       <span class="num"></span>
     </div>
     <div class="asset-delta"><span class="delta"></span> <span class="asset-delta-label">vs mes anterior</span></div>
+    <div class="margin-safety">
+      <div class="margin-safety-label">Margen de seguridad<span class="info-icon" data-tooltip-key="margen_seguridad">ⓘ</span></div>
+      <div class="margin-safety-value"></div>
+    </div>
     <div class="asset-context"></div>
   </div>
 </template>
@@ -885,6 +897,15 @@
   </div>
 </div>
 
+<h2 class="section-title">Decálogo del Inversor Sobrio</h2>
+<div class="card mb">
+  <div class="decalogo-item"><strong>1. Liquidez intocable</strong> — Mantén un fondo de emergencia de 3 a 6 meses. Nunca operes con dinero que necesites mañana.</div>
+  <div class="decalogo-item"><strong>2. Protección del núcleo</strong> — No arriesgues el capital base; si especulas, hazlo exclusivamente con utilidades.</div>
+  <div class="decalogo-item"><strong>3. Filtro de extrema convicción</strong> — De 20 ideas analizadas, ejecuta únicamente las 1 o 2 mejores.</div>
+  <div class="decalogo-item"><strong>4. Educación operativa</strong> — El broker es solo el cable; el conocimiento y tu tesis documentada son el motor.</div>
+  <div class="decalogo-footer">"En los mercados financieros se paga por tener razón a largo plazo, no por estar hiperactivo todos los días. La paciencia es tu activo más valioso."</div>
+</div>
+
 </div><!-- /tab-analisis -->
 
 <footer>Market Intelligence v21 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · martes, 4 de agosto de 2026, 3:14 p. m.</footer>
@@ -928,6 +949,10 @@
       <div class="modal-field">
         <label>Fecha de compra</label>
         <input type="date" id="buyDate">
+      </div>
+      <div class="modal-field">
+        <label>Precio objetivo (opcional)<span class="info-icon" data-tooltip-key="precio_objetivo">ⓘ</span></label>
+        <input type="number" id="buyTargetPrice" placeholder="Promedio de tus 3 fuentes de valoración" step="any">
       </div>
       <div class="modal-field">
         <label id="fundamentoLabel">Fundamento (opcional)</label>
@@ -1040,7 +1065,9 @@ const TOOLTIPS = {
   health_score: "Score de salud: medida del 1 al 10 que evalua diversificacion, rendimiento y disciplina de tu portafolio.",
   breakeven: "Break-even: el precio al que tu posicion vuelve a estar en cero, ni ganancia ni perdida.",
   annualized_return: "Retorno anualizado: proyecta el rendimiento actual como si se mantuviera durante un año completo.",
-  dca: "DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento."
+  dca: "DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.",
+  precio_objetivo: "El precio al que llegarias promediando tus 3 fuentes de valoracion (formula tipo Peter Lynch, consenso de analistas/DCF, y tu propio calculo). Sirve de ancla contra el panico cuando el mercado corrige.",
+  margen_seguridad: "Margen de seguridad: diferencia entre el precio objetivo (promedio de tus 3 valoraciones) y el precio actual. Si el precio esta 20% o mas por debajo del objetivo, hay margen real de compra. Solo aplica a acciones con flujo de caja, no a cripto."
 };
 
 document.addEventListener('click', function(e) {
@@ -1070,6 +1097,18 @@ const ASSET_DATA = [
   { ticker: 'TRUMP', label: 'TRUMP', icon: 'T', type: 'crypto', signal: 'hold', price: 1.48, change: '-15.0%', costAvg: 36.07, current: 1.48, invested: 41, actual: 1, delta: '-0.10', context: '—', class: 'asset-trump' },
   { ticker: 'SPX6900', label: 'SPX6900', icon: 'S', type: 'crypto', signal: 'hold', price: 0.35, change: '-6.0%', costAvg: 1.15, current: 0.3500, invested: 43, actual: 13, delta: '+0.37', context: '—', class: 'asset-spx6900' }
 ];
+
+// Margen de seguridad (solo acciones/ETFs con flujo de caja, no cripto).
+// Completa las 3 fuentes por ticker cuando las tengas — no se inventan valores aqui:
+//   lynch: formula Value Investing tipo Peter Lynch (Fair Value)
+//   consenso: promedio de analistas / modelo DCF (ej. Investing.com)
+//   propio: tu propio caso base de valor intrinseco (ej. AlphaSpread)
+// El margen de seguridad = (promedio de las 3 - precio actual) / promedio de las 3.
+// Si es >= 20%, hay margen real de compra segun la regla del libro.
+const VALUATIONS = {
+  // voo: { lynch: 0, consenso: 0, propio: 0 },
+  // nvda: { lynch: 0, consenso: 0, propio: 0 },
+};
 
 function renderAssets() {
   const stocksContainer = document.getElementById('stocksContainer');
@@ -1122,6 +1161,23 @@ function renderAssets() {
       clone.querySelector('.asset-holdings-qty').textContent = formatQty(holding.qty);
     } else {
       clone.querySelector('.asset-holdings').style.display = 'none';
+    }
+
+    const marginEl = clone.querySelector('.margin-safety');
+    if (asset.type === 'stock') {
+      const val = VALUATIONS[asset.ticker.toLowerCase()];
+      const marginValueEl = marginEl.querySelector('.margin-safety-value');
+      if (val) {
+        const avg = (val.lynch + val.consenso + val.propio) / 3;
+        const margin = ((avg - asset.price) / avg * 100);
+        marginValueEl.innerHTML = margin.toFixed(1) + '% <span class="margin-safety-tag">' + (margin >= 20 ? 'COMPRA' : 'PRECIO JUSTO') + '</span>';
+        marginValueEl.className = 'margin-safety-value ' + (margin >= 20 ? 'pos' : 'text-dim');
+      } else {
+        marginValueEl.textContent = 'Sin valoración aún';
+        marginValueEl.className = 'margin-safety-value text-muted';
+      }
+    } else {
+      marginEl.style.display = 'none';
     }
 
     clone.querySelector('.asset-context').textContent = asset.context;
