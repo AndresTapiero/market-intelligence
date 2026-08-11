@@ -55,3 +55,20 @@ export async function updateJournalEntry(id, changes) {
   if (error) throw new Error(`Error actualizando inv_journal: ${error.message}`);
   return data[0];
 }
+
+export async function insertExitEntry(entry) {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase.from("inv_journal_exits").insert(entry).select();
+  if (error) throw new Error(`Error insertando en inv_journal_exits: ${error.message}`);
+  return data[0];
+}
+
+export async function loadExitEntries() {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from("inv_journal_exits")
+    .select("*")
+    .order("fecha_salida", { ascending: false });
+  if (error) throw new Error(`Error leyendo inv_journal_exits: ${error.message}`);
+  return data;
+}

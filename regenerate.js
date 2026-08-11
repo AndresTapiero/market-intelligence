@@ -12,7 +12,7 @@ import { fileURLToPath } from "url";
 import { exec } from "child_process";
 import { generateHTML } from "./generate-report.js";
 import { detectAndLogDCA } from "./dca-log.js";
-import { loadJournalEntries } from "./supabase-client.js";
+import { loadJournalEntries, loadExitEntries } from "./supabase-client.js";
 
 dotenv.config();
 
@@ -86,6 +86,16 @@ async function main() {
   } catch (err) {
     console.log(`  ⚠️  No se pudo cargar el journal de Supabase: ${err.message}`);
     portfolio.journalEntries = [];
+  }
+
+  try {
+    portfolio.exitEntries = await loadExitEntries();
+    if (portfolio.exitEntries.length > 0) {
+      console.log(`  📤 Ventas: ${portfolio.exitEntries.length} registradas`);
+    }
+  } catch (err) {
+    console.log(`  ⚠️  No se pudo cargar las ventas de Supabase: ${err.message}`);
+    portfolio.exitEntries = [];
   }
   portfolio.cashUpdated = raw.cash?._updated || null;
   portfolio.watchlistNotes = Object.fromEntries(Object.entries(raw.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
