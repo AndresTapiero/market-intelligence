@@ -5,12 +5,16 @@
  * Sin llamar la API de Anthropic — costo $0
  */
 
+import dotenv from "dotenv";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { exec } from "child_process";
 import { generateHTML } from "./generate-report.js";
 import { detectAndLogDCA } from "./dca-log.js";
+import { loadJournalEntries } from "./supabase-client.js";
+
+dotenv.config();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -75,6 +79,14 @@ async function main() {
   portfolio.dcaLog = detectAndLogDCA(raw);
   portfolio.targets = raw.targets || null;
   portfolio.watchlistData = analysisData.watchlist || {};
+
+  try {
+    portfolio.journalEntries = await loadJournalEntries();
+    console.log(`  📓 Journal: ${portfolio.journalEntries.length} posiciones cargadas de Supabase`);
+  } catch (err) {
+    console.log(`  ⚠️  No se pudo cargar el journal de Supabase: ${err.message}`);
+    portfolio.journalEntries = [];
+  }
   portfolio.cashUpdated = raw.cash?._updated || null;
   portfolio.watchlistNotes = Object.fromEntries(Object.entries(raw.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
 

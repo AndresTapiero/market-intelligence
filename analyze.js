@@ -14,6 +14,7 @@ import { promisify } from "util";
 import { generateHTML } from "./generate-report.js";
 import { saveHistory, loadHistory } from "./history.js";
 import { detectAndLogDCA, loadDcaLog } from "./dca-log.js";
+import { loadJournalEntries } from "./supabase-client.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const exec = promisify(execCb);
@@ -244,7 +245,7 @@ export function loadRawCache() {
 // ─── PROCESAR RESPUESTA (reutilizable, sin llamar la API) ──────────────────
 // Toma el texto crudo (de una llamada real o del cache) y genera todo el
 // reporte. Separado de main() para poder reprocesar cache sin gastar API.
-export function processRawResponse(rawPortfolio, rawText) {
+export async function processRawResponse(rawPortfolio, rawText) {
   console.log("🧠 Procesando analisis...");
   const analysisData = sanitizeAndParse(rawText);
 
@@ -260,6 +261,15 @@ export function processRawResponse(rawPortfolio, rawText) {
   PORTFOLIO.dcaLog = dcaLog;
   PORTFOLIO.targets = rawPortfolio.targets || null;
   PORTFOLIO.watchlistData = analysisData.watchlist || {};
+
+  // Diario de inversiones (Supabase) — si falla, el reporte sigue sin journal
+  try {
+    PORTFOLIO.journalEntries = await loadJournalEntries();
+    console.log(`  📓 Journal: ${PORTFOLIO.journalEntries.length} posiciones cargadas de Supabase`);
+  } catch (err) {
+    console.log(`  ⚠️  No se pudo cargar el journal de Supabase: ${err.message}`);
+    PORTFOLIO.journalEntries = [];
+  }
   PORTFOLIO.cashUpdated = rawPortfolio.cash?._updated || null;
   PORTFOLIO.watchlistNotes = Object.fromEntries(Object.entries(rawPortfolio.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
 
@@ -340,7 +350,7 @@ async function main() {
   saveRawCache(rawText);
 
   // 3-6. Procesar respuesta y generar reporte (funcion reutilizable)
-  const { weekLabel, latestPath } = processRawResponse(rawPortfolio, rawText);
+  const { weekLabel, latestPath } = await processRawResponse(rawPortfolio, rawText);
 
   // 7. Push a GitHub
   await gitPush(weekLabel);

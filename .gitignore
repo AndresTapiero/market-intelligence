@@ -3,6 +3,7 @@ node_modules/
 
 # Secretos / scripts auto-generados con credenciales locales
 run-weekly.sh
+.env
 
 # Archivos del sistema
 .DS_Store

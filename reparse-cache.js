@@ -36,7 +36,7 @@ async function main() {
   console.log(`  📦 Cache del: ${cache.timestamp} (hace ${edadMin} minutos)`);
 
   const rawPortfolio = loadPortfolio();
-  const { weekLabel } = processRawResponse(rawPortfolio, cache.rawText);
+  const { weekLabel } = await processRawResponse(rawPortfolio, cache.rawText);
 
   console.log(`\n✅ Reprocesado exitosamente — costo: $0.00`);
   console.log(`   Revisa latest-report.html. Si se ve bien, haz:`);

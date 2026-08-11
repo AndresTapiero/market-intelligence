@@ -10,6 +10,8 @@
     "logs": "tail -f logs/cron.log"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.30.0"
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@supabase/supabase-js": "^2.112.2",
+    "dotenv": "^17.4.2"
   }
 }

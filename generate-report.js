@@ -5,7 +5,7 @@
 
 // BUILD: incrementar en cada cambio entregado por Claude para validar sincronizacion
 // entre lo generado aqui y lo que aparece en tu reporte real tras el deploy.
-const BUILD_VERSION = "v21";
+const BUILD_VERSION = "v22";
 const BUILD_DATE = "2026-07-13";
 
 export function generateHTML(data, history, portfolio) {
@@ -201,6 +201,7 @@ export function generateHTML(data, history, portfolio) {
     const defs = {
       "pnl": "P&L (Profit and Loss): la diferencia entre lo que invertiste y el valor actual de tu posicion.",
       "dca": "DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.",
+      "journal": "Diario de inversiones: registro de cada decision de stock-picking con su tesis, valoracion y checklist de disciplina — para revisar en el futuro por que compraste, no solo cuanto ganaste o perdiste.",
       "breakeven": "Break-even: el precio al que tu posicion vuelve a estar en cero, ni ganancia ni perdida.",
       "feargreed": "Fear & Greed Index: mide el sentimiento del mercado crypto del 0 (miedo extremo) al 100 (codicia extrema).",
       "trm": "TRM: Tasa Representativa del Mercado, el valor oficial del dolar en pesos colombianos publicado por el Banco de la Republica.",
@@ -584,6 +585,85 @@ export function generateHTML(data, history, portfolio) {
     </div>`;
   }
 
+  function journalSection() {
+    const entries = Array.isArray(portfolio.journalEntries) ? portfolio.journalEntries : [];
+    if (entries.length === 0) {
+      return `<div class="no-history" style="padding:20px 0">Aun no hay posiciones registradas en el diario de inversiones.</div>`;
+    }
+
+    const catColors = { core: "var(--green)", satelite: "var(--blue)", legado: "var(--text-muted)" };
+    const catLabels = { core: "Core", satelite: "Satélite", legado: "Legado" };
+    const checklistLabels = {
+      circulo_competencia: "Círculo de competencia",
+      confianza_gerencia: "Confianza en gerencia",
+      tesis_escrita_antes: "Tesis escrita antes de comprar",
+      tolerancia_caida_30_50pct: "Tolerancia a caída 30-50%",
+    };
+
+    const cards = entries.map(e => {
+      const catColor = catColors[e.categoria] || "var(--text-muted)";
+
+      // Buscar precio de mercado actual cruzando con el portafolio, si el ticker sigue activo
+      const tickerLower = e.ticker.toLowerCase();
+      const liveAsset = portfolio.stocks?.[tickerLower] || portfolio.crypto?.[tickerLower];
+      const marketPrice = liveAsset ? (liveAsset.val ?? liveAsset.currentVal / (liveAsset.qty || 1)) : null;
+
+      let statusHtml;
+      if (e.precio_salida) {
+        const gain = e.ganancia_perdida_pct;
+        statusHtml = `<div class="journal-status closed"><span class="label-xs">Cerrada</span><span class="mono num ${cls(gain||0)}">${gain!=null?pct(gain):"—"}</span></div>`;
+      } else if (marketPrice) {
+        const gainLive = ((marketPrice - e.precio_entrada) / e.precio_entrada * 100).toFixed(1);
+        statusHtml = `<div class="journal-status"><span class="label-xs">P&L actual</span><span class="mono num ${cls(gainLive)}">${pct(gainLive)}</span></div>`;
+      } else {
+        statusHtml = `<div class="journal-status"><span class="label-xs text-muted">Sin precio de mercado activo</span></div>`;
+      }
+
+      const checklist = e.checklist_disciplina || {};
+      const checklistHtml = Object.keys(checklistLabels).map(k => {
+        const checked = !!checklist[k];
+        return `<div class="checklist-item ${checked ? "done" : ""}">${checked ? "✓" : "○"} ${checklistLabels[k]}</div>`;
+      }).join("");
+
+      const fuentes = e.fuentes_valoracion;
+      const fuentesHtml = fuentes ? `
+        <div class="journal-fuentes">
+          <div class="label-xs">Valoración (3 fuentes)</div>
+          <div class="fuentes-grid">
+            ${fuentes.value_investing != null ? `<span>Value Investing: $${fuentes.value_investing}</span>` : ""}
+            ${fuentes.simply_wall_st != null ? `<span>Simply Wall St: $${fuentes.simply_wall_st}</span>` : ""}
+            ${fuentes.alphaspread != null ? `<span>AlphaSpread: $${fuentes.alphaspread}</span>` : ""}
+          </div>
+        </div>` : "";
+
+      return `
+      <div class="journal-card">
+        <div class="journal-header">
+          <div class="journal-ticker-group">
+            <span class="journal-ticker">${e.ticker}</span>
+            <span class="journal-cat-badge" style="background:${catColor}22;color:${catColor}">${catLabels[e.categoria]||e.categoria}</span>
+          </div>
+          ${statusHtml}
+        </div>
+        <div class="journal-nums">
+          <div class="journal-num-item"><span class="label-xs">Fecha</span><span class="mono">${e.fecha}</span></div>
+          <div class="journal-num-item"><span class="label-xs">Invertido</span><span class="mono num">$${Number(e.inversion_monto).toFixed(2)}</span></div>
+          <div class="journal-num-item"><span class="label-xs">Precio entrada</span><span class="mono num">$${Number(e.precio_entrada).toFixed(2)}</span></div>
+          ${e.precio_objetivo ? `<div class="journal-num-item"><span class="label-xs">Precio objetivo</span><span class="mono num">$${Number(e.precio_objetivo).toFixed(2)}</span></div>` : ""}
+          ${e.margen_seguridad_pct != null ? `<div class="journal-num-item"><span class="label-xs">Margen seguridad</span><span class="mono num ${cls(e.margen_seguridad_pct)}">${pct(e.margen_seguridad_pct)}</span></div>` : ""}
+        </div>
+        ${fuentesHtml}
+        <div class="journal-tesis">
+          <div class="label-xs">Tesis de inversión</div>
+          <div class="journal-tesis-text">${e.tesis_inversion || "Sin tesis registrada — posición comprada antes de aplicar el método de 3 fuentes."}</div>
+        </div>
+        <div class="journal-checklist">${checklistHtml}</div>
+      </div>`;
+    }).join("");
+
+    return `<div class="journal-grid">${cards}</div>`;
+  }
+
   function actionItems() {
     if (!d.actions) return "";
     return d.actions.map(a=>`<div class="action-item"><span class="action-num">${a.num}</span><span class="action-text">${a.text}</span></div>`).join("");
@@ -892,6 +972,28 @@ export function generateHTML(data, history, portfolio) {
   .cop-breakdown-item{display:flex;gap:6px;font-size:11px;color:var(--text-muted)}
   .cop-breakdown-item .mono{color:var(--text-dim);font-weight:600}
 
+  /* DIARIO DE INVERSIONES */
+  .journal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--g)}
+  .journal-card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--r);padding:20px 22px}
+  .journal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+  .journal-ticker-group{display:flex;align-items:center;gap:9px}
+  .journal-ticker{font-size:17px;font-weight:800;font-family:var(--mono)}
+  .journal-cat-badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:5px;text-transform:uppercase;font-family:var(--mono)}
+  .journal-status{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .journal-status .mono{font-size:15px;font-weight:700}
+  .journal-status.closed{opacity:.85}
+  .journal-nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;padding:12px 0;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);margin-bottom:12px}
+  .journal-num-item{display:flex;flex-direction:column;gap:2px}
+  .journal-num-item .mono{font-size:12px;font-weight:600}
+  .journal-fuentes{margin-bottom:12px}
+  .fuentes-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:5px;font-size:10px;color:var(--text-dim);font-family:var(--mono)}
+  .journal-tesis{margin-bottom:12px}
+  .journal-tesis-text{font-size:12px;line-height:1.6;color:var(--text-dim);padding:10px 12px;background:var(--surface2);border-radius:var(--r-sm);margin-top:5px;border-left:2px solid var(--accent)}
+  .journal-checklist{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .checklist-item{font-size:10px;color:var(--text-muted);font-family:var(--mono)}
+  .checklist-item.done{color:var(--green)}
+  @media(max-width:600px){.journal-checklist{grid-template-columns:1fr}}
+
   /* WATCHLIST */
   .watch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g);max-width:720px}
   .watch-card{background:var(--surface);border:1px dashed var(--border);border-radius:var(--r-sm);padding:16px 17px;border-top:2px dashed var(--asset-color,var(--border));opacity:.95}
@@ -1191,6 +1293,12 @@ ${stockAssets.filter(a=>a.cat!=="etf").length > 0 ? `<div class="signals-group">
   </div>
 </div>
 
+
+<!-- 7b. DIARIO DE INVERSIONES -->
+<div class="section-title">Diario de inversiones${infoIcon("journal")}</div>
+<div class="mb">
+  ${journalSection()}
+</div>
 
 <!-- 8. COMPOSICIÓN -->
 <div class="section-title">Composición del portafolio</div>
