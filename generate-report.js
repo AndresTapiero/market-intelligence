@@ -690,6 +690,14 @@ export function generateHTML(data, history, portfolio) {
 <title>Market Intelligence · ${getMonthLabel()}</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
+  /* TABS */
+  .tabs-nav{display:flex;gap:2px;margin-bottom:24px;border-bottom:1px solid var(--border-subtle);overflow-x:auto;padding-bottom:0}
+  .tab-btn{background:none;border:none;color:var(--text-muted);padding:14px 20px;font-size:13px;font-weight:600;font-family:var(--sans);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+  .tab-btn:hover{color:var(--text);background:rgba(255,255,255,.02)}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tabs-content{display:none}
+  .tabs-content.active{display:block}
+
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
   :root{
     --bg:#0a0c10;--surface:#13161d;--surface2:#1a1e27;--border:#232838;--border-subtle:#1a1e2a;
@@ -1089,6 +1097,17 @@ export function generateHTML(data, history, portfolio) {
   </div>
 </div>
 
+<!-- TABS NAVIGATION -->
+<div class="tabs-nav">
+  <button class="tab-btn active" onclick="switchTab('tab-dashboard')">📊 Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('tab-diario')">📓 Diario de Inversiones</button>
+  <button class="tab-btn" onclick="switchTab('tab-dca')">💰 Inversión Sistemática (DCA)</button>
+  <button class="tab-btn" onclick="switchTab('tab-detalle')">🔍 Análisis Detallado</button>
+</div>
+
+<!-- TAB 1: DASHBOARD EJECUTIVO -->
+<div id="tab-dashboard" class="tabs-content active">
+
 <!-- 1. PORTAFOLIO TOTAL -->
 <div class="section-title">Portafolio total</div>
 <div class="totals-bar mb">
@@ -1277,6 +1296,30 @@ ${stockAssets.filter(a=>a.cat!=="etf").length > 0 ? `<div class="signals-group">
   ${assetCardGroup(cryptoAssets, "assets-grid-crypto")}
 </div>
 
+<!-- 8. COMPOSICIÓN -->
+<div class="section-title">Composición del portafolio</div>
+<div class="comp-pair mb">
+  <div class="card"><div class="section-title">Acciones · $${fmt(totalStocksVal)}</div>${compBarsScroll(stockAssets, totalStocksVal)}</div>
+  <div class="card"><div class="section-title">Crypto · $${fmt(totalCryptoVal)}</div>${compBarsScroll(cryptoAssets, totalCryptoVal)}</div>
+</div>
+
+<!-- 9. DECISIONES DEL MES -->
+<div class="section-title">Decisiones para este mes</div>
+<div class="decision-card mb">
+  <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
+  ${actionItems()}
+</div>
+
+</div><!-- FIN TAB DASHBOARD -->
+
+<!-- TAB 2: DIARIO DE INVERSIONES -->
+<div id="tab-diario" class="tabs-content">
+
+<!-- 7b. DIARIO DE INVERSIONES -->
+<div class="section-title">Diario de inversiones${infoIcon("journal")}</div>
+<div class="card mb">
+  ${journalSection()}
+</div>
 
 <!-- 7. P&L -->
 <div class="section-title">Rendimiento detallado</div>
@@ -1293,36 +1336,35 @@ ${stockAssets.filter(a=>a.cat!=="etf").length > 0 ? `<div class="signals-group">
   </div>
 </div>
 
+</div><!-- FIN TAB DIARIO -->
 
-<!-- 7b. DIARIO DE INVERSIONES -->
-<div class="section-title">Diario de inversiones${infoIcon("journal")}</div>
-<div class="mb">
-  ${journalSection()}
+<!-- TAB 3: INVERSIÓN SISTEMÁTICA (DCA) -->
+<div id="tab-dca" class="tabs-content">
+
+<div class="section-title">DCA Tracker${infoIcon("dca")}</div>
+<div class="card mb">
+  ${dcaTracker()}
 </div>
 
-<!-- 8. COMPOSICIÓN -->
-<div class="section-title">Composición del portafolio</div>
-<div class="comp-pair">
-  <div class="card"><div class="section-title">Acciones · $${fmt(totalStocksVal)}</div>${compBarsScroll(stockAssets, totalStocksVal)}</div>
-  <div class="card"><div class="section-title">Crypto · $${fmt(totalCryptoVal)}</div>${compBarsScroll(cryptoAssets, totalCryptoVal)}</div>
+<div class="section-title">Bitácora de compras</div>
+<div class="card mb">
+  ${dcaLog()}
 </div>
 
+<div class="section-title">Próximos eventos</div>
+<div class="card mb">
+  <div class="cal-grid">${calendario.map(calRow).join("")}</div>
+</div>
+
+</div><!-- FIN TAB DCA -->
+
+<!-- TAB 4: ANÁLISIS DETALLADO -->
+<div id="tab-detalle" class="tabs-content">
 
 <!-- 8b. ASIGNACIÓN OBJETIVO -->
 ${allocationSection()}
-<!-- 9. DECISIONES DEL MES -->
-<div class="section-title">Decisiones para este mes</div>
-<div class="decision-card mb">
-  <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
-  ${actionItems()}
-</div>
 
-<!-- 10. DCA + BITÁCORA + CALENDARIO -->
-<div class="three-col">
-  <div class="card"><div class="section-title">DCA Tracker${infoIcon("dca")}</div>${dcaTracker()}</div>
-  <div class="card"><div class="section-title">Bitácora de compras</div>${dcaLog()}</div>
-  <div class="card"><div class="section-title">Próximos eventos</div><div class="cal-grid">${calendario.map(calRow).join("")}</div></div>
-</div>
+</div><!-- FIN TAB DETALLE -->
 
 <div class="footer">Market Intelligence ${BUILD_VERSION} (${BUILD_DATE}) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · ${now}</div>
 
@@ -1704,6 +1746,13 @@ function copyCashCommand() {
     btn.textContent = '✅ Copiado';
     setTimeout(() => { btn.textContent = original; }, 2000);
   });
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tabs-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId)?.classList.add('active');
+  event.target.classList.add('active');
 }
 
 function exportPDF() {

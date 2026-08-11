@@ -6,6 +6,14 @@
 <title>Market Intelligence · agosto de 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
+  /* TABS */
+  .tabs-nav{display:flex;gap:2px;margin-bottom:24px;border-bottom:1px solid var(--border-subtle);overflow-x:auto;padding-bottom:0}
+  .tab-btn{background:none;border:none;color:var(--text-muted);padding:14px 20px;font-size:13px;font-weight:600;font-family:var(--sans);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+  .tab-btn:hover{color:var(--text);background:rgba(255,255,255,.02)}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tabs-content{display:none}
+  .tabs-content.active{display:block}
+
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
   :root{
     --bg:#0a0c10;--surface:#13161d;--surface2:#1a1e27;--border:#232838;--border-subtle:#1a1e2a;
@@ -288,6 +296,28 @@
   .cop-breakdown-item{display:flex;gap:6px;font-size:11px;color:var(--text-muted)}
   .cop-breakdown-item .mono{color:var(--text-dim);font-weight:600}
 
+  /* DIARIO DE INVERSIONES */
+  .journal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--g)}
+  .journal-card{background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--r);padding:20px 22px}
+  .journal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+  .journal-ticker-group{display:flex;align-items:center;gap:9px}
+  .journal-ticker{font-size:17px;font-weight:800;font-family:var(--mono)}
+  .journal-cat-badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:5px;text-transform:uppercase;font-family:var(--mono)}
+  .journal-status{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .journal-status .mono{font-size:15px;font-weight:700}
+  .journal-status.closed{opacity:.85}
+  .journal-nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;padding:12px 0;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);margin-bottom:12px}
+  .journal-num-item{display:flex;flex-direction:column;gap:2px}
+  .journal-num-item .mono{font-size:12px;font-weight:600}
+  .journal-fuentes{margin-bottom:12px}
+  .fuentes-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:5px;font-size:10px;color:var(--text-dim);font-family:var(--mono)}
+  .journal-tesis{margin-bottom:12px}
+  .journal-tesis-text{font-size:12px;line-height:1.6;color:var(--text-dim);padding:10px 12px;background:var(--surface2);border-radius:var(--r-sm);margin-top:5px;border-left:2px solid var(--accent)}
+  .journal-checklist{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .checklist-item{font-size:10px;color:var(--text-muted);font-family:var(--mono)}
+  .checklist-item.done{color:var(--green)}
+  @media(max-width:600px){.journal-checklist{grid-template-columns:1fr}}
+
   /* WATCHLIST */
   .watch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g);max-width:720px}
   .watch-card{background:var(--surface);border:1px dashed var(--border);border-radius:var(--r-sm);padding:16px 17px;border-top:2px dashed var(--asset-color,var(--border));opacity:.95}
@@ -358,7 +388,7 @@
 <body>
 
 <div class="sticky-bar">
-  <div class="sticky-logo">Market<span>Intel</span><span class="build-tag">v21</span></div>
+  <div class="sticky-logo">Market<span>Intel</span><span class="build-tag">v22</span></div>
   <div class="sticky-stats">
     <div class="sticky-stat"><div class="sticky-stat-label">Total</div><div class="sticky-stat-val num">$3,131</div></div>
     <div class="sticky-stat"><div class="sticky-stat-label">P&L</div><div class="sticky-stat-val num neg">-$1,157</div></div>
@@ -375,13 +405,24 @@
 <div class="header" id="report-content">
   <div>
     <h1>Market Intelligence</h1>
-    <div class="header-sub">Reporte de inversiones · martes, 4 de agosto de 2026, 3:14 p. m.</div>
+    <div class="header-sub">Reporte de inversiones · lunes, 10 de agosto de 2026, 10:17 p. m.</div>
   </div>
   <div class="header-right">
     <div class="week-badge">agosto de 2026</div>
     <div class="analyst-badge">Analista Senior · 10 años · CFA L2</div>
   </div>
 </div>
+
+<!-- TABS NAVIGATION -->
+<div class="tabs-nav">
+  <button class="tab-btn active" onclick="switchTab('tab-dashboard')">📊 Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('tab-diario')">📓 Diario de Inversiones</button>
+  <button class="tab-btn" onclick="switchTab('tab-dca')">💰 Inversión Sistemática (DCA)</button>
+  <button class="tab-btn" onclick="switchTab('tab-detalle')">🔍 Análisis Detallado</button>
+</div>
+
+<!-- TAB 1: DASHBOARD EJECUTIVO -->
+<div id="tab-dashboard" class="tabs-content active">
 
 <!-- 1. PORTAFOLIO TOTAL -->
 <div class="section-title">Portafolio total</div>
@@ -1047,6 +1088,186 @@
       </div></div>
 </div>
 
+<!-- 8. COMPOSICIÓN -->
+<div class="section-title">Composición del portafolio</div>
+<div class="comp-pair mb">
+  <div class="card"><div class="section-title">Acciones · $636</div><div class="comp-scroll"><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#00d4a0"></span><span class="mono">VOO</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:40.4%;background:#00d4a0"></div></div>
+        <div class="comp-pct mono num">40.4%</div>
+        <div class="comp-val mono num">$257</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#76b900"></span><span class="mono">NVDA</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:36%;background:#76b900"></div></div>
+        <div class="comp-pct mono num">36.0%</div>
+        <div class="comp-val mono num">$229</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#4d8fff"></span><span class="mono">QQQ</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:15%;background:#4d8fff"></div></div>
+        <div class="comp-pct mono num">15.0%</div>
+        <div class="comp-val mono num">$95</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#e31937"></span><span class="mono">TSLA</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:6.3%;background:#e31937"></div></div>
+        <div class="comp-pct mono num">6.3%</div>
+        <div class="comp-val mono num">$40</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#8250ff"></span><span class="mono">NU</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:2.2%;background:#8250ff"></div></div>
+        <div class="comp-pct mono num">2.2%</div>
+        <div class="comp-val mono num">$14</div>
+      </div></div></div>
+  <div class="card"><div class="section-title">Crypto · $2,295</div><div class="comp-scroll"><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#f7931a"></span><span class="mono">BTC</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:45.2%;background:#f7931a"></div></div>
+        <div class="comp-pct mono num">45.2%</div>
+        <div class="comp-val mono num">$1,037</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#627eea"></span><span class="mono">ETH</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:14.1%;background:#627eea"></div></div>
+        <div class="comp-pct mono num">14.1%</div>
+        <div class="comp-val mono num">$324</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#9945ff"></span><span class="mono">SOL</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:13.4%;background:#9945ff"></div></div>
+        <div class="comp-pct mono num">13.4%</div>
+        <div class="comp-val mono num">$306</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#38bdf8"></span><span class="mono">TAO</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:6.1%;background:#38bdf8"></div></div>
+        <div class="comp-pct mono num">6.1%</div>
+        <div class="comp-val mono num">$140</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#ff007a"></span><span class="mono">UNI</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:5.2%;background:#ff007a"></div></div>
+        <div class="comp-pct mono num">5.2%</div>
+        <div class="comp-val mono num">$118</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#6fbcf0"></span><span class="mono">SUI</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:4.9%;background:#6fbcf0"></div></div>
+        <div class="comp-pct mono num">4.9%</div>
+        <div class="comp-val mono num">$112</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#e84142"></span><span class="mono">SEI</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:3.9%;background:#e84142"></div></div>
+        <div class="comp-pct mono num">3.9%</div>
+        <div class="comp-val mono num">$88</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#00d4ff"></span><span class="mono">ENA</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:3%;background:#00d4ff"></div></div>
+        <div class="comp-pct mono num">3.0%</div>
+        <div class="comp-val mono num">$69</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#f3ba2f"></span><span class="mono">BNB</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:2.8%;background:#f3ba2f"></div></div>
+        <div class="comp-pct mono num">2.8%</div>
+        <div class="comp-val mono num">$63</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#e84142"></span><span class="mono">AVAX</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#e84142"></div></div>
+        <div class="comp-pct mono num">0.7%</div>
+        <div class="comp-val mono num">$16</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#00d4a0"></span><span class="mono">SPX6900</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#00d4a0"></div></div>
+        <div class="comp-pct mono num">0.6%</div>
+        <div class="comp-val mono num">$13</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#00d4ff"></span><span class="mono">GIGA</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#00d4ff"></div></div>
+        <div class="comp-pct mono num">0.1%</div>
+        <div class="comp-val mono num">$2</div>
+      </div><div class="comp-row">
+        <div class="comp-label"><span class="comp-dot" style="background:#8250ff"></span><span class="mono">TRUMP</span></div>
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#8250ff"></div></div>
+        <div class="comp-pct mono num">0.1%</div>
+        <div class="comp-val mono num">$1</div>
+      </div></div></div>
+</div>
+
+<!-- 9. DECISIONES DEL MES -->
+<div class="section-title">Decisiones para este mes</div>
+<div class="decision-card mb">
+  <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
+  
+</div>
+
+</div><!-- FIN TAB DASHBOARD -->
+
+<!-- TAB 2: DIARIO DE INVERSIONES -->
+<div id="tab-diario" class="tabs-content">
+
+<!-- 7b. DIARIO DE INVERSIONES -->
+<div class="section-title">Diario de inversiones<span class="info-icon" onclick="showToast(this, 'Diario de inversiones: registro de cada decision de stock-picking con su tesis, valoracion y checklist de disciplina — para revisar en el futuro por que compraste, no solo cuanto ganaste o perdiste.')" title="Diario de inversiones: registro de cada decision de stock-picking con su tesis, valoracion y checklist de disciplina — para revisar en el futuro por que compraste, no solo cuanto ganaste o perdiste.">ⓘ</span></div>
+<div class="card mb">
+  <div class="journal-grid">
+      <div class="journal-card">
+        <div class="journal-header">
+          <div class="journal-ticker-group">
+            <span class="journal-ticker">TSLA</span>
+            <span class="journal-cat-badge" style="background:var(--blue)22;color:var(--blue)">Satélite</span>
+          </div>
+          <div class="journal-status"><span class="label-xs">P&L actual</span><span class="mono num neg">-86.7%</span></div>
+        </div>
+        <div class="journal-nums">
+          <div class="journal-num-item"><span class="label-xs">Fecha</span><span class="mono">2025-06-09</span></div>
+          <div class="journal-num-item"><span class="label-xs">Invertido</span><span class="mono num">$39.00</span></div>
+          <div class="journal-num-item"><span class="label-xs">Precio entrada</span><span class="mono num">$302.24</span></div>
+          
+          
+        </div>
+        
+        <div class="journal-tesis">
+          <div class="label-xs">Tesis de inversión</div>
+          <div class="journal-tesis-text">Sin tesis registrada — posición comprada antes de aplicar el método de 3 fuentes.</div>
+        </div>
+        <div class="journal-checklist"><div class="checklist-item ">○ Círculo de competencia</div><div class="checklist-item ">○ Confianza en gerencia</div><div class="checklist-item ">○ Tesis escrita antes de comprar</div><div class="checklist-item ">○ Tolerancia a caída 30-50%</div></div>
+      </div>
+      <div class="journal-card">
+        <div class="journal-header">
+          <div class="journal-ticker-group">
+            <span class="journal-ticker">NVDA</span>
+            <span class="journal-cat-badge" style="background:var(--blue)22;color:var(--blue)">Satélite</span>
+          </div>
+          <div class="journal-status"><span class="label-xs">P&L actual</span><span class="mono num pos">+92.5%</span></div>
+        </div>
+        <div class="journal-nums">
+          <div class="journal-num-item"><span class="label-xs">Fecha</span><span class="mono">2025-01-28</span></div>
+          <div class="journal-num-item"><span class="label-xs">Invertido</span><span class="mono num">$132.04</span></div>
+          <div class="journal-num-item"><span class="label-xs">Precio entrada</span><span class="mono num">$119.11</span></div>
+          
+          
+        </div>
+        
+        <div class="journal-tesis">
+          <div class="label-xs">Tesis de inversión</div>
+          <div class="journal-tesis-text">Sin tesis registrada — posición comprada antes de aplicar el método de 3 fuentes.</div>
+        </div>
+        <div class="journal-checklist"><div class="checklist-item ">○ Círculo de competencia</div><div class="checklist-item ">○ Confianza en gerencia</div><div class="checklist-item ">○ Tesis escrita antes de comprar</div><div class="checklist-item ">○ Tolerancia a caída 30-50%</div></div>
+      </div>
+      <div class="journal-card">
+        <div class="journal-header">
+          <div class="journal-ticker-group">
+            <span class="journal-ticker">NU</span>
+            <span class="journal-cat-badge" style="background:var(--blue)22;color:var(--blue)">Satélite</span>
+          </div>
+          <div class="journal-status"><span class="label-xs">P&L actual</span><span class="mono num pos">+73.6%</span></div>
+        </div>
+        <div class="journal-nums">
+          <div class="journal-num-item"><span class="label-xs">Fecha</span><span class="mono">2023-12-07</span></div>
+          <div class="journal-num-item"><span class="label-xs">Invertido</span><span class="mono num">$8.18</span></div>
+          <div class="journal-num-item"><span class="label-xs">Precio entrada</span><span class="mono num">$8.18</span></div>
+          
+          
+        </div>
+        
+        <div class="journal-tesis">
+          <div class="label-xs">Tesis de inversión</div>
+          <div class="journal-tesis-text">Sin tesis registrada — posición comprada antes de aplicar el método de 3 fuentes.</div>
+        </div>
+        <div class="journal-checklist"><div class="checklist-item ">○ Círculo de competencia</div><div class="checklist-item ">○ Confianza en gerencia</div><div class="checklist-item ">○ Tesis escrita antes de comprar</div><div class="checklist-item ">○ Tolerancia a caída 30-50%</div></div>
+      </div></div>
+</div>
 
 <!-- 7. P&L -->
 <div class="section-title">Rendimiento detallado</div>
@@ -1405,154 +1626,14 @@
   </div>
 </div>
 
+</div><!-- FIN TAB DIARIO -->
 
-<!-- 8. COMPOSICIÓN -->
-<div class="section-title">Composición del portafolio</div>
-<div class="comp-pair">
-  <div class="card"><div class="section-title">Acciones · $636</div><div class="comp-scroll"><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#00d4a0"></span><span class="mono">VOO</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:40.4%;background:#00d4a0"></div></div>
-        <div class="comp-pct mono num">40.4%</div>
-        <div class="comp-val mono num">$257</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#76b900"></span><span class="mono">NVDA</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:36%;background:#76b900"></div></div>
-        <div class="comp-pct mono num">36.0%</div>
-        <div class="comp-val mono num">$229</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#4d8fff"></span><span class="mono">QQQ</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:15%;background:#4d8fff"></div></div>
-        <div class="comp-pct mono num">15.0%</div>
-        <div class="comp-val mono num">$95</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#e31937"></span><span class="mono">TSLA</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:6.3%;background:#e31937"></div></div>
-        <div class="comp-pct mono num">6.3%</div>
-        <div class="comp-val mono num">$40</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#8250ff"></span><span class="mono">NU</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:2.2%;background:#8250ff"></div></div>
-        <div class="comp-pct mono num">2.2%</div>
-        <div class="comp-val mono num">$14</div>
-      </div></div></div>
-  <div class="card"><div class="section-title">Crypto · $2,295</div><div class="comp-scroll"><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#f7931a"></span><span class="mono">BTC</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:45.2%;background:#f7931a"></div></div>
-        <div class="comp-pct mono num">45.2%</div>
-        <div class="comp-val mono num">$1,037</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#627eea"></span><span class="mono">ETH</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:14.1%;background:#627eea"></div></div>
-        <div class="comp-pct mono num">14.1%</div>
-        <div class="comp-val mono num">$324</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#9945ff"></span><span class="mono">SOL</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:13.4%;background:#9945ff"></div></div>
-        <div class="comp-pct mono num">13.4%</div>
-        <div class="comp-val mono num">$306</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#38bdf8"></span><span class="mono">TAO</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:6.1%;background:#38bdf8"></div></div>
-        <div class="comp-pct mono num">6.1%</div>
-        <div class="comp-val mono num">$140</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#ff007a"></span><span class="mono">UNI</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:5.2%;background:#ff007a"></div></div>
-        <div class="comp-pct mono num">5.2%</div>
-        <div class="comp-val mono num">$118</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#6fbcf0"></span><span class="mono">SUI</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:4.9%;background:#6fbcf0"></div></div>
-        <div class="comp-pct mono num">4.9%</div>
-        <div class="comp-val mono num">$112</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#e84142"></span><span class="mono">SEI</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:3.9%;background:#e84142"></div></div>
-        <div class="comp-pct mono num">3.9%</div>
-        <div class="comp-val mono num">$88</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#00d4ff"></span><span class="mono">ENA</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:3%;background:#00d4ff"></div></div>
-        <div class="comp-pct mono num">3.0%</div>
-        <div class="comp-val mono num">$69</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#f3ba2f"></span><span class="mono">BNB</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:2.8%;background:#f3ba2f"></div></div>
-        <div class="comp-pct mono num">2.8%</div>
-        <div class="comp-val mono num">$63</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#e84142"></span><span class="mono">AVAX</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#e84142"></div></div>
-        <div class="comp-pct mono num">0.7%</div>
-        <div class="comp-val mono num">$16</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#00d4a0"></span><span class="mono">SPX6900</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#00d4a0"></div></div>
-        <div class="comp-pct mono num">0.6%</div>
-        <div class="comp-val mono num">$13</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#00d4ff"></span><span class="mono">GIGA</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#00d4ff"></div></div>
-        <div class="comp-pct mono num">0.1%</div>
-        <div class="comp-val mono num">$2</div>
-      </div><div class="comp-row">
-        <div class="comp-label"><span class="comp-dot" style="background:#8250ff"></span><span class="mono">TRUMP</span></div>
-        <div class="comp-bar-wrap"><div class="comp-bar" style="width:1%;background:#8250ff"></div></div>
-        <div class="comp-pct mono num">0.1%</div>
-        <div class="comp-val mono num">$1</div>
-      </div></div></div>
-</div>
+<!-- TAB 3: INVERSIÓN SISTEMÁTICA (DCA) -->
+<div id="tab-dca" class="tabs-content">
 
-
-<!-- 8b. ASIGNACIÓN OBJETIVO -->
-<div class="section-title">Asignación objetivo vs real<span class="info-icon" onclick="showToast(this, 'Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.')" title="Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.">ⓘ</span></div>
-    <div class="card mb">
-      <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
-      
-      <div class="alloc-row">
-        <div class="alloc-label"><span class="comp-dot" style="background:#f7931a"></span>Bitcoin</div>
-        <div class="alloc-bars">
-          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:35.4%;background:#f7931a"></div><div class="alloc-bar-target" style="left:30%"></div></div>
-        </div>
-        <div class="alloc-nums mono num">35.4% <span class="text-muted">/ 30%</span></div>
-        <div class="alloc-gap mono num neg">-5.4pp</div>
-      </div>
-      <div class="alloc-row">
-        <div class="alloc-label"><span class="comp-dot" style="background:#00d4a0"></span>ETFs</div>
-        <div class="alloc-bars">
-          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:0%;background:#00d4a0"></div><div class="alloc-bar-target" style="left:30%"></div></div>
-        </div>
-        <div class="alloc-nums mono num">0% <span class="text-muted">/ 30%</span></div>
-        <div class="alloc-gap mono num pos">+30.0pp</div>
-      </div>
-      <div class="alloc-row">
-        <div class="alloc-label"><span class="comp-dot" style="background:#4d8fff"></span>Acciones indiv.</div>
-        <div class="alloc-bars">
-          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:21.7%;background:#4d8fff"></div><div class="alloc-bar-target" style="left:25%"></div></div>
-        </div>
-        <div class="alloc-nums mono num">21.7% <span class="text-muted">/ 25%</span></div>
-        <div class="alloc-gap mono num pos">+3.3pp</div>
-      </div>
-      <div class="alloc-row">
-        <div class="alloc-label"><span class="comp-dot" style="background:#8b6dff"></span>Altcoins (HOLD)</div>
-        <div class="alloc-bars">
-          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:42.9%;background:#8b6dff"></div><div class="alloc-bar-target" style="left:15%"></div></div>
-        </div>
-        <div class="alloc-nums mono num">42.9% <span class="text-muted">/ 15%</span></div>
-        <div class="alloc-gap mono num neg">-27.9pp</div>
-      </div>
-      <div class="alloc-hint">💡 Tu proxima inversion deberia priorizar <strong>ETFs</strong> (30.0 puntos por debajo del objetivo). Edita tus objetivos en portfolio.json → targets.</div>
-    </div>
-<!-- 9. DECISIONES DEL MES -->
-<div class="section-title">Decisiones para este mes</div>
-<div class="decision-card mb">
-  <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
+<div class="section-title">DCA Tracker<span class="info-icon" onclick="showToast(this, 'DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.')" title="DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.">ⓘ</span></div>
+<div class="card mb">
   
-</div>
-
-<!-- 10. DCA + BITÁCORA + CALENDARIO -->
-<div class="three-col">
-  <div class="card"><div class="section-title">DCA Tracker<span class="info-icon" onclick="showToast(this, 'DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.')" title="DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.">ⓘ</span></div>
     <div class="dca-grid">
       <div class="dca-item">
         <div class="asset-icon-sm" style="background:#f7931a22;color:#f7931a">₿</div>
@@ -1569,12 +1650,16 @@
         <div class="dca-info">
           <div class="dca-name">Cash disponible (Hapi)</div>
           <div class="dca-amount mono">$200 USD</div>
-          <div class="dca-next ">Actualizado hace 18 días</div>
+          <div class="dca-next cash-stale">⚠ Actualizado hace 24 días — verifica si sigue exacto</div>
         </div>
         <button class="cash-update-btn" onclick="openCashModal()">✏️ Actualizar</button>
       </div>
-    </div></div>
-  <div class="card"><div class="section-title">Bitácora de compras</div><div class="log-list">
+    </div>
+</div>
+
+<div class="section-title">Bitácora de compras</div>
+<div class="card mb">
+  <div class="log-list">
       <div class="log-header">
         <span>Fecha</span>
         <span>Activo</span>
@@ -1651,11 +1736,62 @@
         <div class="log-qty mono">+0.014</div>
         <div class="log-price mono">$173.74</div>
         <div class="log-amount mono pos">$2.43</div>
-      </div></div></div>
-  <div class="card"><div class="section-title">Próximos eventos</div><div class="cal-grid"><div class="cal-row"><div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div><div class="cal-dot" style="background:var(--blue)"></div><div class="cal-evento">Decisión FED — tasas de interés</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--yellow)">Jun 25</div><div class="cal-dot" style="background:var(--yellow)"></div><div class="cal-evento">Earnings NVDA Q2 (estimado)</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Acciones — VOO/QQQ $50</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div></div></div>
+      </div></div>
 </div>
 
-<div class="footer">Market Intelligence v21 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · martes, 4 de agosto de 2026, 3:14 p. m.</div>
+<div class="section-title">Próximos eventos</div>
+<div class="card mb">
+  <div class="cal-grid"><div class="cal-row"><div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div><div class="cal-dot" style="background:var(--blue)"></div><div class="cal-evento">Decisión FED — tasas de interés</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--yellow)">Jun 25</div><div class="cal-dot" style="background:var(--yellow)"></div><div class="cal-evento">Earnings NVDA Q2 (estimado)</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Acciones — VOO/QQQ $50</div></div><div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div></div>
+</div>
+
+</div><!-- FIN TAB DCA -->
+
+<!-- TAB 4: ANÁLISIS DETALLADO -->
+<div id="tab-detalle" class="tabs-content">
+
+<!-- 8b. ASIGNACIÓN OBJETIVO -->
+<div class="section-title">Asignación objetivo vs real<span class="info-icon" onclick="showToast(this, 'Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.')" title="Perfil de riesgo: el nivel de volatilidad y posibles perdidas que estas dispuesto a aceptar buscando mayor retorno.">ⓘ</span></div>
+    <div class="card mb">
+      <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
+      
+      <div class="alloc-row">
+        <div class="alloc-label"><span class="comp-dot" style="background:#f7931a"></span>Bitcoin</div>
+        <div class="alloc-bars">
+          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:35.4%;background:#f7931a"></div><div class="alloc-bar-target" style="left:30%"></div></div>
+        </div>
+        <div class="alloc-nums mono num">35.4% <span class="text-muted">/ 30%</span></div>
+        <div class="alloc-gap mono num neg">-5.4pp</div>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-label"><span class="comp-dot" style="background:#00d4a0"></span>ETFs</div>
+        <div class="alloc-bars">
+          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:0%;background:#00d4a0"></div><div class="alloc-bar-target" style="left:30%"></div></div>
+        </div>
+        <div class="alloc-nums mono num">0% <span class="text-muted">/ 30%</span></div>
+        <div class="alloc-gap mono num pos">+30.0pp</div>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-label"><span class="comp-dot" style="background:#4d8fff"></span>Acciones indiv.</div>
+        <div class="alloc-bars">
+          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:21.7%;background:#4d8fff"></div><div class="alloc-bar-target" style="left:25%"></div></div>
+        </div>
+        <div class="alloc-nums mono num">21.7% <span class="text-muted">/ 25%</span></div>
+        <div class="alloc-gap mono num pos">+3.3pp</div>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-label"><span class="comp-dot" style="background:#8b6dff"></span>Altcoins (HOLD)</div>
+        <div class="alloc-bars">
+          <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:42.9%;background:#8b6dff"></div><div class="alloc-bar-target" style="left:15%"></div></div>
+        </div>
+        <div class="alloc-nums mono num">42.9% <span class="text-muted">/ 15%</span></div>
+        <div class="alloc-gap mono num neg">-27.9pp</div>
+      </div>
+      <div class="alloc-hint">💡 Tu proxima inversion deberia priorizar <strong>ETFs</strong> (30.0 puntos por debajo del objetivo). Edita tus objetivos en portfolio.json → targets.</div>
+    </div>
+
+</div><!-- FIN TAB DETALLE -->
+
+<div class="footer">Market Intelligence v22 (2026-07-13) · Tu Asesor Financiero · Solo informativo, no es asesoría financiera regulada · lunes, 10 de agosto de 2026, 10:17 p. m.</div>
 
 <!-- MODAL: REGISTRAR COMPRA -->
 <div class="modal-overlay" id="buyModalOverlay" onclick="if(event.target===this)closeBuyModal()">
@@ -2051,6 +2187,13 @@ function copyCashCommand() {
     btn.textContent = '✅ Copiado';
     setTimeout(() => { btn.textContent = original; }, 2000);
   });
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tabs-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId)?.classList.add('active');
+  event.target.classList.add('active');
 }
 
 function exportPDF() {
