@@ -31,6 +31,11 @@
   .tab-panel{display:none}
   .tab-panel.active{display:block}
   @media print{.tabs-nav-wrap{display:none!important}}
+  @media(min-width:769px){
+    .tabs-nav-wrap{padding:12px 24px}
+    .tabs-nav{width:100%;max-width:640px;padding:5px}
+    .tab-btn{flex:1;justify-content:center;padding:12px 22px;font-size:14px}
+  }
   @media(max-width:480px){.tabs-nav-wrap{padding:8px 12px}.tab-btn{padding:7px 12px;font-size:11px}}
   .num{font-variant-numeric:tabular-nums}
   .mono{font-family:var(--mono)} .pos{color:var(--green)} .neg{color:var(--red)}
