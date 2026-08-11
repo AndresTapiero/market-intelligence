@@ -425,18 +425,11 @@ async function loadSupabaseData() {
       .eq('user_id', userId)
       .order('fecha', { ascending: false });
 
-    const { data: exits, error: exitsErr } = await supabase
-      .from('inv_journal_exits')
-      .select('*')
-      .eq('user_id', userId)
-      .order('fecha_salida', { ascending: false });
-
-    if (!journalErr && !exitsErr) {
+    if (!journalErr) {
       sessionStorage.setItem('supabase_journal', JSON.stringify(journal || []));
-      sessionStorage.setItem('supabase_exits', JSON.stringify(exits || []));
-      console.log(`✅ Datos cargados: ${journal?.length || 0} compras, ${exits?.length || 0} ventas`);
+      console.log(`✅ Datos cargados: ${journal?.length || 0} transacciones`);
     } else {
-      console.warn('⚠️ Error cargando datos:', journalErr?.message || exitsErr?.message);
+      console.warn('⚠️ Error cargando datos:', journalErr?.message);
     }
   } catch (err) {
     console.warn('⚠️ No se pudo cargar datos:', err.message);
@@ -502,7 +495,7 @@ async function registerSale(ticker, quantity, price, reason, observations) {
 
   try {
     const { data, error } = await supabase
-      .from('inv_journal_exits')
+      .from('inv_journal')
       .insert([entry])
       .select();
 
