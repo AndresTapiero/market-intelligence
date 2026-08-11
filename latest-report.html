@@ -443,13 +443,7 @@
     <div class="sticky-stat"><div class="sticky-stat-label">vs mes</div><div class="sticky-stat-val num pos">+1.5%</div></div>
   </div>
   <div class="header-actions">
-    <div class="reg-control">
-      <div class="reg-toggle" role="group" aria-label="Tipo de movimiento a registrar">
-        <button type="button" class="reg-toggle-btn active" data-action="buy" onclick="setRegAction('buy')" aria-pressed="true">Compra</button>
-        <button type="button" class="reg-toggle-btn" data-action="sell" onclick="setRegAction('sell')" aria-pressed="false">Venta</button>
-      </div>
-      <button class="reg-submit-btn is-buy" id="regSubmitBtn" onclick="openRegModal()" aria-label="Registrar movimiento">📥 Registrar compra</button>
-    </div>
+    <button class="reg-submit-btn is-buy" id="regSubmitBtn" onclick="openRegModal()" aria-label="Registrar compra o venta">📥 Registrar</button>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
     <button class="pdf-btn" onclick="exportPDF()" aria-label="Descargar reporte en PDF">⬇ PDF</button>
     <span id="authStatus" style="font-size:11px; color:var(--text-muted); margin-left:16px;">⏳ Conectando...</span>
@@ -943,6 +937,10 @@
       <button class="modal-close" onclick="closeBuyModal()" aria-label="Cerrar modal">✕</button>
     </div>
     <div class="modal-body">
+      <div class="reg-toggle" role="group" aria-label="Tipo de movimiento" style="align-self:center">
+        <button type="button" class="reg-toggle-btn active" data-action="buy" onclick="switchRegModal('buy')" aria-pressed="true">Compra</button>
+        <button type="button" class="reg-toggle-btn" data-action="sell" onclick="switchRegModal('sell')" aria-pressed="false">Venta</button>
+      </div>
       <div class="modal-field">
         <label>Activo</label>
         <select id="buyAssetSelect" onchange="onAssetSelectChange()">
@@ -1006,6 +1004,10 @@
       <button class="modal-close" onclick="closeSellModal()" aria-label="Cerrar modal">✕</button>
     </div>
     <div class="modal-body">
+      <div class="reg-toggle" role="group" aria-label="Tipo de movimiento" style="align-self:center">
+        <button type="button" class="reg-toggle-btn" data-action="buy" onclick="switchRegModal('buy')" aria-pressed="false">Compra</button>
+        <button type="button" class="reg-toggle-btn active" data-action="sell" onclick="switchRegModal('sell')" aria-pressed="true">Venta</button>
+      </div>
       <div class="modal-field">
         <label>Activo a vender</label>
         <select id="sellAssetSelect" onchange="updateSellQtyButtons()">
@@ -1237,28 +1239,23 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 let regAction = 'buy';
-function setRegAction(action) {
-  regAction = action;
-  document.querySelectorAll('.reg-toggle-btn').forEach(b => {
-    const isActive = b.dataset.action === action;
-    b.classList.toggle('active', isActive);
-    b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-  });
-  const btn = document.getElementById('regSubmitBtn');
-  if (action === 'buy') {
-    btn.textContent = '📥 Registrar compra';
-    btn.className = 'reg-submit-btn is-buy';
-    btn.setAttribute('aria-label', 'Registrar nueva compra');
-  } else {
-    btn.textContent = '📤 Registrar venta';
-    btn.className = 'reg-submit-btn is-sell';
-    btn.setAttribute('aria-label', 'Registrar venta');
-  }
-  measureStickyHeights();
-}
 
 function openRegModal() {
   if (regAction === 'buy') openBuyModal(); else openSellModal();
+}
+
+// Toggle Compra/Venta que vive DENTRO de cada modal — cambia de un modal al otro
+// sin pasar por el header, para mantener la barra superior limpia.
+function switchRegModal(action) {
+  if (action === regAction) return;
+  regAction = action;
+  if (action === 'sell') {
+    closeBuyModal();
+    openSellModal();
+  } else {
+    closeSellModal();
+    openBuyModal();
+  }
 }
 
 function measureStickyHeights() {
