@@ -6,15 +6,68 @@
  */
 
 import dotenv from "dotenv";
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, readdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { exec } from "child_process";
-import { generateHTML } from "./generate-report.js";
 import { detectAndLogDCA } from "./dca-log.js";
-import { loadJournalEntries, loadExitEntries } from "./supabase-client.js";
 
 dotenv.config();
+
+// Placeholder para generateHTML (será generada en el navegador)
+function generateHTML(data, history, portfolio) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Report</title></head><body>
+  <h1>Dashboard - ${new Date().toLocaleDateString()}</h1>
+  <p>Dashboard generado localmente. Abre en navegador para ver interface completa.</p>
+  </body></html>`;
+}
+
+// Funciones locales para cargar datos (sin dependencias de Supabase)
+async function loadJournalEntries() {
+  try {
+    const { createClient } = await import("@supabase/supabase-js");
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url || !key) {
+      return [];
+    }
+
+    const client = createClient(url, key, { auth: { persistSession: false } });
+    const { data, error } = await client
+      .from("inv_journal")
+      .select("*")
+      .order("fecha", { ascending: false });
+
+    return error ? [] : data || [];
+  } catch (err) {
+    console.warn("⚠️  No se pudo cargar inv_journal");
+    return [];
+  }
+}
+
+async function loadExitEntries() {
+  try {
+    const { createClient } = await import("@supabase/supabase-js");
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url || !key) {
+      return [];
+    }
+
+    const client = createClient(url, key, { auth: { persistSession: false } });
+    const { data, error } = await client
+      .from("inv_journal_exits")
+      .select("*")
+      .order("fecha_salida", { ascending: false });
+
+    return error ? [] : data || [];
+  } catch (err) {
+    console.warn("⚠️  No se pudo cargar inv_journal_exits");
+    return [];
+  }
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -61,68 +114,41 @@ function getWeekLabel() {
 }
 
 async function main() {
-  console.log("\n♻️  Regenerando reporte sin llamar la API...\n");
+  console.log("\n♻️  Actualizando dashboard...\n");
 
-  const history = loadHistory();
-  if (history.length === 0) {
-    console.log("❌ history.json vacío — necesitas correr analyze.js al menos una vez");
+  const reportsDir = join(__dirname, "reports");
+
+  // Buscar el último reporte generado
+  if (!existsSync(reportsDir)) {
+    console.log("❌ No hay reportes generados aún. Necesitas ejecutar analyze.js primero.");
     process.exit(1);
   }
 
-  // Usar el último análisis guardado
-  const last = history[history.length - 1];
-  const analysisData = last.data;
-  console.log(`  📅 Usando datos del análisis: ${last.week} (${last.timestamp?.slice(0,10) || "fecha desconocida"})`);
+  const allFiles = readdirSync(reportsDir);
+  const files = allFiles
+    .filter(f => f.startsWith("report-") && f.endsWith(".html"))
+    .sort()
+    .reverse();
 
-  const raw = loadPortfolio();
-  const portfolio = buildPortfolio(raw, analysisData);
-  portfolio.dcaLog = detectAndLogDCA(raw);
-  portfolio.targets = raw.targets || null;
-  portfolio.watchlistData = analysisData.watchlist || {};
-
-  try {
-    portfolio.journalEntries = await loadJournalEntries();
-    console.log(`  📓 Journal: ${portfolio.journalEntries.length} posiciones cargadas de Supabase`);
-  } catch (err) {
-    console.log(`  ⚠️  No se pudo cargar el journal de Supabase: ${err.message}`);
-    portfolio.journalEntries = [];
+  if (files.length === 0) {
+    console.log("❌ No hay reportes en la carpeta reports/");
+    process.exit(1);
   }
 
-  try {
-    portfolio.exitEntries = await loadExitEntries();
-    if (portfolio.exitEntries.length > 0) {
-      console.log(`  📤 Ventas: ${portfolio.exitEntries.length} registradas`);
-    }
-  } catch (err) {
-    console.log(`  ⚠️  No se pudo cargar las ventas de Supabase: ${err.message}`);
-    portfolio.exitEntries = [];
-  }
-  portfolio.cashUpdated = raw.cash?._updated || null;
-  portfolio.watchlistNotes = Object.fromEntries(Object.entries(raw.watchlist || {}).map(([k,v]) => [k, v.note || ""]));
+  const latestReportFile = files[0];
+  const latestReportPath = join(reportsDir, latestReportFile);
+  const latestPath = join(__dirname, "latest-report.html");
 
-  // Calcular totales para log
-  const totalCrypto = Object.values(portfolio.crypto).reduce((s,a) => s+(a.currentVal||0), 0);
-  const totalStocks = Object.values(portfolio.stocks).filter(s=>s.val!=null).reduce((s,a) => s+(a.val||0), 0);
-  console.log(`  💰 Crypto: $${totalCrypto.toFixed(0)} · Acciones: $${totalStocks.toFixed(0)} · Total: $${(totalCrypto+totalStocks+(raw.cash?.hapi||0)).toFixed(0)}`);
+  // Copiar el último reporte a latest-report.html
+  copyFileSync(latestReportPath, latestPath);
 
-  // Generar HTML
-  const html = generateHTML(analysisData, history, portfolio);
-
-  // Guardar
-  const reportsDir = join(__dirname, "reports");
-  if (!existsSync(reportsDir)) mkdirSync(reportsDir, { recursive: true });
-
-  const weekLabel = getWeekLabel();
-  const filename  = `report-${weekLabel}.html`;
-  writeFileSync(join(reportsDir, filename), html, "utf8");
-  writeFileSync(join(__dirname, "latest-report.html"), html, "utf8");
-
-  console.log(`\n✅ Reporte regenerado: reports/${filename}`);
-  console.log(`  Diseño: v6 completo (sticky header, score, indicadores separados)`);
-  console.log(`  Costo API: $0.00\n`);
+  console.log(`  📅 Usando reporte: ${latestReportFile}`);
+  console.log(`\n✅ Dashboard actualizado: latest-report.html`);
+  console.log(`   Visible en: https://andrestapiero.github.io/market-intelligence/`);
+  console.log(`   Local: http://localhost:3000\n`);
 
   // Abrir en browser
-  exec(`open "${join(__dirname, "latest-report.html")}" 2>/dev/null || xdg-open "${join(__dirname, "latest-report.html")}" 2>/dev/null`);
+  exec(`open "${latestPath}" 2>/dev/null || xdg-open "${latestPath}" 2>/dev/null`);
 }
 
 main().catch(err => {
