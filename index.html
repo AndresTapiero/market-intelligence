@@ -199,35 +199,19 @@
   </div>
 
   <script>
-    async function loadLatestReport() {
+    function loadLatestReport() {
       const loading = document.getElementById('loading');
       const status = document.getElementById('status-info');
 
       loading.classList.add('active');
 
       try {
-        // Fetch index of reports
-        const response = await fetch('./reports/');
-        const html = await response.text();
-
-        // Parse HTML to find latest report
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const links = Array.from(doc.querySelectorAll('a'))
-          .map(a => a.href)
-          .filter(href => href.includes('report-'));
-
-        if (links.length > 0) {
-          // Get latest (last in alphabetical order)
-          const latest = links.sort().reverse()[0];
-          status.textContent = '✅ Reporte encontrado';
-          window.location.href = latest;
-        } else {
-          throw new Error('No reports found');
-        }
+        status.textContent = '✅ Cargando dashboard...';
+        // Redirect to latest report
+        window.location.href = './latest-report.html';
       } catch (err) {
         loading.classList.remove('active');
-        status.textContent = '❌ No hay reportes. Ejecuta: node regenerate.js';
+        status.textContent = '❌ Error al cargar';
         console.error(err);
       }
     }

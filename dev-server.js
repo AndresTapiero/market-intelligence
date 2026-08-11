@@ -219,7 +219,7 @@ const server = http.createServer(async (req, res) => {
 
   // Servir archivos estáticos
   const reqPath = req.url.split("?")[0];
-  let filePath = path.join(__dirname, reqPath === "/" ? "reports/report-2026-W33.html" : reqPath);
+  let filePath = path.join(__dirname, reqPath === "/" ? "latest-report.html" : reqPath);
 
   if (!filePath.includes(".")) {
     filePath += ".html";
@@ -231,5 +231,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`\n✅ Dev server corriendo en http://localhost:${PORT}`);
   console.log(`\n📊 Abre en navegador:`);
-  console.log(`   http://localhost:${PORT}/reports/report-2026-W33.html\n`);
+  console.log(`   http://localhost:${PORT}\n`);
 });
