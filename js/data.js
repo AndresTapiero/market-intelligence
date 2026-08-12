@@ -39,8 +39,8 @@ window.EXISTING_ASSETS = {
   "voo": { type: "stock", label: "VOO", qty: 0.36947, costAvg: 508.99, fundamento: "" },
   "qqq": { type: "stock", label: "QQQ", qty: 0.15618, costAvg: 533.7, fundamento: "" },
   "nvda": { type: "stock", label: "NVIDIA", qty: 1.10855, costAvg: 119.11, fundamento: "" },
-  "nu": { type: "stock", label: "Nubank", qty: 1, costAvg: 8.18, fundamento: "" },
-  "tsla": { type: "stock", label: "Tesla", qty: 0.12903, costAvg: 302.24, fundamento: "" }
+  "nu": { type: "stock", label: "Nubank", qty: 0, costAvg: 8.18, fundamento: "" },
+  "tsla": { type: "stock", label: "Tesla", qty: 0, costAvg: 302.24, fundamento: "" }
 };
 
 // Margen de seguridad (solo acciones/ETFs con flujo de caja, no cripto).

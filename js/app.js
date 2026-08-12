@@ -75,9 +75,10 @@ class InvestmentApp {
       if (error) throw error;
       if (!data?.length) return;
 
-      const assets = window.EXISTING_ASSETS;
+      // Clonar baseline para no mutar el original
+      const computed = JSON.parse(JSON.stringify(window.EXISTING_ASSETS));
 
-      // Aplicar transacciones sobre el baseline hardcodeado
+      // Aplicar transacciones sobre el baseline clonado
       data.forEach(row => {
         const ticker = row.ticker.toLowerCase();
         const qty    = parseFloat(row.numero_acciones) || 0;
@@ -85,23 +86,21 @@ class InvestmentApp {
         const isSell = !!row.fecha_venta;
 
         if (isSell) {
-          if (assets[ticker]) {
-            assets[ticker].qty = Math.max(0, assets[ticker].qty - qty);
+          if (computed[ticker]) {
+            computed[ticker].qty = Math.max(0, computed[ticker].qty - qty);
           }
         } else {
-          if (assets[ticker]) {
-            const prev   = assets[ticker];
+          if (computed[ticker]) {
+            const prev   = computed[ticker];
             const newQty = prev.qty + qty;
-            assets[ticker].costAvg = newQty > 0
+            computed[ticker].costAvg = newQty > 0
               ? (prev.qty * prev.costAvg + qty * price) / newQty
               : price;
-            assets[ticker].qty = newQty;
+            computed[ticker].qty = newQty;
           } else {
-            // Activo nuevo no estaba en el baseline
             const assetMeta = window.ASSET_DATA?.find(a => a.ticker === row.ticker);
-            assets[ticker] = {
-              qty,
-              costAvg: price,
+            computed[ticker] = {
+              qty, costAvg: price,
               type:  assetMeta?.type  || 'crypto',
               label: assetMeta?.label || row.ticker,
               fundamento: ''
@@ -110,12 +109,13 @@ class InvestmentApp {
         }
       });
 
+      // REEMPLAZAR (no mutar) — garantiza que cualquier lectura de window.EXISTING_ASSETS
+      // obtenga el objeto actualizado incluso si hay referencias estales
+      window.EXISTING_ASSETS = computed;
+
       console.log('✅ Portafolio sincronizado desde Supabase');
-      // Actualizar dropdowns primero
       window.populateAssetSelects?.();
-      // Re-renderizar si el tab activos ya estaba cargado
       this._rerenderPortfolio();
-      // Notificar a tab-loader para que re-renderice el tab activo
       document.dispatchEvent(new CustomEvent('portfolio-synced'));
 
       // Cargar historial de ventas
