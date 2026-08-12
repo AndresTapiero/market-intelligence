@@ -230,11 +230,11 @@ class InvestmentApp {
         costBase += holding.qty * holding.costAvg;
       });
 
-      // Add cash if available
-      const cashAmount = window.CASH_AMOUNT || 0;
+      // Cash desde localStorage (fuente de verdad: Hapi)
+      const cashAmount = window.CURRENT_CASH || 0;
       total += cashAmount;
 
-      const pnl = total - cashAmount - costBase; // PnL only on invested assets
+      const pnl = total - cashAmount - costBase; // PnL solo sobre activos invertidos
 
       // BTC price
       const btcAsset = assetData.find(a => a.ticker === 'BTC');
@@ -245,17 +245,25 @@ class InvestmentApp {
       const pnlEl = document.getElementById('stickyPnl');
       const btcEl = document.getElementById('stickyBtc');
 
-      if (totalEl) totalEl.textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      const fmtUSD = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+      if (totalEl) totalEl.textContent = fmtUSD(total);
 
       if (pnlEl) {
         const isPos = pnl >= 0;
-        pnlEl.textContent = (isPos ? '+$' : '-$') + Math.abs(pnl).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        pnlEl.textContent = (isPos ? '+' : '-') + fmtUSD(pnl);
         pnlEl.className = 'sticky-stat-val num ' + (isPos ? 'pos' : 'neg');
       }
 
       if (btcEl && btcPrice !== null) {
         btcEl.textContent = '$' + btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
+
+      // Actualizar cards del tab Resumen (si ya están cargados)
+      const resumeTotal = document.getElementById('resumeTotal');
+      const resumeCash  = document.getElementById('resumeCash');
+      if (resumeTotal) resumeTotal.textContent = fmtUSD(total);
+      if (resumeCash)  resumeCash.textContent  = fmtUSD(cashAmount);
     } catch (err) {
       console.warn('⚠️ Error actualizando sticky bar:', err.message);
     }

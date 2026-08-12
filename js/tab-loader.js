@@ -2,7 +2,9 @@
 // Classic script (not a module) — loaded with <script src defer>
 
 (function() {
-  var SESSION_KEY_PREFIX = 'tab_html_';
+  // Bump this version whenever tab HTML files change to invalidate sessionStorage cache
+  var CACHE_VERSION    = 'v4';
+  var SESSION_KEY_PREFIX = 'tab_html_v' + CACHE_VERSION + '_';
 
   /**
    * Load a tab's HTML content into its container.
@@ -79,6 +81,11 @@
 
   // Re-render cuando el sync de Supabase completa
   document.addEventListener('portfolio-synced', function() {
+    // Sticky bar y cards del resumen
+    if (window.app && typeof window.app._updateStickyBar === 'function') {
+      window.app._updateStickyBar();
+    }
+    // Activos tab
     var activosEl = document.getElementById('tab-activos');
     if (activosEl && activosEl.dataset.loaded === '1') {
       ['stocksPnlContainer','cryptoPnlContainer','stocksCompContainer','cryptoCompContainer']

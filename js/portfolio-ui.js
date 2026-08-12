@@ -49,9 +49,12 @@ function renderPnl() {
     clone.querySelector('.pnl-name').textContent = asset.ticker;
     clone.querySelector('.pnl-qty').textContent = formatQty(qty);
 
+    const investedEl = clone.querySelector('.pnl-invested');
+    if (investedEl) investedEl.textContent = '$' + invested.toFixed(0);
+
     const trios = clone.querySelectorAll('.pnl-trio');
-    trios[0].querySelector('.mono').textContent = fmtPrice(costAvg);
-    trios[1].querySelector('.mono').textContent = fmtPrice(currentPrice);
+    trios[1].querySelector('.mono').textContent = fmtPrice(costAvg);
+    trios[2].querySelector('.mono').textContent = fmtPrice(currentPrice);
 
     const dollarEl = clone.querySelector('.pnl-dollar');
     const pctEl   = clone.querySelector('.pnl-pct');
