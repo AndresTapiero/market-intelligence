@@ -57,25 +57,21 @@ export class TransactionService {
 
     const montoBruto = quantity * price;
     const montoNeto = montoBruto - commission;
-    const obs = [
-      commission > 0 ? `Comisión broker: $${commission.toFixed(2)}` : null,
-      observations || null
-    ].filter(Boolean).join(' | ') || null;
 
     const entry = {
       user_id: user.id,
       fecha: date || new Date().toISOString().split('T')[0],
-      fecha_salida: date || new Date().toISOString().split('T')[0],
       ticker: ticker.toUpperCase(),
-      numero_acciones_vendidas: quantity,
+      categoria: 'venta',
+      inversion_monto: montoBruto,
+      numero_acciones: quantity,
+      precio_entrada: 0,
       precio_salida: price,
-      monto_bruto: montoBruto,
-      costo_base: 0,
-      ganancia_bruta: 0,
-      ganancia_pct: 0,
-      razon_venta: reason,
+      fecha_venta: date || new Date().toISOString().split('T')[0],
+      razon_venta: reason || null,
+      comision: commission > 0 ? commission : null,
       monto_neto: montoNeto,
-      observaciones: obs
+      tesis_inversion: observations || null
     };
 
     try {
