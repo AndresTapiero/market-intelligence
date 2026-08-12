@@ -57,7 +57,90 @@ class InvestmentApp {
     await this.portfolioService.loadTransactions();
     await this.portfolioHistoryService.loadHistoricalReports();
     this.uiManager.updateAuthStatus();
-    await this._loadSellHistoryFromSupabase();
+    await this._syncPortfolioFromSupabase();
+  }
+
+  async _syncPortfolioFromSupabase() {
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) return;
+
+      // Cargar todas las transacciones en orden cronológico
+      const { data, error } = await this.supabase
+        .from('inv_journal')
+        .select('ticker, numero_acciones, precio_entrada, precio_salida, inversion_monto, comision, monto_neto, ganancia_perdida_pct, fecha_venta, razon_venta, tesis_inversion, fecha')
+        .eq('user_id', user.id)
+        .order('fecha', { ascending: true });
+
+      if (error) throw error;
+      if (!data?.length) return;
+
+      const assets = window.EXISTING_ASSETS;
+
+      // Aplicar transacciones sobre el baseline hardcodeado
+      data.forEach(row => {
+        const ticker = row.ticker.toLowerCase();
+        const qty    = parseFloat(row.numero_acciones) || 0;
+        const price  = parseFloat(row.precio_entrada)  || 0;
+        const isSell = !!row.fecha_venta;
+
+        if (isSell) {
+          if (assets[ticker]) {
+            assets[ticker].qty = Math.max(0, assets[ticker].qty - qty);
+          }
+        } else {
+          if (assets[ticker]) {
+            const prev   = assets[ticker];
+            const newQty = prev.qty + qty;
+            assets[ticker].costAvg = newQty > 0
+              ? (prev.qty * prev.costAvg + qty * price) / newQty
+              : price;
+            assets[ticker].qty = newQty;
+          } else {
+            // Activo nuevo no estaba en el baseline
+            const assetMeta = window.ASSET_DATA?.find(a => a.ticker === row.ticker);
+            assets[ticker] = {
+              qty,
+              costAvg: price,
+              type:  assetMeta?.type  || 'crypto',
+              label: assetMeta?.label || row.ticker,
+              fundamento: ''
+            };
+          }
+        }
+      });
+
+      console.log('✅ Portafolio sincronizado desde Supabase');
+      this._rerenderPortfolio();
+      window.populateAssetSelects?.();
+
+      // Cargar historial de ventas
+      const sells = data.filter(r => !!r.fecha_venta);
+      if (sells.length) {
+        window.SELL_HISTORY = sells.reverse().map(r => {
+          const qty    = r.numero_acciones || 0;
+          const price  = r.precio_salida   || 0;
+          const costAvg = r.precio_entrada  || 0;
+          const gross  = r.inversion_monto  || qty * price;
+          const comm   = r.comision         || 0;
+          const net    = r.monto_neto       || gross - comm;
+          const pnl    = net - qty * costAvg;
+          const pnlPct = r.ganancia_perdida_pct ?? (costAvg > 0 ? pnl / (qty * costAvg) * 100 : 0);
+          return {
+            key: r.ticker.toLowerCase(), ticker: r.ticker,
+            qty, price, gross, commission: comm, net, pnl, pnlPct,
+            date: r.fecha_venta
+              ? new Date(r.fecha_venta).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' })
+              : '—',
+            reason: r.razon_venta || ''
+          };
+        });
+        console.log(`✅ ${window.SELL_HISTORY.length} ventas cargadas`);
+        window.renderSellHistory?.();
+      }
+    } catch (err) {
+      console.warn('⚠️ Error sincronizando portafolio:', err.message);
+    }
   }
 
   async _loadSellHistoryFromSupabase() {
