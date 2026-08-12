@@ -469,6 +469,7 @@
   <nav class="tabs-nav" role="tablist" aria-label="Secciones del reporte">
     <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-resumen" onclick="switchTab('resumen')">📊 Resumen</button>
     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-activos" onclick="switchTab('activos')">💼 Activos</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-historial" onclick="switchTab('historial')">📈 Historial</button>
     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-transacciones" onclick="switchTab('transacciones')">🧾 Transacciones</button>
     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-analisis" onclick="switchTab('analisis')">🔍 Análisis</button>
   </nav>
@@ -773,6 +774,15 @@
 </template>
 
 </div><!-- /tab-activos -->
+
+<div class="tab-panel" id="tab-historial" data-tab="historial" role="tabpanel">
+
+<h2 class="section-title">Composición histórica del portafolio</h2>
+<div id="historialContainer" style="display:flex;flex-direction:column;gap:var(--g-lg)">
+  <div style="text-align:center;color:var(--text-muted);padding:40px 20px">⏳ Cargando historial...</div>
+</div>
+
+</div><!-- /tab-historial -->
 
 <div class="tab-panel" id="tab-transacciones" data-tab="transacciones" role="tabpanel">
 
@@ -1440,6 +1450,88 @@ function updateCashPreview() {}
 function generateCashCommand() {}
 function copyCommand() {}
 function copyCashCommand() {}
+
+async function loadHistorial() {
+  if (!window.app || !window.app.portfolioHistoryService) return;
+
+  try {
+    const container = document.getElementById('historialContainer');
+    const reports = await window.app.getHistoricalReports();
+
+    if (!reports || reports.length === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px">Sin datos históricos</div>';
+      return;
+    }
+
+    let html = '';
+    for (const report of reports) {
+      const assets = await window.app.getPortfolioComposition(report.id);
+      const snapshot = report.portfolio_snapshot || {};
+      const date = new Date(report.report_date).toLocaleDateString('es-CO', {
+        weekday: 'short', year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      html += `
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="font-size:14px;font-weight:600">${date} (${report.week})</h3>
+            <div style="font-size:12px;color:var(--text-muted)">
+              Total: <span class="mono" style="color:var(--text);font-weight:600">$${snapshot.total?.toLocaleString() || '0'}</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+            <div style="background:var(--surface2);padding:12px;border-radius:8px">
+              <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px">CRYPTO</div>
+              <div class="mono" style="font-weight:600">$${snapshot.totalCrypto?.toLocaleString() || '0'}</div>
+            </div>
+            <div style="background:var(--surface2);padding:12px;border-radius:8px">
+              <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px">ACCIONES</div>
+              <div class="mono" style="font-weight:600">$${snapshot.totalStocks?.toLocaleString() || '0'}</div>
+            </div>
+            <div style="background:var(--surface2);padding:12px;border-radius:8px">
+              <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px">CASH</div>
+              <div class="mono" style="font-weight:600">$${snapshot.cash?.toLocaleString() || '0'}</div>
+            </div>
+          </div>
+
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Activos por precio:</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px">
+            ${assets.map(a => `
+              <div style="background:var(--surface2);padding:10px;border-radius:6px;font-size:11px">
+                <div style="font-weight:600;margin-bottom:2px">${a.asset_key.toUpperCase()}</div>
+                <div class="mono" style="color:var(--text-dim)">${a.price}</div>
+                <div class="mono" style="font-size:10px;color:${a.change_7d?.includes('-') ? 'var(--red)' : 'var(--green)'}">${a.change_7d || '-'}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('Error cargando historial:', err);
+    container.innerHTML = `<div style="color:var(--red);padding:20px">Error: ${err.message}</div>`;
+  }
+}
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (window.app && window.app.portfolioHistoryService) {
+      loadHistorial();
+    }
+  }, 500);
+});
+
+const switchTabOriginal = window.switchTab;
+window.switchTab = function(name) {
+  switchTabOriginal(name);
+  if (name === 'historial' && !window.historialLoaded) {
+    window.historialLoaded = true;
+    loadHistorial();
+  }
+};
 </script>
 </body>
 </html>
