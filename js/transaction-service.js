@@ -62,7 +62,7 @@ export class TransactionService {
       user_id: user.id,
       fecha: date || new Date().toISOString().split('T')[0],
       ticker: ticker.toUpperCase(),
-      categoria: 'venta',
+      categoria: 'satelite',
       inversion_monto: montoBruto,
       numero_acciones: quantity,
       precio_entrada: costAvg || 0,
