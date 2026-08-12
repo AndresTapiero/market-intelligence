@@ -11,30 +11,27 @@
 <div class="totals-bar mb">
   <div class="total-card">
     <div class="total-label">Capital Invertido</div>
-    <div class="total-value num">$4,089</div>
+    <div class="total-value num" id="resumeCostBase">$—</div>
     <div class="total-sub">costo base USD</div>
-    <div class="total-sub-cop">≈ $13.209.872 COP</div>
-    <div class="total-breakdown"><span>Crypto $3,638</span><span>Acc. $450</span></div>
+    <div class="total-breakdown"><span>Crypto <span id="resumeCryptoCost">—</span></span><span>Acc. <span id="resumeStocksCost">—</span></span></div>
   </div>
   <div class="total-card">
     <div class="total-label">Valor de Mercado</div>
-    <div class="total-value num">$2,931</div>
+    <div class="total-value num" id="resumeMarket">$—</div>
     <div class="total-sub">a precios actuales</div>
-    <div class="total-sub-cop">≈ $9.471.004 COP</div>
-    <div class="total-breakdown"><span>Crypto $2,295</span><span>Acc. $636</span></div>
+    <div class="total-breakdown"><span>Crypto <span id="resumeCryptoMarket">—</span></span><span>Acc. <span id="resumeStocksMarket">—</span></span></div>
   </div>
   <div class="total-card">
     <div class="total-label">Resultado P&L<span class="info-icon" data-tooltip-key="pnl">ⓘ</span></div>
-    <div class="total-value num neg">-$1,157</div>
-    <div class="total-sub neg">-28.3% sobre capital</div>
-    <div class="total-sub-cop neg">≈ -$3.738.868 COP</div>
-    <div class="total-breakdown"><span class="neg">Crypto -36.9%</span><span class="pos">Acc. +41.3%</span></div>
+    <div class="total-value num" id="resumePnl">$—</div>
+    <div class="total-sub" id="resumePnlPct">—% sobre capital</div>
+    <div class="total-breakdown"><span id="resumeCryptoPnlPct">Crypto —</span><span id="resumeStocksPnlPct">Acc. —</span></div>
   </div>
   <div class="total-card highlight">
     <div class="total-label">Total Portafolio</div>
     <div class="total-value num" id="resumeTotal">$—</div>
-    <div class="total-sub">activos + cash · <span id="resumeVsMes" class="pos">—</span></div>
-    <div class="total-breakdown"><span>Cash <span id="resumeCash">$—</span></span><span class="neg" id="resumeAnn">—</span></div>
+    <div class="total-sub">activos + cash · <span id="resumeVsMes">—</span></div>
+    <div class="total-breakdown"><span>Cash <span id="resumeCash">$—</span></span></div>
   </div>
 </div>
 
@@ -82,21 +79,21 @@
       <span class="score-label-badge" style="background:var(--green)22;color:var(--green)">Saludable</span>
     </div>
     <div class="score-bar-wrap"><div class="score-bar" style="width:95%;background:var(--green)"></div></div>
-    <div class="score-items">
-      <div class="score-item">📊 Balance 78/22 crypto/acc.</div>
-      <div class="score-item neg">₿ Crypto P&L -36.9%</div>
-      <div class="score-item pos">📈 Acciones P&L +41.3%</div>
-      <div class="score-item pos">✓ DCA activo · 4 ciclos</div>
+    <div class="score-items" id="scoreItems">
+      <div class="score-item">📊 Balance —/— crypto/acc.</div>
+      <div class="score-item">₿ Crypto P&L —</div>
+      <div class="score-item">📈 Acciones P&L —</div>
+      <div class="score-item pos">✓ DCA activo</div>
     </div>
     <div class="ratio-bar">
-      <div class="ratio-crypto" style="width:78%"><span class="ratio-label">Crypto 78%</span></div>
-      <div class="ratio-stocks" style="width:22%"><span class="ratio-label">Acc. 22%</span></div>
+      <div class="ratio-crypto" id="ratioCrypto" style="width:78%"><span class="ratio-label">Crypto —%</span></div>
+      <div class="ratio-stocks" id="ratioStocks" style="width:22%"><span class="ratio-label">Acc. —%</span></div>
     </div>
   </div>
   <div class="insight-card alert-orange">
     <div class="insight-label">📍 BTC Break-even<span class="info-icon" data-tooltip-key="breakeven">ⓘ</span></div>
-    <div class="insight-value" style="color:var(--orange)">+19.8%</div>
-    <div class="insight-sub">Costo avg: <strong>$76,370</strong><br>Precio: <strong>$63,736</strong><br>Falta 19.8% para break-even</div>
+    <div class="insight-value" id="btcBreakevenPct" style="color:var(--orange)">—</div>
+    <div class="insight-sub">Costo avg: <strong id="btcBreakevenCost">—</strong><br>Precio: <strong id="btcBreakevenPrice">—</strong><br><span id="btcBreakevenSub">—</span></div>
   </div>
   <div class="insight-card">
     <div class="insight-label">📅 Retorno anualizado<span class="info-icon" data-tooltip-key="annualized_return">ⓘ</span></div>
@@ -108,27 +105,27 @@
 <div class="insights-mid mb">
   <div class="insight-card good">
     <div class="insight-label">🏆 Mejor acción</div>
-    <div class="insight-value pos">NU</div>
-    <div class="insight-value" style="font-size:15px;color:var(--green)">+2.0%</div>
-    <div class="insight-sub">Nubank<br>Valor: $14<br>P&L: <strong class="pos">+73.6%</strong></div>
+    <div class="insight-value pos" id="bestStockTicker">—</div>
+    <div class="insight-value" style="font-size:15px;color:var(--green)" id="bestStockChange">—</div>
+    <div class="insight-sub" id="bestStockSub">—</div>
   </div>
   <div class="insight-card alert-red">
     <div class="insight-label" style="color:var(--red)">⚠️ Peor acción</div>
-    <div class="insight-value neg">TSLA</div>
-    <div class="insight-value" style="font-size:15px;color:var(--red)">-1.5%</div>
-    <div class="insight-sub">Tesla<br>Valor: $40<br>P&L: <strong class="pos">+3.4%</strong></div>
+    <div class="insight-value neg" id="worstStockTicker">—</div>
+    <div class="insight-value" style="font-size:15px;color:var(--red)" id="worstStockChange">—</div>
+    <div class="insight-sub" id="worstStockSub">—</div>
   </div>
   <div class="insight-card good">
     <div class="insight-label">🏆 Mejor crypto</div>
-    <div class="insight-value pos">BNB</div>
-    <div class="insight-value" style="font-size:15px;color:var(--green)">+1.5%</div>
-    <div class="insight-sub">BNB<br>Valor: $63<br>P&L: <strong class="neg">-12.0%</strong></div>
+    <div class="insight-value pos" id="bestCryptoTicker">—</div>
+    <div class="insight-value" style="font-size:15px;color:var(--green)" id="bestCryptoChange">—</div>
+    <div class="insight-sub" id="bestCryptoSub">—</div>
   </div>
   <div class="insight-card alert-red">
     <div class="insight-label" style="color:var(--red)">⚠️ Peor crypto</div>
-    <div class="insight-value neg">TRUMP</div>
-    <div class="insight-value" style="font-size:15px;color:var(--red)">-15.0%</div>
-    <div class="insight-sub">TRUMP<br>Valor: $1<br>P&L: <strong class="neg">-95.9%</strong></div>
+    <div class="insight-value neg" id="worstCryptoTicker">—</div>
+    <div class="insight-value" style="font-size:15px;color:var(--red)" id="worstCryptoChange">—</div>
+    <div class="insight-sub" id="worstCryptoSub">—</div>
   </div>
 </div>
 

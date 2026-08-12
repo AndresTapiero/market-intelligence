@@ -124,6 +124,7 @@ class InvestmentApp {
       window.populateAssetSelects?.();
       this._rerenderPortfolio();
       this._updateStickyBar();
+      this._updateResumenCards();
       await this._loadBuyHistory();
       document.dispatchEvent(new CustomEvent('portfolio-synced'));
 
@@ -214,6 +215,107 @@ class InvestmentApp {
   /**
    * Calcula y actualiza los valores de la sticky bar dinámicamente
    */
+  _updateResumenCards() {
+    try {
+      const assets    = window.EXISTING_ASSETS || {};
+      const assetData = window.ASSET_DATA || [];
+
+      let totalCrypto = 0, totalStocks = 0, costCrypto = 0, costStocks = 0;
+      const stockResults = [], cryptoResults = [];
+
+      assetData.forEach(a => {
+        const key = a.ticker.toLowerCase();
+        const h   = assets[key];
+        if (!h || h.qty <= 0) return;
+        const val  = h.qty * a.price;
+        const cost = h.qty * h.costAvg;
+        const pnlPct = ((a.price - h.costAvg) / h.costAvg * 100);
+        const entry = { ticker: a.ticker, label: a.label || a.ticker, val, cost, pnlPct, change: a.change || '—' };
+        if (a.type === 'stock') { totalStocks += val; costStocks += cost; stockResults.push(entry); }
+        else                    { totalCrypto += val; costCrypto += cost; cryptoResults.push(entry); }
+      });
+
+      const totalMarket = totalCrypto + totalStocks;
+      const totalCost   = costCrypto + costStocks;
+      const pnl         = totalMarket - totalCost;
+      const pnlPct      = totalCost > 0 ? (pnl / totalCost * 100) : 0;
+      const cryptoPnlPct = costCrypto > 0 ? ((totalCrypto - costCrypto) / costCrypto * 100) : 0;
+      const stocksPnlPct = costStocks > 0 ? ((totalStocks - costStocks) / costStocks * 100) : 0;
+      const cash         = window.CURRENT_CASH || 0;
+
+      const fmtD  = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 });
+      const fmtPct = (n, plus=true) => (n >= 0 && plus ? '+' : n < 0 ? '' : '') + n.toFixed(1) + '%';
+      const cls   = n => n >= 0 ? 'pos' : 'neg';
+      const set   = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+      const setClass = (id, c) => { const el = document.getElementById(id); if (el) el.className = c; };
+
+      // Totals bar
+      set('resumeCostBase',       fmtD(totalCost));
+      set('resumeCryptoCost',     fmtD(costCrypto));
+      set('resumeStocksCost',     fmtD(costStocks));
+      set('resumeMarket',         fmtD(totalMarket));
+      set('resumeCryptoMarket',   fmtD(totalCrypto));
+      set('resumeStocksMarket',   fmtD(totalStocks));
+      set('resumePnl',            (pnl >= 0 ? '+' : '-') + fmtD(pnl));
+      setClass('resumePnl',       'total-value num ' + cls(pnl));
+      set('resumePnlPct',         fmtPct(pnlPct) + ' sobre capital');
+      setClass('resumePnlPct',    'total-sub ' + cls(pnl));
+      set('resumeCryptoPnlPct',   'Crypto ' + fmtPct(cryptoPnlPct));
+      setClass('resumeCryptoPnlPct', cls(cryptoPnlPct));
+      set('resumeStocksPnlPct',   'Acc. ' + fmtPct(stocksPnlPct));
+      setClass('resumeStocksPnlPct', cls(stocksPnlPct));
+      set('resumeTotal',          fmtD(totalMarket + cash));
+      set('resumeCash',           fmtD(cash));
+
+      // Ratio bars
+      const cryptoRatio = totalMarket > 0 ? Math.round(totalCrypto / totalMarket * 100) : 0;
+      const stocksRatio = 100 - cryptoRatio;
+      const rc = document.getElementById('ratioCrypto'), rs = document.getElementById('ratioStocks');
+      if (rc) { rc.style.width = cryptoRatio + '%'; const lbl = rc.querySelector('.ratio-label'); if (lbl) lbl.textContent = 'Crypto ' + cryptoRatio + '%'; }
+      if (rs) { rs.style.width = stocksRatio + '%'; const lbl = rs.querySelector('.ratio-label'); if (lbl) lbl.textContent = 'Acc. '    + stocksRatio + '%'; }
+
+      // Score items
+      const si = document.getElementById('scoreItems');
+      if (si) si.innerHTML =
+        `<div class="score-item">📊 Balance ${cryptoRatio}/${stocksRatio} crypto/acc.</div>` +
+        `<div class="score-item ${cls(cryptoPnlPct)}">₿ Crypto P&L ${fmtPct(cryptoPnlPct)}</div>` +
+        `<div class="score-item ${cls(stocksPnlPct)}">📈 Acciones P&L ${fmtPct(stocksPnlPct)}</div>` +
+        `<div class="score-item pos">✓ DCA activo</div>`;
+
+      // BTC break-even
+      const btcA = assetData.find(a => a.ticker === 'BTC');
+      const btcH = assets['btc'];
+      if (btcA && btcH && btcH.qty > 0) {
+        const bePct  = ((btcH.costAvg - btcA.price) / btcA.price * 100);
+        const beEl   = document.getElementById('btcBreakevenPct');
+        if (beEl) { beEl.textContent = (bePct > 0 ? '+' : '') + bePct.toFixed(1) + '%'; beEl.style.color = bePct > 0 ? 'var(--orange)' : 'var(--green)'; }
+        set('btcBreakevenCost',  '$' + btcH.costAvg.toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 }));
+        set('btcBreakevenPrice', '$' + btcA.price.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }));
+        set('btcBreakevenSub',   (bePct > 0 ? 'Falta ' : 'Superado por ') + Math.abs(bePct).toFixed(1) + '% para break-even');
+      }
+
+      // Mejor/Peor acción
+      const fillCard = (tickerId, changeId, subId, asset, colorCls) => {
+        set(tickerId, asset.ticker);
+        const chEl = document.getElementById(changeId);
+        if (chEl) { chEl.textContent = asset.change; chEl.style.color = asset.pnlPct >= 0 ? 'var(--green)' : 'var(--red)'; }
+        set(subId, `${asset.label} · ${fmtD(asset.val)} · P&L ${fmtPct(asset.pnlPct)}`);
+      };
+      if (stockResults.length) {
+        const sorted = [...stockResults].sort((a,b) => b.pnlPct - a.pnlPct);
+        fillCard('bestStockTicker',  'bestStockChange',  'bestStockSub',  sorted[0]);
+        fillCard('worstStockTicker', 'worstStockChange', 'worstStockSub', sorted[sorted.length-1]);
+      }
+      if (cryptoResults.length) {
+        const sorted = [...cryptoResults].sort((a,b) => b.pnlPct - a.pnlPct);
+        fillCard('bestCryptoTicker',  'bestCryptoChange',  'bestCryptoSub',  sorted[0]);
+        fillCard('worstCryptoTicker', 'worstCryptoChange', 'worstCryptoSub', sorted[sorted.length-1]);
+      }
+    } catch (err) {
+      console.warn('⚠️ Error actualizando resumen cards:', err.message);
+    }
+  }
+
   _updateStickyBar() {
     try {
       const assets = window.EXISTING_ASSETS || {};
@@ -695,3 +797,4 @@ window.submitBuy = () => app.submitBuy();
 window.submitSale = () => app.submitSale();
 window.refreshPortfolio = () => app.refreshPortfolio();
 window.deleteTransaction = (id) => app.deleteTransaction(id);
+window.updateResumenCards = () => app._updateResumenCards();
