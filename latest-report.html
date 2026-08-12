@@ -1688,6 +1688,8 @@ function populateAssetSelects() {
   Object.values(groups).forEach(g => { if (g) g.innerHTML = ''; });
 
   Object.entries(EXISTING_ASSETS).forEach(([key, asset]) => {
+    if (asset.qty <= 0) return;
+
     const buyOpt = document.createElement('option');
     buyOpt.value = key;
     buyOpt.textContent = asset.label + ' (' + key.toUpperCase() + ')';
