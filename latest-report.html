@@ -759,12 +759,12 @@
   <div class="pnl-card">
     <div class="pnl-header"><div class="pnl-title">Acciones · 5</div><div class="pnl-total-badge pos">+$186 (+41.3%)</div></div>
     <div class="pnl-scroll" id="stocksPnlContainer"></div>
-    <div class="pnl-subtotal"><span class="text-muted">Total</span><span class="mono num">$450</span><span class="mono num">$636</span><span class="mono num pos">+$186</span></div>
+    <div class="pnl-subtotal"><span class="text-muted">Invertido</span><span class="mono num" id="stocksSubInvested">—</span><span class="text-muted">Actual</span><span class="mono num" id="stocksSubActual">—</span><span class="mono num" id="stocksSubPnl">—</span></div>
   </div>
   <div class="pnl-card">
-    <div class="pnl-header"><div class="pnl-title">Crypto · 13</div><div class="pnl-total-badge neg">-$1,343 (-36.9%)</div></div>
+    <div class="pnl-header"><div class="pnl-title">Crypto · 13</div><div class="pnl-total-badge neg" id="cryptoPnlBadge">-$1,343 (-36.9%)</div></div>
     <div class="pnl-scroll" id="cryptoPnlContainer"></div>
-    <div class="pnl-subtotal"><span class="text-muted">Total</span><span class="mono num">$3,638</span><span class="mono num">$2,295</span><span class="mono num neg">-$1,343</span></div>
+    <div class="pnl-subtotal"><span class="text-muted">Invertido</span><span class="mono num" id="cryptoSubInvested">—</span><span class="text-muted">Actual</span><span class="mono num" id="cryptoSubActual">—</span><span class="mono num" id="cryptoSubPnl">—</span></div>
   </div>
 </div>
 
@@ -778,16 +778,12 @@
       </div>
     </div>
     <div class="pnl-nums">
-      <div class="pnl-trio"><span class="label-xs">Compra</span><span class="mono num"></span></div>
-      <div class="pnl-trio"><span class="label-xs">Mercado</span><span class="mono num"></span></div>
-      <div class="pnl-trio"><span class="label-xs">Invertido</span><span class="mono num"></span></div>
-      <div class="pnl-trio"><span class="label-xs">Actual</span><span class="mono num"></span></div>
-      <div class="pnl-trio"><span class="label-xs">vs mes</span><span class="delta"></span></div>
+      <div class="pnl-trio"><span class="label-xs">P. Compra</span><span class="mono num"></span></div>
+      <div class="pnl-trio"><span class="label-xs">P. Mercado</span><span class="mono num"></span></div>
       <div class="pnl-trio">
-        <span class="label-xs">P&L</span>
-        <span class="mono num"></span>
-        <span class="mono num small"></span>
-        <div class="pnl-bar-wrap"><div class="pnl-bar"></div></div>
+        <span class="label-xs">P&amp;L</span>
+        <span class="mono num pnl-dollar"></span>
+        <span class="mono num small pnl-pct"></span>
       </div>
     </div>
   </div>
@@ -1275,9 +1271,97 @@ function filterLogByMonth(month) {
   if (emptyEl) emptyEl.style.display = visibleCount === 0 ? 'block' : 'none';
 }
 
+const ASSET_COLORS = {
+  btc:'#f7931a',eth:'#627eea',sol:'#9945ff',tao:'#38bdf8',uni:'#ff007a',bnb:'#f3ba2f',
+  sui:'#6fbcf0',sei:'#e84142',ena:'#00d4ff',avax:'#e84142',giga:'#00d4ff',trump:'#8250ff',
+  spx6900:'#00d4a0',voo:'#00d4a0',qqq:'#4d8fff',nvda:'#76b900',nu:'#8250ff',tsla:'#e31937'
+};
+
+function fmtPrice(v) {
+  if (v >= 1000) return '$' + v.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+  if (v >= 1)    return '$' + v.toFixed(2);
+  if (v >= 0.01) return '$' + v.toFixed(4);
+  return '$' + v.toFixed(6);
+}
+
+function renderPnl() {
+  const stocksEl = document.getElementById('stocksPnlContainer');
+  const cryptoEl = document.getElementById('cryptoPnlContainer');
+  const tmpl = document.getElementById('pnlRowTemplate');
+  if (!stocksEl || !cryptoEl || !tmpl) return;
+
+  let sInv = 0, sAct = 0, cInv = 0, cAct = 0;
+
+  ASSET_DATA.forEach(asset => {
+    const key = asset.ticker.toLowerCase();
+    const holding = EXISTING_ASSETS[key];
+    if (!holding) return;
+
+    const costAvg = holding.costAvg;
+    const qty = holding.qty;
+    const currentPrice = asset.price;
+    const invested = qty * costAvg;
+    const actual = qty * currentPrice;
+    const pnlD = actual - invested;
+    const pnlP = (currentPrice - costAvg) / costAvg * 100;
+    const isPos = pnlD >= 0;
+    const color = ASSET_COLORS[key] || 'var(--accent)';
+
+    const clone = tmpl.content.cloneNode(true);
+    const icon = clone.querySelector('.asset-icon-sm');
+    icon.textContent = asset.icon;
+    icon.style.background = color + '22';
+    icon.style.color = color;
+
+    clone.querySelector('.pnl-name').textContent = asset.ticker;
+    clone.querySelector('.pnl-qty').textContent = formatQty(qty);
+
+    const trios = clone.querySelectorAll('.pnl-trio');
+    trios[0].querySelector('.mono').textContent = fmtPrice(costAvg);
+    trios[1].querySelector('.mono').textContent = fmtPrice(currentPrice);
+
+    const dollarEl = clone.querySelector('.pnl-dollar');
+    const pctEl   = clone.querySelector('.pnl-pct');
+    dollarEl.textContent = (isPos ? '+$' : '-$') + Math.abs(pnlD).toFixed(0);
+    dollarEl.className   = 'mono num pnl-dollar ' + (isPos ? 'pos' : 'neg');
+    pctEl.textContent    = (isPos ? '+' : '') + pnlP.toFixed(1) + '%';
+    pctEl.className      = 'mono num small pnl-pct ' + (isPos ? 'pos' : 'neg');
+
+    if (asset.type === 'stock') {
+      stocksEl.appendChild(clone);
+      sInv += invested; sAct += actual;
+    } else {
+      cryptoEl.appendChild(clone);
+      cInv += invested; cAct += actual;
+    }
+  });
+
+  const setEl = (id, text, cls) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    if (cls) el.className = 'mono num ' + cls;
+  };
+  const sPnl = sAct - sInv, cPnl = cAct - cInv;
+  setEl('stocksSubInvested', '$' + sInv.toFixed(0));
+  setEl('stocksSubActual',   '$' + sAct.toFixed(0));
+  setEl('stocksSubPnl', (sPnl >= 0 ? '+$' : '-$') + Math.abs(sPnl).toFixed(0), sPnl >= 0 ? 'pos' : 'neg');
+  setEl('cryptoSubInvested', '$' + cInv.toFixed(0));
+  setEl('cryptoSubActual',   '$' + cAct.toFixed(0));
+  setEl('cryptoSubPnl', (cPnl >= 0 ? '+$' : '-$') + Math.abs(cPnl).toFixed(0), cPnl >= 0 ? 'pos' : 'neg');
+
+  const sPct = (sPnl / sInv * 100).toFixed(1);
+  const cPct = (cPnl / cInv * 100).toFixed(1);
+  const sBadge = document.querySelector('#stocksPnlContainer')?.closest('.pnl-card')?.querySelector('.pnl-total-badge');
+  const cBadge = document.getElementById('cryptoPnlBadge');
+  if (sBadge) { sBadge.textContent = (sPnl >= 0 ? '+$' : '-$') + Math.abs(sPnl).toFixed(0) + ' (' + (sPnl >= 0 ? '+' : '') + sPct + '%)'; sBadge.className = 'pnl-total-badge ' + (sPnl >= 0 ? 'pos' : 'neg'); }
+  if (cBadge) { cBadge.textContent = (cPnl >= 0 ? '+$' : '-$') + Math.abs(cPnl).toFixed(0) + ' (' + (cPnl >= 0 ? '+' : '') + cPct + '%)'; cBadge.className = 'pnl-total-badge ' + (cPnl >= 0 ? 'pos' : 'neg'); }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const select = document.getElementById('logMonthFilter');
   if (select) filterLogByMonth(select.value);
+  renderPnl();
 });
 
 let regAction = 'buy';
@@ -1535,19 +1619,6 @@ async function loadPortfolioComposition() {
           </div>
         </div>
 
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Activos por precio de mercado:</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px">
-          ${assets.map(a => {
-            const color = a.change_7d?.includes('-') ? 'var(--red)' : a.change_7d?.includes('+') ? 'var(--green)' : 'var(--text-muted)';
-            return `
-              <div style="background:var(--surface2);padding:12px;border-radius:6px;border-left:3px solid ${color}">
-                <div style="font-weight:600;margin-bottom:4px;font-size:12px">${a.asset_key.toUpperCase()}</div>
-                <div class="mono" style="color:var(--text-dim);font-size:11px;margin-bottom:2px">${a.price}</div>
-                <div class="mono" style="font-size:9px;color:${color}">${a.change_7d || '−'}</div>
-              </div>
-            `;
-          }).join('')}
-        </div>
       </div>
     `;
 
