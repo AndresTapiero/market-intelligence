@@ -839,8 +839,8 @@
         <div class="asset-icon-sm" style="background:rgba(90,96,128,0.15);color:var(--text-muted);font-size:13px">$</div>
         <div class="dca-info">
           <div class="dca-name">Cash disponible (Hapi)</div>
-          <div class="dca-amount mono">$200 USD</div>
-          <div class="dca-next">Actualizado hace 18 días</div>
+          <div class="dca-amount mono" id="cashDisplayAmount">$200.00 USD</div>
+          <div class="dca-next" id="cashDisplayDate">Actualizado hace 18 días</div>
         </div>
         <button class="cash-update-btn" onclick="openCashModal()" aria-label="Actualizar cash">✏️ Actualizar</button>
       </div>
@@ -1155,22 +1155,17 @@
     </div>
     <div class="modal-body">
       <div class="modal-field">
-        <label>Cash registrado actualmente</label>
-        <input type="text" id="cashRegistered" readonly>
+        <label>Cash actual registrado</label>
+        <input type="text" id="cashRegistered" readonly style="opacity:.6">
       </div>
       <div class="modal-field">
-        <label>Cash real (verifica en tu app de Hapi)</label>
+        <label>Cash real en Hapi (USD)</label>
         <input type="number" id="cashReal" placeholder="0.00" step="any" oninput="updateCashPreview()">
       </div>
       <div class="buy-preview" id="cashPreview" style="display:none">
         <div class="buy-preview-row"><span>Diferencia</span><span class="mono num" id="cashDiff">$0</span></div>
       </div>
-      <div class="modal-field" id="cashCommandBlock" style="display:none">
-        <label>Comando listo para Claude Code</label>
-        <textarea id="cashCommandOutput" readonly rows="6"></textarea>
-        <button class="copy-btn" onclick="copyCashCommand()">📋 Copiar comando</button>
-      </div>
-      <button class="modal-submit" onclick="generateCashCommand()">Generar comando</button>
+      <button class="modal-submit" onclick="saveCash()">💾 Guardar cash</button>
     </div>
   </div>
 </div>
@@ -1798,6 +1793,60 @@ function calcSellPreview() {
 window.calcSellPreview = calcSellPreview;
 
 window.SELL_HISTORY = [];
+
+// Cash persistence via localStorage — fuente de verdad: Hapi
+window.CURRENT_CASH = parseFloat(localStorage.getItem('hapi_cash') ?? '200') || 200;
+
+function updateCashDisplay(delta) {
+  const amountEl = document.getElementById('cashDisplayAmount');
+  const dateEl   = document.getElementById('cashDisplayDate');
+  if (amountEl) amountEl.textContent = '$' + window.CURRENT_CASH.toFixed(2) + ' USD';
+  if (dateEl) {
+    const now = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+    if (delta !== undefined) {
+      const sign = delta >= 0 ? '+' : '';
+      dateEl.textContent = sign + '$' + Math.abs(delta).toFixed(2) + ' · ' + now;
+    } else {
+      dateEl.textContent = 'Actualizado ' + now;
+    }
+  }
+}
+
+function updateCashAfterTrade(delta) {
+  window.CURRENT_CASH = Math.max(0, window.CURRENT_CASH + delta);
+  localStorage.setItem('hapi_cash', window.CURRENT_CASH.toFixed(2));
+  updateCashDisplay(delta);
+}
+window.updateCashAfterTrade = updateCashAfterTrade;
+
+function openCashModal() {
+  document.getElementById('cashRegistered').value = '$' + window.CURRENT_CASH.toFixed(2);
+  document.getElementById('cashReal').value = '';
+  document.getElementById('cashPreview').style.display = 'none';
+  document.getElementById('cashModalOverlay').classList.add('show');
+}
+function closeCashModal() { document.getElementById('cashModalOverlay').classList.remove('show'); }
+
+function updateCashPreview() {
+  const real = parseFloat(document.getElementById('cashReal').value) || 0;
+  const diff = real - window.CURRENT_CASH;
+  const diffEl  = document.getElementById('cashDiff');
+  const preview = document.getElementById('cashPreview');
+  if (diffEl) { diffEl.textContent = (diff >= 0 ? '+' : '') + '$' + diff.toFixed(2); diffEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)'; }
+  if (preview) preview.style.display = 'flex';
+}
+
+function saveCash() {
+  const real = parseFloat(document.getElementById('cashReal').value);
+  if (isNaN(real) || real < 0) return;
+  window.CURRENT_CASH = real;
+  localStorage.setItem('hapi_cash', real.toFixed(2));
+  updateCashDisplay();
+  closeCashModal();
+}
+
+// Inicializar display al cargar
+document.addEventListener('DOMContentLoaded', () => { updateCashDisplay(); });
 
 function renderSellHistory() {
   const card = document.getElementById('sellHistoryCard');

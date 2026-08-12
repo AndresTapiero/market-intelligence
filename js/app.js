@@ -236,7 +236,7 @@ class InvestmentApp {
         this._addToSellHistory({ key, qty, price, commission, costAvg: costAvgAtSale, pnl, pnlPct });
         setTimeout(() => {
           this.closeSellModal();
-          this._refreshBalanceAfterSell(key, qty);
+          this._refreshBalanceAfterSell(key, qty, net);  // venta suma net al cash
         }, 1000);
       } else {
         this.uiManager.showError(result.error);
@@ -249,6 +249,7 @@ class InvestmentApp {
   }
 
   _refreshBalanceAfterBuy(key, qty, price, isNew = false, rawType = 'crypto') {
+    window.updateCashAfterTrade?.(-(qty * price));  // compra resta cash
     const assets = window.EXISTING_ASSETS;
     const type = rawType === 'etf' ? 'stock' : rawType;
 
@@ -302,7 +303,8 @@ class InvestmentApp {
     window.renderSellHistory?.();
   }
 
-  _refreshBalanceAfterSell(key, qty) {
+  _refreshBalanceAfterSell(key, qty, netAmount = 0) {
+    window.updateCashAfterTrade?.(netAmount);        // venta suma monto neto al cash
     const assets = window.EXISTING_ASSETS;
     if (assets?.[key]) {
       assets[key].qty = Math.max(0, assets[key].qty - qty);
