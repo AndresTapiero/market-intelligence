@@ -218,12 +218,16 @@ class InvestmentApp {
         return;
       }
 
+      const commission = parseFloat(document.getElementById('sellCommission')?.value) || 0;
+      const costAvgAtSale = asset.costAvg;
+
       this.uiManager.setButtonLoading('#sellModalOverlay .modal-submit', true);
 
-      const result = await this.transactionService.recordSale(key, qty, price, reason, observations, date);
+      const result = await this.transactionService.recordSale(key, qty, price, reason, observations, date, commission);
 
       if (result.success) {
         this.uiManager.setButtonSuccess('#sellModalOverlay .modal-submit');
+        this._addToSellHistory({ key, qty, price, commission, costAvg: costAvgAtSale });
         setTimeout(() => {
           this.closeSellModal();
           this._refreshBalanceAfterSell(key, qty);
@@ -247,6 +251,28 @@ class InvestmentApp {
       assets[key].qty = newQty;
     }
     this._rerenderPortfolio();
+  }
+
+  _addToSellHistory({ key, qty, price, commission, costAvg }) {
+    if (!window.SELL_HISTORY) window.SELL_HISTORY = [];
+    const gross = qty * price;
+    const net = gross - commission;
+    const cost = qty * costAvg;
+    const pnl = net - cost;
+    const pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
+    window.SELL_HISTORY.push({
+      key,
+      ticker: key.toUpperCase(),
+      qty,
+      price,
+      gross,
+      commission,
+      net,
+      pnl,
+      pnlPct,
+      date: new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    });
+    window.renderSellHistory?.();
   }
 
   _refreshBalanceAfterSell(key, qty) {

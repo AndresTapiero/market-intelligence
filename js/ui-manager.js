@@ -68,6 +68,7 @@ export class UIManager {
 
     document.getElementById('sellQty').value = '';
     document.getElementById('sellPrice').value = '';
+    document.getElementById('sellCommission').value = '';
     document.getElementById('sellReason').value = 'Toma de ganancias';
     document.getElementById('sellObservations').value = '';
     document.getElementById('sellPreview').style.display = 'none';
@@ -124,24 +125,24 @@ export class UIManager {
    * Actualiza preview de venta
    */
   updateSellPreview(availableQuantity) {
-    const qtyEl = document.getElementById('sellQty');
-    const priceEl = document.getElementById('sellPrice');
+    const qty = parseFloat(document.getElementById('sellQty')?.value) || 0;
+    const price = parseFloat(document.getElementById('sellPrice')?.value) || 0;
+    const commission = parseFloat(document.getElementById('sellCommission')?.value) || 0;
     const previewEl = document.getElementById('sellPreview');
 
-    const qty = parseFloat(qtyEl?.value) || 0;
-    const price = parseFloat(priceEl?.value) || 0;
-
     if (qty > 0 && price > 0 && qty <= availableQuantity) {
-      const total = qty * price;
+      const gross = qty * price;
+      const net = gross - commission;
       const remaining = availableQuantity - qty;
 
-      const previewTotal = document.getElementById('sellPreviewTotal');
-      const previewRemaining = document.getElementById('sellPreviewRemaining');
+      const fmt = v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('sellPreviewTotal').textContent = fmt(gross);
+      document.getElementById('sellPreviewCommission').textContent = commission > 0 ? '-' + fmt(commission) : '$0.00';
+      document.getElementById('sellPreviewNet').textContent = fmt(net);
+      document.getElementById('sellPreviewRemaining').textContent =
+        remaining.toLocaleString('en-US', { maximumFractionDigits: 8 });
 
-      if (previewTotal) previewTotal.textContent = '$' + total.toLocaleString('en-US', { maximumFractionDigits: 2 });
-      if (previewRemaining) previewRemaining.textContent = remaining.toFixed(8);
-
-      previewEl.style.display = 'flex';
+      if (previewEl) previewEl.style.display = 'flex';
     } else if (previewEl) {
       previewEl.style.display = 'none';
     }
@@ -153,10 +154,18 @@ export class UIManager {
   updateSellQtyOptions(availableQuantity) {
     const qtyOptionsEl = document.getElementById('sellQtyOptions');
     const hintEl = document.getElementById('sellQtyHint');
+    const qtyInput = document.getElementById('sellQty');
 
     if (qtyOptionsEl && hintEl) {
       qtyOptionsEl.style.display = 'flex';
-      hintEl.textContent = 'Tienes: ' + availableQuantity.toFixed(availableQuantity < 1 ? 8 : 2) + ' unidades';
+      hintEl.textContent = 'Disponible: ' + availableQuantity.toLocaleString('en-US', { maximumFractionDigits: 8 }) + ' unidades';
+    }
+    if (qtyInput) {
+      qtyInput.max = availableQuantity;
+      qtyInput.oninput = () => {
+        if (parseFloat(qtyInput.value) > availableQuantity) qtyInput.value = availableQuantity;
+        window.updateSellPreview();
+      };
     }
 
     this.setSellQuantityType('partial');

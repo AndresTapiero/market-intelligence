@@ -51,11 +51,16 @@ export class TransactionService {
   /**
    * Registra una venta
    */
-  async recordSale(ticker, quantity, price, reason = 'Otro', observations = null, date = null) {
+  async recordSale(ticker, quantity, price, reason = 'Otro', observations = null, date = null, commission = 0) {
     const user = this.authService.getCurrentUser();
     if (!user) throw new Error('No autenticado');
 
     const montoBruto = quantity * price;
+    const montoNeto = montoBruto - commission;
+    const obs = [
+      commission > 0 ? `Comisión broker: $${commission.toFixed(2)}` : null,
+      observations || null
+    ].filter(Boolean).join(' | ') || null;
 
     const entry = {
       user_id: user.id,
@@ -69,7 +74,8 @@ export class TransactionService {
       ganancia_bruta: 0,
       ganancia_pct: 0,
       razon_venta: reason,
-      observaciones: observations
+      monto_neto: montoNeto,
+      observaciones: obs
     };
 
     try {

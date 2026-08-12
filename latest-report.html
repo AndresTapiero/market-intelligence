@@ -288,6 +288,11 @@
   .comp-bar-wrap{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
   .comp-bar{height:6px;border-radius:3px;transition:width .5s ease}
   .comp-pct{font-size:11px;text-align:right} .comp-val{font-size:10px;text-align:right;color:var(--text-muted)}
+  .sell-hist-table{width:100%;border-collapse:collapse;font-size:11px}
+  .sell-hist-table th{text-align:left;padding:6px 10px;color:var(--text-muted);font-size:9px;letter-spacing:.7px;text-transform:uppercase;font-family:var(--mono);border-bottom:1px solid var(--border);font-weight:600}
+  .sell-hist-table td{padding:9px 10px;border-bottom:1px solid var(--border-subtle)}
+  .sell-hist-table tr:last-child td{border-bottom:none}
+  .sell-hist-table tr:hover td{background:var(--surface2)}
 
   /* MACRO + DECISIONS */
   .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
@@ -867,6 +872,16 @@
   </div><!-- /three-col-stack -->
 </div>
 
+<div class="card mb" id="sellHistoryCard" style="display:none">
+  <h3 class="section-title">Historial de ventas (sesión)</h3>
+  <div style="overflow-x:auto">
+    <table class="sell-hist-table">
+      <thead><tr><th>Fecha</th><th>Activo</th><th>Cantidad</th><th>P. Venta</th><th>Bruto</th><th>Comisión</th><th>Neto</th><th>P&amp;L</th></tr></thead>
+      <tbody id="sellHistoryBody"></tbody>
+    </table>
+  </div>
+</div>
+
 </div><!-- /tab-transacciones -->
 
 <div class="tab-panel" id="tab-analisis" data-tab="analisis" role="tabpanel">
@@ -1084,12 +1099,20 @@
           <option value="Otro">❓ Otro</option>
         </select>
       </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Comisión del broker (USD)</label>
+          <input type="number" id="sellCommission" placeholder="0.00" step="any" min="0" oninput="window.updateSellPreview()">
+        </div>
+      </div>
       <div class="modal-field">
         <label>Observaciones (opcional)</label>
-        <textarea id="sellObservations" rows="3" placeholder="Detalles adicionales sobre la venta..."></textarea>
+        <textarea id="sellObservations" rows="2" placeholder="Detalles adicionales sobre la venta..."></textarea>
       </div>
       <div class="sell-preview" id="sellPreview" style="display:none">
         <div class="sell-preview-row"><span>💵 Monto bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
+        <div class="sell-preview-row"><span>🏦 Comisión broker</span><span class="mono num neg" id="sellPreviewCommission">$0</span></div>
+        <div class="sell-preview-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:2px"><span><strong>💰 Monto neto</strong></span><span class="mono num" id="sellPreviewNet">$0</span></div>
         <div class="sell-preview-row"><span>📊 Cantidad restante</span><span class="mono num" id="sellPreviewRemaining">0</span></div>
       </div>
       <button class="modal-submit" onclick="window.submitSale()">📤 Registrar venta</button>
@@ -1299,7 +1322,7 @@ function renderPnl() {
   ASSET_DATA.forEach(asset => {
     const key = asset.ticker.toLowerCase();
     const holding = EXISTING_ASSETS[key];
-    if (!holding) return;
+    if (!holding || holding.qty <= 0) return;
 
     const costAvg = holding.costAvg;
     const qty = holding.qty;
@@ -1374,7 +1397,7 @@ function renderComp() {
   ASSET_DATA.forEach(asset => {
     const key = asset.ticker.toLowerCase();
     const holding = EXISTING_ASSETS[key];
-    if (!holding) return;
+    if (!holding || holding.qty <= 0) return;
     const actual = holding.qty * asset.price;
     const entry = { ticker: asset.ticker, actual, color: ASSET_COLORS[key] || 'var(--accent)' };
     if (asset.type === 'stock') { stocks.push(entry); sTotal += actual; }
@@ -1637,6 +1660,33 @@ function populateAssetSelects() {
 }
 
 window.populateAssetSelects = populateAssetSelects;
+
+window.SELL_HISTORY = [];
+
+function renderSellHistory() {
+  const card = document.getElementById('sellHistoryCard');
+  const body = document.getElementById('sellHistoryBody');
+  if (!card || !body) return;
+  if (!window.SELL_HISTORY.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  body.innerHTML = '';
+  window.SELL_HISTORY.slice().reverse().forEach(s => {
+    const isPos = s.pnl >= 0;
+    const color = ASSET_COLORS[s.key] || 'var(--accent)';
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td class="mono">${s.date}</td>` +
+      `<td><span class="mono" style="color:${color};font-weight:700">${s.ticker}</span></td>` +
+      `<td class="mono num">${formatQty(s.qty)}</td>` +
+      `<td class="mono num">${fmtPrice(s.price)}</td>` +
+      `<td class="mono num">$${s.gross.toFixed(2)}</td>` +
+      `<td class="mono num neg">${s.commission > 0 ? '-$'+s.commission.toFixed(2) : '—'}</td>` +
+      `<td class="mono num">$${s.net.toFixed(2)}</td>` +
+      `<td class="mono num ${isPos?'pos':'neg'}">${isPos?'+':''}$${Math.abs(s.pnl).toFixed(2)} (${isPos?'+':''}${s.pnlPct.toFixed(1)}%)</td>`;
+    body.appendChild(tr);
+  });
+}
+window.renderSellHistory = renderSellHistory;
 function updateCashPreview() {}
 function generateCashCommand() {}
 function copyCommand() {}
