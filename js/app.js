@@ -111,8 +111,12 @@ class InvestmentApp {
       });
 
       console.log('✅ Portafolio sincronizado desde Supabase');
-      this._rerenderPortfolio();
+      // Actualizar dropdowns primero
       window.populateAssetSelects?.();
+      // Re-renderizar si el tab activos ya estaba cargado
+      this._rerenderPortfolio();
+      // Notificar a tab-loader para que re-renderice el tab activo
+      document.dispatchEvent(new CustomEvent('portfolio-synced'));
 
       // Cargar historial de ventas
       const sells = data.filter(r => !!r.fecha_venta);

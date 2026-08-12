@@ -55,7 +55,8 @@
 
 /* SELL SUMMARY */
 .sell-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-@media(max-width:600px){.sell-summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.sell-summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.sell-summary{grid-template-columns:1fr 1fr;gap:8px}}
 
 /* RESPONSIVE */
 @media(max-width:1100px){
@@ -75,11 +76,16 @@
   .assets-grid-stocks{grid-template-columns:repeat(2,1fr)}
   .bottom-grid{grid-template-columns:1fr}
   .two-col{grid-template-columns:1fr}
+  .three-col{grid-template-columns:1fr}
   .total-value{font-size:22px} .total-card.highlight .total-value{font-size:24px}
   .header h1{font-size:20px}
   .sticky-stats{gap:14px}
   .tabs-nav{display:grid;grid-template-columns:1fr 1fr;width:100%}
   .tab-btn{justify-content:center}
+  /* Transacciones */
+  .dca-item{padding:10px;gap:10px}
+  .log-list{overflow-x:auto}
+  .sell-stat-val{font-size:15px}
 }
 @media(max-width:480px){
   body{padding:12px}
@@ -88,10 +94,21 @@
   .assets-grid-stocks{grid-template-columns:1fr 1fr}
   .total-value{font-size:19px}
   .pnl-row{flex-direction:column;align-items:flex-start}
-  .pnl-nums{width:100%}
+  .pnl-nums{width:100%;gap:10px}
   .sticky-stat:nth-child(n+3){display:none}
   .comp-row{grid-template-columns:52px 1fr 38px 52px}
-  .log-header{grid-template-columns:42px 32px 1fr 1fr 1fr;gap:4px;font-size:8px}
-  .log-row{grid-template-columns:42px 32px 1fr 1fr 1fr;gap:4px;font-size:9px}
+  /* Log bitácora — solo 3 columnas visibles en móvil */
+  .log-list{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .log-header,.log-row{min-width:320px}
+  .log-header{grid-template-columns:60px 44px 1fr 1fr 70px;gap:4px;font-size:8px}
+  .log-row{grid-template-columns:60px 44px 1fr 1fr 70px;gap:4px;font-size:9px}
+  /* DCA compact */
+  .dca-item{padding:8px;gap:8px}
+  .dca-name{font-size:12px}
+  .dca-amount,.dca-next{font-size:10px}
+  /* Sell stats */
+  .sell-stat{padding:10px 10px}
+  .sell-stat-val{font-size:14px}
+  .sell-stat-label{font-size:8px}
 }
 @media(max-width:600px){.alloc-row{grid-template-columns:90px 1fr 70px 50px;gap:8px}.alloc-label{font-size:10px}}

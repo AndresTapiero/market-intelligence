@@ -77,6 +77,19 @@
     loadTab('resumen');
   });
 
+  // Re-render cuando el sync de Supabase completa
+  document.addEventListener('portfolio-synced', function() {
+    var activosEl = document.getElementById('tab-activos');
+    if (activosEl && activosEl.dataset.loaded === '1') {
+      ['stocksPnlContainer','cryptoPnlContainer','stocksCompContainer','cryptoCompContainer']
+        .forEach(function(id) { var el = document.getElementById(id); if (el) el.innerHTML = ''; });
+      if (typeof window.renderPnl  === 'function') window.renderPnl();
+      if (typeof window.renderComp === 'function') window.renderComp();
+    }
+    if (typeof window.populateAssetSelects === 'function') window.populateAssetSelects();
+    if (typeof window.renderSellHistory    === 'function') window.renderSellHistory();
+  });
+
   // After activos tab loads, render PnL and composition
   document.addEventListener('tabloaded', function(e) {
     if (e.detail && e.detail.tab === 'activos') {
