@@ -1,0 +1,17 @@
+{
+  "name": "market-intelligence-analyzer",
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Análisis mensual de portafolio via Anthropic API → Supabase",
+  "scripts": {
+    "analyze": "node analyze.js",
+    "test":    "node test-dry-run.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk":    "^0.52.0",
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
