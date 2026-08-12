@@ -1197,7 +1197,7 @@ document.addEventListener('click', function(e) {
   }
 });
 
-const ASSET_DATA = [
+window.ASSET_DATA = [
   { ticker: 'VOO', label: 'VOO', icon: 'V', type: 'stock', signal: 'buy', price: 696.41, change: '+1.4%', costAvg: 508, current: 696, invested: 188, actual: 257, delta: '+6.38', context: 'VOO cotiza en 696.41 cerca de su maximo de 52 semanas (699.15), con un rango diario reciente entre 688.61 y 697.31, senal tecnica de Strong Buy segun promedios moviles. El aporte mensual de $50 debe continuar sin cambios, ya que el S&P 500 sigue en tendencia alcista de fondo pese a la cercania al techo historico.', class: 'asset-voo' },
   { ticker: 'QQQ', label: 'QQQ', icon: 'Q', type: 'stock', signal: 'buy', price: 612.35, change: '+1.8%', costAvg: 533, current: 612, invested: 83, actual: 95, delta: '-11', context: 'QQQ avanzo cerca de 1.76% recientemente impulsado por el rebote en semiconductores y tecnologia, en linea con el momentum de NVDA. Sigue siendo un vehiculo solido para el DCA mensual dado el peso de las megacaps de IA en el indice.', class: 'asset-qqq' },
   { ticker: 'NVDA', label: 'NVIDIA', icon: 'N', type: 'stock', signal: 'buy', price: 206.83, change: '-0.4%', costAvg: 119, current: 206, invested: 132, actual: 229, delta: '-0.01', context: 'NVDA cotiza en 206.83 con maximo de 52 semanas en 236.54, y su capitalizacion se mantiene practicamente plana la ultima semana (-0.35%). El proximo reporte de resultados el 26 de agosto es un catalizador clave a vigilar antes de anadir exposicion adicional.', class: 'asset-nvda' },
@@ -1602,7 +1602,7 @@ function showToast(el, text) {
   toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-const EXISTING_ASSETS = {
+window.EXISTING_ASSETS = {
   "btc": { type: "crypto", label: "Bitcoin", qty: 0.016271, costAvg: 76370.002869, fundamento: "" },
   "eth": { type: "crypto", label: "Ethereum", qty: 0.1736, costAvg: 2532.66, fundamento: "" },
   "sol": { type: "crypto", label: "Solana", qty: 4.179, costAvg: 173.74, fundamento: "" },
