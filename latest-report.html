@@ -1030,7 +1030,7 @@
         <textarea id="commandOutput" readonly rows="6"></textarea>
         <button class="copy-btn" onclick="copyCommand()">📋 Copiar comando</button>
       </div>
-      <button class="modal-submit" onclick="submitBuy()">Generar comando</button>
+      <button class="modal-submit" onclick="window.submitBuy()">📥 Registrar compra</button>
     </div>
   </div>
 </div>
@@ -1070,6 +1070,10 @@
         </div>
       </div>
       <div class="modal-field">
+        <label>Fecha de venta</label>
+        <input type="date" id="sellDate">
+      </div>
+      <div class="modal-field">
         <label>Razón de venta</label>
         <select id="sellReason">
           <option value="Toma de ganancias">✅ Toma de ganancias</option>
@@ -1088,7 +1092,7 @@
         <div class="sell-preview-row"><span>💵 Monto bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
         <div class="sell-preview-row"><span>📊 Cantidad restante</span><span class="mono num" id="sellPreviewRemaining">0</span></div>
       </div>
-      <button class="modal-submit" onclick="submitSale()">📤 Registrar venta</button>
+      <button class="modal-submit" onclick="window.submitSale()">📤 Registrar venta</button>
     </div>
   </div>
 </div>
@@ -1409,6 +1413,12 @@ document.addEventListener('DOMContentLoaded', function() {
   if (select) filterLogByMonth(select.value);
   renderPnl();
   renderComp();
+  populateAssetSelects();
+  const today = new Date().toISOString().split('T')[0];
+  const buyDateEl = document.getElementById('buyDate');
+  const sellDateEl = document.getElementById('sellDate');
+  if (buyDateEl) buyDateEl.value = today;
+  if (sellDateEl) sellDateEl.value = today;
 });
 
 let regAction = 'buy';
@@ -1598,12 +1608,35 @@ function closeSellModal() { document.getElementById('sellModalOverlay').classLis
 function openCashModal() { document.getElementById('cashModalOverlay').classList.add('show'); }
 function closeCashModal() { document.getElementById('cashModalOverlay').classList.remove('show'); }
 function onAssetSelectChange() { document.getElementById('newAssetFields').style.display = document.getElementById('buyAssetSelect').value === '__new__' ? 'flex' : 'none'; }
-function updateBuyPreview() {}
-function updateSellPreview() {}
-function updateSellQtyButtons() {}
-function setSellQuantityType(type) {}
-function submitBuy() {}
-function submitSale() {}
+function populateAssetSelects() {
+  const groups = {
+    buyGroupCrypto:  document.getElementById('buyGroupCrypto'),
+    buyGroupStocks:  document.getElementById('buyGroupStocks'),
+    sellGroupCrypto: document.getElementById('sellGroupCrypto'),
+    sellGroupStocks: document.getElementById('sellGroupStocks'),
+  };
+  Object.values(groups).forEach(g => { if (g) g.innerHTML = ''; });
+
+  Object.entries(EXISTING_ASSETS).forEach(([key, asset]) => {
+    const buyOpt = document.createElement('option');
+    buyOpt.value = key;
+    buyOpt.textContent = asset.label + ' (' + key.toUpperCase() + ')';
+
+    const sellOpt = document.createElement('option');
+    sellOpt.value = key;
+    sellOpt.textContent = asset.label + ' (' + key.toUpperCase() + ') — ' + formatQty(asset.qty);
+
+    if (asset.type === 'crypto') {
+      groups.buyGroupCrypto?.appendChild(buyOpt);
+      groups.sellGroupCrypto?.appendChild(sellOpt);
+    } else {
+      groups.buyGroupStocks?.appendChild(buyOpt);
+      groups.sellGroupStocks?.appendChild(sellOpt);
+    }
+  });
+}
+
+window.populateAssetSelects = populateAssetSelects;
 function updateCashPreview() {}
 function generateCashCommand() {}
 function copyCommand() {}

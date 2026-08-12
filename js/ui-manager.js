@@ -45,6 +45,9 @@ export class UIManager {
     document.getElementById('buyPrice').value = '';
     document.getElementById('buyFundamento').value = '';
     document.getElementById('buyPreview').style.display = 'none';
+    const today = new Date().toISOString().split('T')[0];
+    const buyDateEl = document.getElementById('buyDate');
+    if (buyDateEl && !buyDateEl.value) buyDateEl.value = today;
     modal.classList.add('show');
   }
 
@@ -68,6 +71,9 @@ export class UIManager {
     document.getElementById('sellReason').value = 'Toma de ganancias';
     document.getElementById('sellObservations').value = '';
     document.getElementById('sellPreview').style.display = 'none';
+    const today = new Date().toISOString().split('T')[0];
+    const sellDateEl = document.getElementById('sellDate');
+    if (sellDateEl) sellDateEl.value = today;
     modal.classList.add('show');
   }
 
@@ -83,20 +89,32 @@ export class UIManager {
    * Actualiza preview de compra
    */
   updateBuyPreview() {
-    const qtyEl = document.getElementById('buyQty');
-    const priceEl = document.getElementById('buyPrice');
+    const qty = parseFloat(document.getElementById('buyQty')?.value) || 0;
+    const price = parseFloat(document.getElementById('buyPrice')?.value) || 0;
     const previewEl = document.getElementById('buyPreview');
-
-    const qty = parseFloat(qtyEl?.value) || 0;
-    const price = parseFloat(priceEl?.value) || 0;
 
     if (qty > 0 && price > 0) {
       const total = qty * price;
-      const previewTotal = document.getElementById('previewTotal');
-      if (previewTotal) {
-        previewTotal.textContent = '$' + total.toLocaleString('en-US', { maximumFractionDigits: 2 });
-        previewEl.style.display = 'flex';
-      }
+      const assetKey = window.getSelectedAssetKey?.();
+      const existing = window.EXISTING_ASSETS?.[assetKey];
+
+      document.getElementById('previewTotal').textContent =
+        '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const newQty = existing ? existing.qty + qty : qty;
+      const newCostAvg = existing
+        ? (existing.qty * existing.costAvg + qty * price) / newQty
+        : price;
+
+      const fmtP = v => v >= 1000
+        ? '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : '$' + v.toFixed(v >= 1 ? 2 : v >= 0.01 ? 4 : 6);
+
+      document.getElementById('previewNewQty').textContent =
+        newQty.toLocaleString('en-US', { maximumFractionDigits: 8 });
+      document.getElementById('previewNewCostAvg').textContent = fmtP(newCostAvg);
+
+      if (previewEl) previewEl.style.display = 'flex';
     } else if (previewEl) {
       previewEl.style.display = 'none';
     }

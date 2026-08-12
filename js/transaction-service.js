@@ -14,13 +14,13 @@ export class TransactionService {
   /**
    * Registra una compra
    */
-  async recordBuy(ticker, quantity, price, fundamento = null) {
+  async recordBuy(ticker, quantity, price, fundamento = null, date = null) {
     const user = this.authService.getCurrentUser();
     if (!user) throw new Error('No autenticado');
 
     const entry = {
       user_id: user.id,
-      fecha: new Date().toISOString().split('T')[0],
+      fecha: date || new Date().toISOString().split('T')[0],
       ticker: ticker.toUpperCase(),
       categoria: 'satelite',
       inversion_monto: quantity * price,
@@ -51,7 +51,7 @@ export class TransactionService {
   /**
    * Registra una venta
    */
-  async recordSale(ticker, quantity, price, reason = 'Otro', observations = null) {
+  async recordSale(ticker, quantity, price, reason = 'Otro', observations = null, date = null) {
     const user = this.authService.getCurrentUser();
     if (!user) throw new Error('No autenticado');
 
@@ -59,7 +59,8 @@ export class TransactionService {
 
     const entry = {
       user_id: user.id,
-      fecha_salida: new Date().toISOString().split('T')[0],
+      fecha: date || new Date().toISOString().split('T')[0],
+      fecha_salida: date || new Date().toISOString().split('T')[0],
       ticker: ticker.toUpperCase(),
       numero_acciones_vendidas: quantity,
       precio_salida: price,

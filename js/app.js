@@ -170,7 +170,8 @@ class InvestmentApp {
       const key = window.getSelectedAssetKey?.();
       const qty = parseFloat(document.getElementById('buyQty')?.value) || 0;
       const price = parseFloat(document.getElementById('buyPrice')?.value) || 0;
-      const fundamento = document.getElementById('buyFundamento')?.value.trim();
+      const date = document.getElementById('buyDate')?.value || new Date().toISOString().split('T')[0];
+      const fundamento = document.getElementById('buyFundamento')?.value.trim() || null;
 
       if (!key || qty <= 0 || price <= 0) {
         this.uiManager.showError('Completa el activo, la cantidad y el precio.');
@@ -179,14 +180,14 @@ class InvestmentApp {
 
       this.uiManager.setButtonLoading('#buyModalOverlay .modal-submit', true);
 
-      const result = await this.transactionService.recordBuy(key, qty, price, 'stocks', fundamento);
+      const result = await this.transactionService.recordBuy(key, qty, price, fundamento, date);
 
       if (result.success) {
         this.uiManager.setButtonSuccess('#buyModalOverlay .modal-submit');
         setTimeout(() => {
           this.closeBuyModal();
-          location.reload();
-        }, 1500);
+          this._refreshBalanceAfterBuy(key, qty, price);
+        }, 1000);
       } else {
         this.uiManager.showError(result.error);
         this.uiManager.setButtonLoading('#buyModalOverlay .modal-submit', false);
@@ -202,8 +203,9 @@ class InvestmentApp {
       const key = document.getElementById('sellAssetSelect')?.value;
       const qty = parseFloat(document.getElementById('sellQty')?.value) || 0;
       const price = parseFloat(document.getElementById('sellPrice')?.value) || 0;
+      const date = document.getElementById('sellDate')?.value || new Date().toISOString().split('T')[0];
       const reason = document.getElementById('sellReason')?.value || 'Otro';
-      const observations = document.getElementById('sellObservations')?.value.trim();
+      const observations = document.getElementById('sellObservations')?.value.trim() || null;
 
       if (!key || qty <= 0 || price <= 0) {
         this.uiManager.showError('Completa el activo, la cantidad y el precio.');
@@ -218,14 +220,14 @@ class InvestmentApp {
 
       this.uiManager.setButtonLoading('#sellModalOverlay .modal-submit', true);
 
-      const result = await this.transactionService.recordSale(key, qty, price, reason, observations);
+      const result = await this.transactionService.recordSale(key, qty, price, reason, observations, date);
 
       if (result.success) {
         this.uiManager.setButtonSuccess('#sellModalOverlay .modal-submit');
         setTimeout(() => {
           this.closeSellModal();
-          location.reload();
-        }, 1500);
+          this._refreshBalanceAfterSell(key, qty);
+        }, 1000);
       } else {
         this.uiManager.showError(result.error);
         this.uiManager.setButtonLoading('#sellModalOverlay .modal-submit', false);
@@ -234,6 +236,33 @@ class InvestmentApp {
       this.uiManager.showError(err.message);
       this.uiManager.setButtonLoading('#sellModalOverlay .modal-submit', false);
     }
+  }
+
+  _refreshBalanceAfterBuy(key, qty, price) {
+    const assets = window.EXISTING_ASSETS;
+    if (assets?.[key]) {
+      const prev = assets[key];
+      const newQty = prev.qty + qty;
+      assets[key].costAvg = (prev.qty * prev.costAvg + qty * price) / newQty;
+      assets[key].qty = newQty;
+    }
+    this._rerenderPortfolio();
+  }
+
+  _refreshBalanceAfterSell(key, qty) {
+    const assets = window.EXISTING_ASSETS;
+    if (assets?.[key]) {
+      assets[key].qty = Math.max(0, assets[key].qty - qty);
+    }
+    this._rerenderPortfolio();
+  }
+
+  _rerenderPortfolio() {
+    ['stocksPnlContainer','cryptoPnlContainer','stocksCompContainer','cryptoCompContainer']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+    window.renderPnl?.();
+    window.renderComp?.();
+    window.populateAssetSelects?.();
   }
 }
 
@@ -253,5 +282,7 @@ window.updateBuyPreview = () => app.updateBuyPreview();
 window.updateSellPreview = () => app.updateSellPreview();
 window.updateSellQtyButtons = () => app.updateSellQtyButtons();
 window.setSellQuantityType = (type) => app.setSellQuantityType(type);
+window.submitBuy = () => app.submitBuy();
+window.submitSale = () => app.submitSale();
 window.submitBuy = () => app.submitBuy();
 window.submitSale = () => app.submitSale();
