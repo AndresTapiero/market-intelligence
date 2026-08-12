@@ -469,7 +469,6 @@
   <nav class="tabs-nav" role="tablist" aria-label="Secciones del reporte">
     <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-resumen" onclick="switchTab('resumen')">📊 Resumen</button>
     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-activos" onclick="switchTab('activos')">💼 Activos</button>
-    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-historial" onclick="switchTab('historial')">📈 Historial</button>
     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-transacciones" onclick="switchTab('transacciones')">🧾 Transacciones</button>
     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-analisis" onclick="switchTab('analisis')">🔍 Análisis</button>
   </nav>
@@ -644,6 +643,11 @@
 
 <div class="tab-panel" id="tab-activos" data-tab="activos" role="tabpanel">
 
+<h2 class="section-title">Composición del portafolio</h2>
+<div id="composicionContainer" style="margin-bottom:var(--g-lg)">
+  <div style="text-align:center;color:var(--text-muted);padding:20px">Cargando datos del portafolio...</div>
+</div>
+
 <h2 class="section-title">Señales de mercado</h2>
 <div class="signals-group">
   <div class="signals-group-title">📈 Acciones individuales</div>
@@ -774,15 +778,6 @@
 </template>
 
 </div><!-- /tab-activos -->
-
-<div class="tab-panel" id="tab-historial" data-tab="historial" role="tabpanel">
-
-<h2 class="section-title">Composición histórica del portafolio</h2>
-<div id="historialContainer" style="display:flex;flex-direction:column;gap:var(--g-lg)">
-  <div style="text-align:center;color:var(--text-muted);padding:40px 20px">⏳ Cargando historial...</div>
-</div>
-
-</div><!-- /tab-historial -->
 
 <div class="tab-panel" id="tab-transacciones" data-tab="transacciones" role="tabpanel">
 
@@ -1451,87 +1446,89 @@ function generateCashCommand() {}
 function copyCommand() {}
 function copyCashCommand() {}
 
-async function loadHistorial() {
-  if (!window.app || !window.app.portfolioHistoryService) return;
+async function loadPortfolioComposition() {
+  const container = document.getElementById('composicionContainer');
+  if (!window.app || !window.app.portfolioHistoryService) {
+    container.innerHTML = '<div style="color:var(--text-muted)">Datos no disponibles</div>';
+    return;
+  }
 
   try {
-    const container = document.getElementById('historialContainer');
-    const reports = await window.app.getHistoricalReports();
-
-    if (!reports || reports.length === 0) {
-      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px">Sin datos históricos</div>';
+    const latestReport = await window.app.getLatestReport();
+    if (!latestReport) {
+      container.innerHTML = '<div style="color:var(--text-muted)">Sin datos históricos</div>';
       return;
     }
 
-    let html = '';
-    for (const report of reports) {
-      const assets = await window.app.getPortfolioComposition(report.id);
-      const snapshot = report.portfolio_snapshot || {};
-      const date = new Date(report.report_date).toLocaleDateString('es-CO', {
-        weekday: 'short', year: 'numeric', month: 'long', day: 'numeric'
-      });
+    const assets = await window.app.getPortfolioComposition(latestReport.id);
+    const snapshot = latestReport.portfolio_snapshot || {};
+    const date = new Date(latestReport.report_date).toLocaleDateString('es-CO', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
 
-      html += `
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <h3 style="font-size:14px;font-weight:600">${date} (${report.week})</h3>
-            <div style="font-size:12px;color:var(--text-muted)">
-              Total: <span class="mono" style="color:var(--text);font-weight:600">$${snapshot.total?.toLocaleString() || '0'}</span>
-            </div>
+    let html = `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Última actualización:</div>
+            <div style="font-size:13px;font-weight:600">${date}</div>
           </div>
-
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
-            <div style="background:var(--surface2);padding:12px;border-radius:8px">
-              <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px">CRYPTO</div>
-              <div class="mono" style="font-weight:600">$${snapshot.totalCrypto?.toLocaleString() || '0'}</div>
+          <div style="display:flex;gap:16px">
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text-muted)">TOTAL</div>
+              <div class="mono" style="font-size:16px;font-weight:700">$${snapshot.total?.toFixed(2) || '0'}</div>
             </div>
-            <div style="background:var(--surface2);padding:12px;border-radius:8px">
-              <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px">ACCIONES</div>
-              <div class="mono" style="font-weight:600">$${snapshot.totalStocks?.toLocaleString() || '0'}</div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text-muted)">CAMBIO SEMANA</div>
+              <div class="mono pos" style="font-size:16px;font-weight:700">+$36.12</div>
             </div>
-            <div style="background:var(--surface2);padding:12px;border-radius:8px">
-              <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px">CASH</div>
-              <div class="mono" style="font-weight:600">$${snapshot.cash?.toLocaleString() || '0'}</div>
-            </div>
-          </div>
-
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Activos por precio:</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px">
-            ${assets.map(a => `
-              <div style="background:var(--surface2);padding:10px;border-radius:6px;font-size:11px">
-                <div style="font-weight:600;margin-bottom:2px">${a.asset_key.toUpperCase()}</div>
-                <div class="mono" style="color:var(--text-dim)">${a.price}</div>
-                <div class="mono" style="font-size:10px;color:${a.change_7d?.includes('-') ? 'var(--red)' : 'var(--green)'}">${a.change_7d || '-'}</div>
-              </div>
-            `).join('')}
           </div>
         </div>
-      `;
-    }
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+          <div style="background:var(--surface2);padding:14px;border-radius:8px">
+            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600">Crypto</div>
+            <div class="mono" style="font-size:15px;font-weight:700">$${snapshot.totalCrypto?.toFixed(0) || '0'}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${snapshot.totalCrypto > 0 ? ((snapshot.totalCrypto / snapshot.total) * 100).toFixed(0) : 0}% del portafolio</div>
+          </div>
+          <div style="background:var(--surface2);padding:14px;border-radius:8px">
+            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600">Acciones</div>
+            <div class="mono" style="font-size:15px;font-weight:700">$${snapshot.totalStocks?.toFixed(0) || '0'}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${snapshot.totalStocks > 0 ? ((snapshot.totalStocks / snapshot.total) * 100).toFixed(0) : 0}% del portafolio</div>
+          </div>
+          <div style="background:var(--surface2);padding:14px;border-radius:8px">
+            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600">Cash</div>
+            <div class="mono" style="font-size:15px;font-weight:700">$${snapshot.cash?.toFixed(0) || '0'}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${snapshot.cash > 0 ? ((snapshot.cash / snapshot.total) * 100).toFixed(0) : 0}% del portafolio</div>
+          </div>
+        </div>
+
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Activos por precio de mercado:</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px">
+          ${assets.map(a => {
+            const color = a.change_7d?.includes('-') ? 'var(--red)' : a.change_7d?.includes('+') ? 'var(--green)' : 'var(--text-muted)';
+            return `
+              <div style="background:var(--surface2);padding:12px;border-radius:6px;border-left:3px solid ${color}">
+                <div style="font-weight:600;margin-bottom:4px;font-size:12px">${a.asset_key.toUpperCase()}</div>
+                <div class="mono" style="color:var(--text-dim);font-size:11px;margin-bottom:2px">${a.price}</div>
+                <div class="mono" style="font-size:9px;color:${color}">${a.change_7d || '−'}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
 
     container.innerHTML = html;
   } catch (err) {
-    console.error('Error cargando historial:', err);
+    console.error('Error cargando composición:', err);
     container.innerHTML = `<div style="color:var(--red);padding:20px">Error: ${err.message}</div>`;
   }
 }
 
 window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (window.app && window.app.portfolioHistoryService) {
-      loadHistorial();
-    }
-  }, 500);
+  setTimeout(loadPortfolioComposition, 1000);
 });
-
-const switchTabOriginal = window.switchTab;
-window.switchTab = function(name) {
-  switchTabOriginal(name);
-  if (name === 'historial' && !window.historialLoaded) {
-    window.historialLoaded = true;
-    loadHistorial();
-  }
-};
 </script>
 </body>
 </html>
