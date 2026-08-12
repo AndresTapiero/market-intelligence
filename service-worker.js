@@ -37,13 +37,18 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
   if (request.method !== 'GET') return;
+  if (!request.url.startsWith('http')) return;
 
   event.respondWith(
     fetch(request)
       .then(response => {
         if (response.status === 200 && response.type !== 'error') {
           const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache));
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(request, responseToCache).catch(err => {
+              console.log('Cache put error:', err);
+            });
+          });
         }
         return response;
       })
