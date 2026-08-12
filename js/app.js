@@ -65,7 +65,10 @@ class InvestmentApp {
       const user = this.authService.getCurrentUser();
       if (!user) return;
 
-      // Cargar todas las transacciones en orden cronológico
+      // 1. Cargar precios y señales desde portfolio_assets (último reporte)
+      await this._loadLatestAssetData();
+
+      // 2. Cargar todas las transacciones en orden cronológico
       const { data, error } = await this.supabase
         .from('inv_journal')
         .select('ticker, numero_acciones, precio_entrada, precio_salida, inversion_monto, comision, monto_neto, ganancia_perdida_pct, fecha_venta, razon_venta, tesis_inversion, fecha')
@@ -144,6 +147,51 @@ class InvestmentApp {
       }
     } catch (err) {
       console.warn('⚠️ Error sincronizando portafolio:', err.message);
+    }
+  }
+
+  async _loadLatestAssetData() {
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) return;
+
+      // Obtener el último reporte
+      const { data: reports } = await this.supabase
+        .from('portfolio_history')
+        .select('id, report_date, portfolio_snapshot')
+        .eq('user_id', user.id)
+        .order('report_date', { ascending: false })
+        .limit(1);
+
+      if (!reports?.length) return;
+      const report = reports[0];
+
+      // Obtener activos del último reporte
+      const { data: assets } = await this.supabase
+        .from('portfolio_assets')
+        .select('asset_key, price, change_7d, signal, context')
+        .eq('report_id', report.id);
+
+      if (!assets?.length) return;
+
+      // Actualizar ASSET_DATA con precios y señales de Supabase
+      const metaMap = {};
+      (window.ASSET_DATA || []).forEach(a => { metaMap[a.ticker.toLowerCase()] = a; });
+
+      assets.forEach(row => {
+        const key  = row.asset_key.toLowerCase();
+        const meta = metaMap[key];
+        if (!meta) return;
+        // Actualizar precio y señal desde Supabase (fuente de verdad del reporte)
+        if (row.price)     meta.price   = parseFloat(row.price)   || meta.price;
+        if (row.change_7d) meta.change  = row.change_7d;
+        if (row.signal)    meta.signal  = row.signal;
+        if (row.context)   meta.context = row.context;
+      });
+
+      console.log(`✅ Precios y señales actualizados desde reporte ${report.report_date}`);
+    } catch (err) {
+      console.warn('⚠️ Error cargando asset data:', err.message);
     }
   }
 

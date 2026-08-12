@@ -5,8 +5,6 @@ window.ASSET_DATA = [
   { ticker: 'VOO', label: 'VOO', icon: 'V', type: 'stock', signal: 'buy', price: 696.41, change: '+1.4%', costAvg: 508, current: 696, invested: 188, actual: 257, delta: '+6.38', context: 'VOO cotiza en 696.41 cerca de su maximo de 52 semanas (699.15), con un rango diario reciente entre 688.61 y 697.31, senal tecnica de Strong Buy segun promedios moviles. El aporte mensual de $50 debe continuar sin cambios, ya que el S&P 500 sigue en tendencia alcista de fondo pese a la cercania al techo historico.', class: 'asset-voo' },
   { ticker: 'QQQ', label: 'QQQ', icon: 'Q', type: 'stock', signal: 'buy', price: 612.35, change: '+1.8%', costAvg: 533, current: 612, invested: 83, actual: 95, delta: '-11', context: 'QQQ avanzo cerca de 1.76% recientemente impulsado por el rebote en semiconductores y tecnologia, en linea con el momentum de NVDA. Sigue siendo un vehiculo solido para el DCA mensual dado el peso de las megacaps de IA en el indice.', class: 'asset-qqq' },
   { ticker: 'NVDA', label: 'NVIDIA', icon: 'N', type: 'stock', signal: 'buy', price: 206.83, change: '-0.4%', costAvg: 119, current: 206, invested: 132, actual: 229, delta: '-0.01', context: 'NVDA cotiza en 206.83 con maximo de 52 semanas en 236.54, y su capitalizacion se mantiene practicamente plana la ultima semana (-0.35%). El proximo reporte de resultados el 26 de agosto es un catalizador clave a vigilar antes de anadir exposicion adicional.', class: 'asset-nvda' },
-  { ticker: 'NU', label: 'Nubank', icon: 'N', type: 'stock', signal: 'hold', price: 14.20, change: '+2.0%', costAvg: 8.18, current: 14.20, invested: 8, actual: 14, delta: '+0.11', context: '—', class: 'asset-nu' },
-  { ticker: 'TSLA', label: 'Tesla', icon: 'T', type: 'stock', signal: 'hold', price: 312.50, change: '-1.5%', costAvg: 302, current: 312, invested: 38, actual: 40, delta: '-0.07', context: '—', class: 'asset-tsla' },
   { ticker: 'BTC', label: 'Bitcoin', icon: '₿', type: 'crypto', signal: 'buy', price: 63736.05, change: '+0.7%', costAvg: 76370, current: 63736, invested: 1242, actual: 1037, delta: '-8.36', context: 'BTC subio cerca de 2% este martes en la manana y se mantiene estable respecto a hace una semana, con dominancia de mercado en 56.4% lo que refuerza su rol defensivo dentro del portafolio cripto. El fear index en zona de miedo (27) historicamente ha sido un buen punto de entrada para DCA en BTC, por lo que continuar el aporte mensual de $50 tiene sentido.', class: 'asset-btc' },
   { ticker: 'ETH', label: 'Ethereum', icon: 'Ξ', type: 'crypto', signal: 'hold', price: 1868.43, change: '-3.2%', costAvg: 2532, current: 1868, invested: 439, actual: 324, delta: '-1.14', context: '—', class: 'asset-eth' },
   { ticker: 'SOL', label: 'Solana', icon: '◎', type: 'crypto', signal: 'hold', price: 73.32, change: '-2.4%', costAvg: 173, current: 73.32, invested: 726, actual: 306, delta: '-4.94', context: '—', class: 'asset-sol' },
@@ -39,8 +37,7 @@ window.EXISTING_ASSETS = {
   "voo": { type: "stock", label: "VOO", qty: 0.36947, costAvg: 508.99, fundamento: "" },
   "qqq": { type: "stock", label: "QQQ", qty: 0.15618, costAvg: 533.7, fundamento: "" },
   "nvda": { type: "stock", label: "NVIDIA", qty: 1.10855, costAvg: 119.11, fundamento: "" },
-  "nu": { type: "stock", label: "Nubank", qty: 0, costAvg: 8.18, fundamento: "" },
-  "tsla": { type: "stock", label: "Tesla", qty: 0, costAvg: 302.24, fundamento: "" }
+  // NU y TSLA vendidos — eliminados del baseline. El sync los ignorará si aparecen en inv_journal.
 };
 
 // Margen de seguridad (solo acciones/ETFs con flujo de caja, no cripto).
@@ -53,6 +50,6 @@ window.VALUATIONS = VALUATIONS;
 const ASSET_COLORS = {
   btc:'#f7931a',eth:'#627eea',sol:'#9945ff',tao:'#38bdf8',uni:'#ff007a',bnb:'#f3ba2f',
   sui:'#6fbcf0',sei:'#e84142',ena:'#00d4ff',avax:'#e84142',giga:'#00d4ff',trump:'#8250ff',
-  spx6900:'#00d4a0',voo:'#00d4a0',qqq:'#4d8fff',nvda:'#76b900',nu:'#8250ff',tsla:'#e31937'
+  spx6900:'#00d4a0',voo:'#00d4a0',qqq:'#4d8fff',nvda:'#76b900'
 };
 window.ASSET_COLORS = ASSET_COLORS;
