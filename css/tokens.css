@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+:root{
+  --bg:#0a0c10;--surface:#13161d;--surface2:#1a1e27;--border:#232838;--border-subtle:#1a1e2a;
+  --text:#eef0f7;--text-muted:#646b85;--text-dim:#9aa2bd;
+  --green:#00d9a3;--green-dim:rgba(0,217,163,0.1);
+  --red:#ff5575;--red-dim:rgba(255,85,117,0.1);
+  --yellow:#f5c842;--yellow-dim:rgba(245,200,66,0.1);
+  --blue:#4d8fff;--blue-dim:rgba(77,143,255,0.1);
+  --accent:#8b6dff;--accent-dim:rgba(139,109,255,0.12);
+  --orange:#ff9838;--orange-dim:rgba(255,152,56,0.1);
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+  --r:14px;--r-sm:10px;--g:16px;--g-lg:20px;
+}

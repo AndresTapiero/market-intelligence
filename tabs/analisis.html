@@ -1,0 +1,92 @@
+<h2 class="section-title">Asignación objetivo vs real<span class="info-icon" data-tooltip-key="risk_profile">ⓘ</span></h2>
+<div class="card mb">
+  <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#f7931a"></span>Bitcoin</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:35.4%;background:#f7931a"></div><div class="alloc-bar-target" style="left:30%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">35.4% <span class="text-muted">/ 30%</span></div>
+    <div class="alloc-gap mono num neg">-5.4pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#00d4a0"></span>ETFs</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:0%;background:#00d4a0"></div><div class="alloc-bar-target" style="left:30%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">0% <span class="text-muted">/ 30%</span></div>
+    <div class="alloc-gap mono num pos">+30.0pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#4d8fff"></span>Acciones indiv.</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:21.7%;background:#4d8fff"></div><div class="alloc-bar-target" style="left:25%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">21.7% <span class="text-muted">/ 25%</span></div>
+    <div class="alloc-gap mono num pos">+3.3pp</div>
+  </div>
+  <div class="alloc-row">
+    <div class="alloc-label"><span class="comp-dot" style="background:#8b6dff"></span>Altcoins (HOLD)</div>
+    <div class="alloc-bars">
+      <div class="alloc-bar-track"><div class="alloc-bar-actual" style="width:42.9%;background:#8b6dff"></div><div class="alloc-bar-target" style="left:15%"></div></div>
+    </div>
+    <div class="alloc-nums mono num">42.9% <span class="text-muted">/ 15%</span></div>
+    <div class="alloc-gap mono num neg">-27.9pp</div>
+  </div>
+  <div class="alloc-hint">💡 Tu proxima inversion deberia priorizar <strong>ETFs</strong> (30.0 puntos por debajo del objetivo). Edita tus objetivos en portfolio.json → targets.</div>
+</div>
+
+<h2 class="section-title">Contexto macroeconómico</h2>
+<div class="card mb">
+  <div class="macro-grid">
+    <div class="macro-item"><div class="macro-item-label">USD/COP<span class="info-icon" data-tooltip-key="trm">ⓘ</span></div><div class="macro-item-value num">$3,230.44 COP</div><div class="macro-item-sub">tasa ARQ</div></div>
+    <div class="macro-item"><div class="macro-item-label">FED Rate</div><div class="macro-item-value num">4.25%-4.50%</div><div class="macro-item-sub">política</div></div>
+    <div class="macro-item"><div class="macro-item-label">BTC Dom.<span class="info-icon" data-tooltip-key="btc_dominance">ⓘ</span></div><div class="macro-item-value num">56.4%</div><div class="macro-item-sub">dominancia</div></div>
+    <div class="macro-item"><div class="macro-item-label">Fear & Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-item-value num">27</div><div class="macro-item-sub">Fear</div></div>
+  </div>
+  <div class="macro-narrative">El Banco de la Republica fijo la TRM de hoy en $3,230.44, el nivel mas alto en mas de una semana, tras subir 86.3 pesos frente al dia anterior. En cripto, el Fear and Greed Index se ubica en 27 (zona de miedo), mientras la dominancia de BTC en 56.4% confirma que el capital sigue rotando hacia el activo mas seguro del ecosistema.</div>
+</div>
+
+<h2 class="section-title">Simulador de conversión a pesos</h2>
+<div class="card mb">
+  <div class="cop-widget">
+    <div class="cop-header">
+      <div>
+        <div class="cop-current-rate">TRM actual: <span class="mono num" id="copBaseRate">$0</span> COP</div>
+        <div class="cop-sub">Desliza para simular distintos escenarios de tasa de cambio</div>
+      </div>
+      <button class="cop-reset" onclick="resetCopRate()">↺ Restablecer</button>
+    </div>
+    <input type="range" id="copSlider" class="cop-slider" min="2800" max="4500" step="1" value="3433">
+    <div class="cop-rate-display">
+      <span class="cop-rate-label">Tasa simulada:</span>
+      <span class="mono num cop-rate-value" id="copRateValue">$3,433.71</span>
+      <span class="cop-rate-diff" id="copRateDiff"></span>
+    </div>
+    <div class="cop-results">
+      <div class="cop-result-item">
+        <div class="cop-result-label">Total Portafolio (USD)</div>
+        <div class="mono num cop-result-value" id="copUsdVal">$0</div>
+      </div>
+      <div class="cop-result-arrow">→</div>
+      <div class="cop-result-item highlight">
+        <div class="cop-result-label">Equivalente en COP</div>
+        <div class="mono num cop-result-value" id="copValue">$0</div>
+      </div>
+    </div>
+    <div class="cop-breakdown">
+      <div class="cop-breakdown-item"><span>Crypto</span><span class="mono num" id="copCrypto">$0</span></div>
+      <div class="cop-breakdown-item"><span>Acciones</span><span class="mono num" id="copStocks">$0</span></div>
+      <div class="cop-breakdown-item"><span>Cash</span><span class="mono num" id="copCash">$0</span></div>
+    </div>
+  </div>
+</div>
+
+<h2 class="section-title">Decálogo del Inversor Sobrio</h2>
+<div class="card mb">
+  <div class="decalogo-item"><strong>1. Liquidez intocable</strong> — Mantén un fondo de emergencia de 3 a 6 meses. Nunca operes con dinero que necesites mañana.</div>
+  <div class="decalogo-item"><strong>2. Protección del núcleo</strong> — No arriesgues el capital base; si especulas, hazlo exclusivamente con utilidades.</div>
+  <div class="decalogo-item"><strong>3. Filtro de extrema convicción</strong> — De 20 ideas analizadas, ejecuta únicamente las 1 o 2 mejores.</div>
+  <div class="decalogo-item"><strong>4. Educación operativa</strong> — El broker es solo el cable; el conocimiento y tu tesis documentada son el motor.</div>
+  <div class="decalogo-footer">"En los mercados financieros se paga por tener razón a largo plazo, no por estar hiperactivo todos los días. La paciencia es tu activo más valioso."</div>
+</div>

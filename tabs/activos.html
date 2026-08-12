@@ -1,0 +1,129 @@
+<h2 class="section-title">Composición del portafolio</h2>
+<div id="composicionContainer" style="margin-bottom:var(--g-lg)">
+  <div style="text-align:center;color:var(--text-muted);padding:20px">Cargando datos del portafolio...</div>
+</div>
+
+<h2 class="section-title">Señales de mercado</h2>
+<div class="signals-group">
+  <div class="signals-group-title">📈 Acciones individuales</div>
+  <div class="assets-grid-stocks" id="stocksContainer"></div>
+</div>
+
+<div class="signals-group">
+  <div class="signals-group-title">🔶 Crypto</div>
+  <div class="assets-grid-crypto" id="cryptoContainer"></div>
+</div>
+
+<template id="assetCardTemplate">
+  <div class="asset-card">
+    <div class="asset-header">
+      <div class="asset-name">
+        <div class="asset-icon"></div>
+        <div>
+          <div class="asset-ticker"></div>
+          <div class="asset-label"></div>
+        </div>
+      </div>
+      <span class="signal-badge"></span>
+    </div>
+    <div class="asset-price num"></div>
+    <div class="asset-change num"></div>
+    <div class="asset-holdings"><span class="asset-holdings-label">Tienes</span><span class="mono num asset-holdings-qty"></span></div>
+    <div class="price-compare">
+      <div class="pc-item"><span class="pc-label">Compra</span><span class="mono num"></span></div>
+      <span class="pc-arrow">→</span>
+      <div class="pc-item"><span class="pc-label">Mercado</span><span class="mono num"></span></div>
+      <span class="pc-gain"></span>
+    </div>
+    <div class="port-mini">
+      <span class="num"></span>
+      <span class="num"></span>
+    </div>
+    <div class="asset-delta"><span class="delta"></span> <span class="asset-delta-label">vs mes anterior</span></div>
+    <div class="margin-safety">
+      <div class="margin-safety-label">Margen de seguridad<span class="info-icon" data-tooltip-key="margen_seguridad">ⓘ</span></div>
+      <div class="margin-safety-value"></div>
+    </div>
+    <div class="asset-context"></div>
+  </div>
+</template>
+
+<h2 class="section-title">En seguimiento — candidatas a comprar</h2>
+<div class="watch-grid mb">
+  <div class="watch-card asset-schd">
+    <div class="asset-header">
+      <div class="asset-name">
+        <div class="asset-icon" style="background:#f5c84222;color:#f5c842">S</div>
+        <div><div class="asset-ticker">SCHD</div><div class="asset-label">SCHD Div.</div></div>
+      </div>
+      <span class="signal-badge signal-wait">ESPERAR</span>
+    </div>
+    <div class="asset-price num">$33.55</div>
+    <div class="asset-change num pos">+1.0% <span class="asset-change-label">semana</span></div>
+    <div class="asset-context">SCHD subio 0.24% en la sesion y se mueve en linea con el rally amplio del mercado, por lo que conviene esperar una correccion antes de iniciar posicion y no perseguir el precio.</div>
+    <div class="watch-tag">👁 En observación — no posees este activo</div>
+  </div>
+  <div class="watch-card asset-vti">
+    <div class="asset-header">
+      <div class="asset-name">
+        <div class="asset-icon" style="background:#ff983822;color:#ff9838">V</div>
+        <div><div class="asset-ticker">VTI</div><div class="asset-label">VTI Total</div></div>
+      </div>
+      <span class="signal-badge signal-wait">ESPERAR</span>
+    </div>
+    <div class="asset-price num">$373.84</div>
+    <div class="asset-change num pos">+2.5% <span class="asset-change-label">semana</span></div>
+    <div class="asset-context">Total market USA, diversificacion maxima en un solo ETF</div>
+    <div class="watch-tag">👁 En observación — no posees este activo</div>
+  </div>
+</div>
+
+<h2 class="section-title">Rendimiento detallado</h2>
+<div class="pnl-grid mb">
+  <div class="pnl-card">
+    <div class="pnl-header"><div class="pnl-title">Acciones · 5</div><div class="pnl-total-badge pos">+$186 (+41.3%)</div></div>
+    <div class="pnl-scroll" id="stocksPnlContainer"></div>
+    <div class="pnl-subtotal"><span class="text-muted">Invertido</span><span class="mono num" id="stocksSubInvested">—</span><span class="text-muted">Actual</span><span class="mono num" id="stocksSubActual">—</span><span class="mono num" id="stocksSubPnl">—</span></div>
+  </div>
+  <div class="pnl-card">
+    <div class="pnl-header"><div class="pnl-title">Crypto · 13</div><div class="pnl-total-badge neg" id="cryptoPnlBadge">-$1,343 (-36.9%)</div></div>
+    <div class="pnl-scroll" id="cryptoPnlContainer"></div>
+    <div class="pnl-subtotal"><span class="text-muted">Invertido</span><span class="mono num" id="cryptoSubInvested">—</span><span class="text-muted">Actual</span><span class="mono num" id="cryptoSubActual">—</span><span class="mono num" id="cryptoSubPnl">—</span></div>
+  </div>
+</div>
+
+<template id="pnlRowTemplate">
+  <div class="pnl-row">
+    <div class="pnl-asset">
+      <div class="asset-icon-sm"></div>
+      <div>
+        <div class="pnl-name"></div>
+        <div class="pnl-qty"></div>
+      </div>
+    </div>
+    <div class="pnl-nums">
+      <div class="pnl-trio"><span class="label-xs">P. Compra</span><span class="mono num"></span></div>
+      <div class="pnl-trio"><span class="label-xs">P. Mercado</span><span class="mono num"></span></div>
+      <div class="pnl-trio">
+        <span class="label-xs">P&amp;L</span>
+        <span class="mono num pnl-dollar"></span>
+        <span class="mono num small pnl-pct"></span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<h2 class="section-title">Composición del portafolio</h2>
+<div class="comp-pair">
+  <div class="card"><h3 class="section-title">Acciones · $636</h3><div class="comp-scroll" id="stocksCompContainer"></div></div>
+  <div class="card"><h3 class="section-title">Crypto · $2,295</h3><div class="comp-scroll" id="cryptoCompContainer"></div></div>
+</div>
+
+<template id="compRowTemplate">
+  <div class="comp-row">
+    <div class="comp-label"><span class="comp-dot"></span><span class="mono"></span></div>
+    <div class="comp-bar-wrap"><div class="comp-bar"></div></div>
+    <div class="comp-pct mono num"></div>
+    <div class="comp-val mono num"></div>
+  </div>
+</template>
