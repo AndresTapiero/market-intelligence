@@ -123,11 +123,9 @@ class InvestmentApp {
   updateSellPreview() {
     const assetKey = document.getElementById('sellAssetSelect')?.value;
     if (!assetKey) return;
-
-    // Obtener cantidad disponible (del EXISTING_ASSETS global)
     const asset = window.EXISTING_ASSETS?.[assetKey];
     if (asset) {
-      this.uiManager.updateSellPreview(asset.qty);
+      this.uiManager.updateSellPreview(asset.qty, asset.costAvg);
     }
   }
 
@@ -147,7 +145,7 @@ class InvestmentApp {
     const assetKey = document.getElementById('sellAssetSelect')?.value;
     const asset = window.EXISTING_ASSETS?.[assetKey];
     if (asset) {
-      this.uiManager.setSellQuantityType(type, asset.qty);
+      this.uiManager.setSellQuantityType(type, asset.qty, asset.costAvg);
     }
   }
 

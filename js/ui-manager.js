@@ -133,7 +133,7 @@ export class UIManager {
   /**
    * Actualiza preview de venta
    */
-  updateSellPreview(availableQuantity) {
+  updateSellPreview(availableQuantity, costAvg = 0) {
     const qty = parseFloat(document.getElementById('sellQty')?.value) || 0;
     const price = parseFloat(document.getElementById('sellPrice')?.value) || 0;
     const commission = parseFloat(document.getElementById('sellCommission')?.value) || 0;
@@ -142,6 +142,10 @@ export class UIManager {
     if (qty > 0 && price > 0 && qty <= availableQuantity) {
       const gross = qty * price;
       const net = gross - commission;
+      const cost = qty * costAvg;
+      const pnl = net - cost;
+      const pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
+      const isPos = pnl >= 0;
       const remaining = availableQuantity - qty;
 
       const fmt = v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -150,6 +154,22 @@ export class UIManager {
       document.getElementById('sellPreviewNet').textContent = fmt(net);
       document.getElementById('sellPreviewRemaining').textContent =
         remaining.toLocaleString('en-US', { maximumFractionDigits: 8 });
+
+      const pnlEl = document.getElementById('sellPreviewPnL');
+      const pnlPctEl = document.getElementById('sellPreviewPnLPct');
+      const pnlLabelEl = document.getElementById('sellPreviewPnLLabel');
+      if (pnlEl) {
+        pnlEl.textContent = (isPos ? '+' : '') + fmt(pnl);
+        pnlEl.className = 'mono num ' + (isPos ? 'pos' : 'neg');
+      }
+      if (pnlPctEl) {
+        pnlPctEl.textContent = (isPos ? '+' : '') + pnlPct.toFixed(2) + '%';
+        pnlPctEl.className = 'mono num ' + (isPos ? 'pos' : 'neg');
+        pnlPctEl.style.fontSize = '10px';
+      }
+      if (pnlLabelEl) {
+        pnlLabelEl.textContent = isPos ? '📈 Ganancia' : '📉 Pérdida';
+      }
 
       if (previewEl) previewEl.style.display = 'flex';
     } else if (previewEl) {
@@ -183,23 +203,14 @@ export class UIManager {
   /**
    * Establece tipo de cantidad a vender
    */
-  setSellQuantityType(type, availableQuantity = 0) {
+  setSellQuantityType(type, availableQuantity = 0, costAvg = 0) {
     this.sellQuantityType = type;
-    const allBtn = document.querySelector('.sell-qty-btn:nth-child(1)');
-    const partialBtn = document.querySelector('.sell-qty-btn:nth-child(2)');
     const qtyEl = document.getElementById('sellQty');
-
-    if (type === 'all') {
-      if (allBtn) allBtn.classList.add('active');
-      if (partialBtn) partialBtn.classList.remove('active');
-      if (qtyEl) {
-        qtyEl.value = availableQuantity;
-        this.updateSellPreview(availableQuantity);
-      }
-    } else {
-      if (partialBtn) partialBtn.classList.add('active');
-      if (allBtn) allBtn.classList.remove('active');
-      if (qtyEl) qtyEl.value = '';
+    if (type === 'all' && qtyEl) {
+      qtyEl.value = availableQuantity;
+      this.updateSellPreview(availableQuantity, costAvg);
+    } else if (qtyEl) {
+      qtyEl.value = '';
     }
   }
 
