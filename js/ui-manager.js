@@ -41,10 +41,19 @@ export class UIManager {
     const modal = document.getElementById('buyModalOverlay');
     if (!modal) return;
 
+    document.getElementById('buyAssetSelect').value = '';
     document.getElementById('buyQty').value = '';
     document.getElementById('buyPrice').value = '';
     document.getElementById('buyFundamento').value = '';
+    document.getElementById('buyTargetPrice').value = '';
     document.getElementById('buyPreview').style.display = 'none';
+    // Reset type selector
+    const typeSelect = document.getElementById('buyNewType');
+    if (typeSelect) { typeSelect.value = 'crypto'; typeSelect.disabled = true; typeSelect.style.opacity = '.7'; }
+    const newTickerField = document.getElementById('newTickerField');
+    if (newTickerField) newTickerField.style.display = 'none';
+    const newTicker = document.getElementById('buyNewTicker');
+    if (newTicker) newTicker.value = '';
     const today = new Date().toISOString().split('T')[0];
     const buyDateEl = document.getElementById('buyDate');
     if (buyDateEl && !buyDateEl.value) buyDateEl.value = today;

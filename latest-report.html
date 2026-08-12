@@ -1000,18 +1000,22 @@
           <option value="">Selecciona un activo...</option>
           <optgroup label="Crypto" id="buyGroupCrypto"></optgroup>
           <optgroup label="Acciones/ETFs" id="buyGroupStocks"></optgroup>
-          <option value="__new__">+ Nuevo activo (no esta en el portafolio)</option>
+          <option value="__new__">+ Nuevo activo (no está en el portafolio)</option>
         </select>
       </div>
-      <div class="modal-field" id="newAssetFields" style="display:none">
-        <label>Ticker del nuevo activo</label>
-        <input type="text" id="buyNewTicker" placeholder="ej: schd, vti, btc">
-        <label style="margin-top:8px">Tipo</label>
-        <select id="buyNewType">
-          <option value="crypto">Crypto</option>
-          <option value="etf">Accion ETF</option>
-          <option value="stock">Accion individual</option>
-        </select>
+      <div class="modal-row" style="align-items:flex-end">
+        <div class="modal-field" style="flex:0 0 140px">
+          <label>Tipo</label>
+          <select id="buyNewType" disabled style="opacity:.7">
+            <option value="crypto">🔵 Crypto</option>
+            <option value="stock">📈 Acción</option>
+            <option value="etf">🏦 ETF</option>
+          </select>
+        </div>
+        <div class="modal-field" id="newTickerField" style="display:none;flex:1">
+          <label>Ticker del nuevo activo</label>
+          <input type="text" id="buyNewTicker" placeholder="ej: SCHD, DOGE, AMZN" style="text-transform:uppercase">
+        </div>
       </div>
       <div class="modal-row">
         <div class="modal-field">
@@ -1629,7 +1633,32 @@ function openSellModal() { document.getElementById('sellModalOverlay').classList
 function closeSellModal() { document.getElementById('sellModalOverlay').classList.remove('show'); }
 function openCashModal() { document.getElementById('cashModalOverlay').classList.add('show'); }
 function closeCashModal() { document.getElementById('cashModalOverlay').classList.remove('show'); }
-function onAssetSelectChange() { document.getElementById('newAssetFields').style.display = document.getElementById('buyAssetSelect').value === '__new__' ? 'flex' : 'none'; }
+function onAssetSelectChange() {
+  const val = document.getElementById('buyAssetSelect').value;
+  const typeSelect = document.getElementById('buyNewType');
+  const newTickerField = document.getElementById('newTickerField');
+  const previewEl = document.getElementById('buyPreview');
+  if (previewEl) previewEl.style.display = 'none';
+
+  if (val === '__new__') {
+    typeSelect.disabled = false;
+    typeSelect.style.opacity = '1';
+    newTickerField.style.display = '';
+  } else if (val) {
+    const asset = EXISTING_ASSETS[val];
+    if (asset) {
+      typeSelect.value = asset.type === 'stock' ? 'stock' : 'crypto';
+      typeSelect.disabled = true;
+      typeSelect.style.opacity = '.7';
+    }
+    newTickerField.style.display = 'none';
+    window.updateBuyPreview?.();
+  } else {
+    typeSelect.disabled = true;
+    typeSelect.style.opacity = '.7';
+    newTickerField.style.display = 'none';
+  }
+}
 function populateAssetSelects() {
   const groups = {
     buyGroupCrypto:  document.getElementById('buyGroupCrypto'),
