@@ -1071,11 +1071,12 @@
       </div>
       <div class="modal-row">
         <div class="modal-field">
-          <label>Cantidad a vender <span id="sellQtyHint" style="font-size:10px;color:var(--text-muted);font-weight:400"></span></label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input type="number" id="sellQty" placeholder="0.00" step="any" oninput="onSellQtyInput()" style="flex:1;min-width:0">
-            <button type="button" onclick="sellSelectAll()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-size:11px;font-weight:600;padding:8px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">Todo</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <label style="margin-bottom:0">Cantidad a vender</label>
+            <button type="button" onclick="sellSelectAll()" style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:6px;color:var(--accent);font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;letter-spacing:.3px">Vender todo</button>
           </div>
+          <input type="number" id="sellQty" placeholder="0.00" step="any" oninput="onSellQtyInput()" style="width:100%">
+          <div id="sellQtyHint" style="font-size:10px;color:var(--text-muted);margin-top:5px"></div>
         </div>
         <div class="modal-field">
           <label>Precio unitario (USD)</label>
@@ -1664,7 +1665,7 @@ function onSellAssetChange() {
   const asset = key && EXISTING_ASSETS[key];
   const hint = document.getElementById('sellQtyHint');
   const qtyEl = document.getElementById('sellQty');
-  if (hint) hint.textContent = asset ? '— Disponible: ' + formatQty(asset.qty) : '';
+  if (hint) hint.textContent = asset ? 'Disponible: ' + formatQty(asset.qty) + ' unidades' : '';
   if (qtyEl) { qtyEl.value = ''; qtyEl.max = asset ? asset.qty : ''; }
   document.getElementById('sellPreview').style.display = 'none';
 }
