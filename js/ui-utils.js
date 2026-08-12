@@ -176,10 +176,11 @@ function measureStickyHeights() {
 }
 window.measureStickyHeights = measureStickyHeights;
 
+var _resizeTimer;
 window.addEventListener('load', measureStickyHeights);
 window.addEventListener('resize', function() {
-  clearTimeout(window._stickyResizeT);
-  window._stickyResizeT = setTimeout(measureStickyHeights, 120);
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(measureStickyHeights, 100);
 });
 document.addEventListener('DOMContentLoaded', measureStickyHeights);
 
@@ -249,67 +250,112 @@ async function loadPortfolioComposition() {
   var container = document.getElementById('composicionContainer');
   if (!container) return;
   if (!window.app || !window.app.portfolioHistoryService) {
-    container.innerHTML = '<div style="color:var(--text-muted)">Datos no disponibles</div>';
+    container.textContent = '';
+    var msg = document.createElement('div');
+    msg.style.color = 'var(--text-muted)';
+    msg.textContent = 'Datos no disponibles';
+    container.appendChild(msg);
     return;
   }
 
   try {
     var latestReport = await window.app.getLatestReport();
     if (!latestReport) {
-      container.innerHTML = '<div style="color:var(--text-muted)">Sin datos históricos</div>';
+      container.textContent = '';
+      var noData = document.createElement('div');
+      noData.style.color = 'var(--text-muted)';
+      noData.textContent = 'Sin datos históricos';
+      container.appendChild(noData);
       return;
     }
 
-    var assets = await window.app.getPortfolioComposition(latestReport.id);
     var snapshot = latestReport.portfolio_snapshot || {};
     var date = new Date(latestReport.report_date).toLocaleDateString('es-CO', {
       year: 'numeric', month: 'long', day: 'numeric'
     });
+    var total = snapshot.total || 0;
+    var totalCrypto = snapshot.totalCrypto || 0;
+    var totalStocks = snapshot.totalStocks || 0;
+    var cash = snapshot.cash || 0;
 
-    var html = `
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <div>
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Última actualización:</div>
-            <div style="font-size:13px;font-weight:600">${date}</div>
-          </div>
-          <div style="display:flex;gap:16px">
-            <div style="text-align:right">
-              <div style="font-size:11px;color:var(--text-muted)">TOTAL</div>
-              <div class="mono" style="font-size:16px;font-weight:700">$${snapshot.total?.toFixed(2) || '0'}</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:11px;color:var(--text-muted)">CAMBIO SEMANA</div>
-              <div class="mono pos" style="font-size:16px;font-weight:700">+$36.12</div>
-            </div>
-          </div>
-        </div>
+    // Build DOM
+    container.textContent = '';
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
-          <div style="background:var(--surface2);padding:14px;border-radius:8px">
-            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600">Crypto</div>
-            <div class="mono" style="font-size:15px;font-weight:700">$${snapshot.totalCrypto?.toFixed(0) || '0'}</div>
-            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${snapshot.totalCrypto > 0 ? ((snapshot.totalCrypto / snapshot.total) * 100).toFixed(0) : 0}% del portafolio</div>
-          </div>
-          <div style="background:var(--surface2);padding:14px;border-radius:8px">
-            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600">Acciones</div>
-            <div class="mono" style="font-size:15px;font-weight:700">$${snapshot.totalStocks?.toFixed(0) || '0'}</div>
-            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${snapshot.totalStocks > 0 ? ((snapshot.totalStocks / snapshot.total) * 100).toFixed(0) : 0}% del portafolio</div>
-          </div>
-          <div style="background:var(--surface2);padding:14px;border-radius:8px">
-            <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600">Cash</div>
-            <div class="mono" style="font-size:15px;font-weight:700">$${snapshot.cash?.toFixed(0) || '0'}</div>
-            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${snapshot.cash > 0 ? ((snapshot.cash / snapshot.total) * 100).toFixed(0) : 0}% del portafolio</div>
-          </div>
-        </div>
+    var card = document.createElement('div');
+    card.className = 'card';
 
-      </div>
-    `;
+    // Header row
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px';
 
-    container.innerHTML = html;
+    var dateDiv = document.createElement('div');
+    var dateLabel = document.createElement('div');
+    dateLabel.style.cssText = 'font-size:12px;color:var(--text-muted);margin-bottom:4px';
+    dateLabel.textContent = 'Última actualización:';
+    var dateVal = document.createElement('div');
+    dateVal.style.cssText = 'font-size:13px;font-weight:600';
+    dateVal.textContent = date;
+    dateDiv.appendChild(dateLabel);
+    dateDiv.appendChild(dateVal);
+
+    var totalsDiv = document.createElement('div');
+    totalsDiv.style.cssText = 'display:flex;gap:16px';
+    function makeTotalItem(label, value) {
+      var item = document.createElement('div');
+      item.style.textAlign = 'right';
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:11px;color:var(--text-muted)';
+      lbl.textContent = label;
+      var val = document.createElement('div');
+      val.className = 'mono';
+      val.style.cssText = 'font-size:16px;font-weight:700';
+      val.textContent = value;
+      item.appendChild(lbl);
+      item.appendChild(val);
+      return item;
+    }
+    totalsDiv.appendChild(makeTotalItem('TOTAL', '$' + total.toFixed(2)));
+    header.appendChild(dateDiv);
+    header.appendChild(totalsDiv);
+    card.appendChild(header);
+
+    // Category grid
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px';
+
+    function makeCategoryCard(label, amount, parentTotal) {
+      var pct = parentTotal > 0 ? ((amount / parentTotal) * 100).toFixed(0) : 0;
+      var item = document.createElement('div');
+      item.style.cssText = 'background:var(--surface2);padding:14px;border-radius:8px';
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600';
+      lbl.textContent = label;
+      var val = document.createElement('div');
+      val.className = 'mono';
+      val.style.cssText = 'font-size:15px;font-weight:700';
+      val.textContent = '$' + amount.toFixed(0);
+      var sub = document.createElement('div');
+      sub.style.cssText = 'font-size:10px;color:var(--text-muted);margin-top:2px';
+      sub.textContent = pct + '% del portafolio';
+      item.appendChild(lbl);
+      item.appendChild(val);
+      item.appendChild(sub);
+      return item;
+    }
+
+    grid.appendChild(makeCategoryCard('Crypto', totalCrypto, total));
+    grid.appendChild(makeCategoryCard('Acciones', totalStocks, total));
+    grid.appendChild(makeCategoryCard('Cash', cash, total));
+    card.appendChild(grid);
+
+    container.appendChild(card);
   } catch (err) {
     console.error('Error cargando composición:', err);
-    container.innerHTML = '<div style="color:var(--red);padding:20px">Error: ' + err.message + '</div>';
+    container.textContent = '';
+    var errDiv = document.createElement('div');
+    errDiv.style.cssText = 'color:var(--red);padding:20px';
+    errDiv.textContent = 'Error: ' + err.message;
+    container.appendChild(errDiv);
   }
 }
 window.loadPortfolioComposition = loadPortfolioComposition;

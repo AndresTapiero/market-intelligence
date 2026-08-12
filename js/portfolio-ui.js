@@ -23,6 +23,7 @@ function renderPnl() {
   if (!stocksEl || !cryptoEl || !tmpl) return;
 
   let sInv = 0, sAct = 0, cInv = 0, cAct = 0;
+  let sCount = 0, cCount = 0;
 
   window.ASSET_DATA.forEach(function(asset) {
     const key = asset.ticker.toLowerCase();
@@ -61,10 +62,10 @@ function renderPnl() {
 
     if (asset.type === 'stock') {
       stocksEl.appendChild(clone);
-      sInv += invested; sAct += actual;
+      sInv += invested; sAct += actual; sCount++;
     } else {
       cryptoEl.appendChild(clone);
-      cInv += invested; cAct += actual;
+      cInv += invested; cAct += actual; cCount++;
     }
   });
 
@@ -82,9 +83,17 @@ function renderPnl() {
   setEl('cryptoSubActual',   '$' + cAct.toFixed(0));
   setEl('cryptoSubPnl', (cPnl >= 0 ? '+$' : '-$') + Math.abs(cPnl).toFixed(0), cPnl >= 0 ? 'pos' : 'neg');
 
-  var sPct = (sPnl / sInv * 100).toFixed(1);
-  var cPct = (cPnl / cInv * 100).toFixed(1);
-  var sBadge = document.querySelector('#stocksPnlContainer')?.closest('.pnl-card')?.querySelector('.pnl-total-badge');
+  var sPct = sInv > 0 ? (sPnl / sInv * 100).toFixed(1) : '0.0';
+  var cPct = cInv > 0 ? (cPnl / cInv * 100).toFixed(1) : '0.0';
+
+  // Update title counts
+  var sTitleEl = document.getElementById('stocksPnlTitle');
+  var cTitleEl = document.getElementById('cryptoPnlTitle');
+  if (sTitleEl) sTitleEl.textContent = 'Acciones · ' + sCount;
+  if (cTitleEl) cTitleEl.textContent = 'Crypto · ' + cCount;
+
+  // Update badges
+  var sBadge = document.getElementById('stocksPnlBadge');
   var cBadge = document.getElementById('cryptoPnlBadge');
   if (sBadge) { sBadge.textContent = (sPnl >= 0 ? '+$' : '-$') + Math.abs(sPnl).toFixed(0) + ' (' + (sPnl >= 0 ? '+' : '') + sPct + '%)'; sBadge.className = 'pnl-total-badge ' + (sPnl >= 0 ? 'pos' : 'neg'); }
   if (cBadge) { cBadge.textContent = (cPnl >= 0 ? '+$' : '-$') + Math.abs(cPnl).toFixed(0) + ' (' + (cPnl >= 0 ? '+' : '') + cPct + '%)'; cBadge.className = 'pnl-total-badge ' + (cPnl >= 0 ? 'pos' : 'neg'); }

@@ -61,6 +61,10 @@ class InvestmentApp {
   }
 
   async _syncPortfolioFromSupabase() {
+    // Show sync loader
+    const loader = document.getElementById('syncLoader');
+    if (loader) loader.classList.add('visible');
+
     try {
       const user = this.authService.getCurrentUser();
       if (!user) return;
@@ -119,6 +123,8 @@ class InvestmentApp {
       console.log('✅ Portafolio sincronizado desde Supabase');
       window.populateAssetSelects?.();
       this._rerenderPortfolio();
+      this._updateStickyBar();
+      await this._loadBuyHistory();
       document.dispatchEvent(new CustomEvent('portfolio-synced'));
 
       // Cargar historial de ventas
@@ -147,6 +153,10 @@ class InvestmentApp {
       }
     } catch (err) {
       console.warn('⚠️ Error sincronizando portafolio:', err.message);
+    } finally {
+      // Hide sync loader
+      const loaderEl = document.getElementById('syncLoader');
+      if (loaderEl) loaderEl.classList.remove('visible');
     }
   }
 
@@ -190,9 +200,167 @@ class InvestmentApp {
       });
 
       console.log(`✅ Precios y señales actualizados desde reporte ${report.report_date}`);
+
+      // Update report date line in resumen tab
+      const el = document.getElementById('reportDateLine');
+      if (el) {
+        el.textContent = 'Reporte de inversiones · ' + new Date(report.report_date).toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      }
     } catch (err) {
       console.warn('⚠️ Error cargando asset data:', err.message);
     }
+  }
+
+  /**
+   * Calcula y actualiza los valores de la sticky bar dinámicamente
+   */
+  _updateStickyBar() {
+    try {
+      const assets = window.EXISTING_ASSETS || {};
+      const assetData = window.ASSET_DATA || [];
+
+      let total = 0;
+      let costBase = 0;
+
+      assetData.forEach(function(asset) {
+        const key = asset.ticker.toLowerCase();
+        const holding = assets[key];
+        if (!holding || holding.qty <= 0) return;
+        total += holding.qty * asset.price;
+        costBase += holding.qty * holding.costAvg;
+      });
+
+      // Add cash if available
+      const cashAmount = window.CASH_AMOUNT || 0;
+      total += cashAmount;
+
+      const pnl = total - cashAmount - costBase; // PnL only on invested assets
+
+      // BTC price
+      const btcAsset = assetData.find(a => a.ticker === 'BTC');
+      const btcPrice = btcAsset ? btcAsset.price : null;
+
+      // Update DOM
+      const totalEl = document.getElementById('stickyTotal');
+      const pnlEl = document.getElementById('stickyPnl');
+      const btcEl = document.getElementById('stickyBtc');
+
+      if (totalEl) totalEl.textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+      if (pnlEl) {
+        const isPos = pnl >= 0;
+        pnlEl.textContent = (isPos ? '+$' : '-$') + Math.abs(pnl).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        pnlEl.className = 'sticky-stat-val num ' + (isPos ? 'pos' : 'neg');
+      }
+
+      if (btcEl && btcPrice !== null) {
+        btcEl.textContent = '$' + btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+    } catch (err) {
+      console.warn('⚠️ Error actualizando sticky bar:', err.message);
+    }
+  }
+
+  /**
+   * Carga la bitácora de compras desde inv_journal (solo filas sin fecha_venta)
+   */
+  async _loadBuyHistory() {
+    const container = document.getElementById('logScroll');
+    if (!container) return;
+
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) return;
+
+      const { data, error } = await this.supabase
+        .from('inv_journal')
+        .select('id, ticker, numero_acciones, precio_entrada, inversion_monto, fecha')
+        .eq('user_id', user.id)
+        .is('fecha_venta', null)
+        .order('fecha', { ascending: false });
+
+      if (error) throw error;
+
+      container.innerHTML = '';
+
+      if (!data || !data.length) {
+        container.innerHTML = '<div class="log-empty" style="padding:14px 0;text-align:center;font-size:11px">Sin compras registradas.</div>';
+        return;
+      }
+
+      const colors = window.ASSET_COLORS || {};
+      const emptyEl = document.getElementById('logEmpty');
+
+      data.forEach(row => {
+        const ticker = (row.ticker || '').toUpperCase();
+        const key = ticker.toLowerCase();
+        const color = colors[key] || 'var(--text)';
+        const qty = parseFloat(row.numero_acciones) || 0;
+        const price = parseFloat(row.precio_entrada) || 0;
+        const amount = parseFloat(row.inversion_monto) || qty * price;
+        const dateStr = row.fecha
+          ? new Date(row.fecha).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+          : '—';
+        const monthKey = row.fecha ? row.fecha.substring(0, 7) : 'all';
+
+        const div = document.createElement('div');
+        div.className = 'log-row';
+        div.dataset.month = monthKey;
+        div.innerHTML = `
+          <div class="log-date mono">${dateStr}</div>
+          <div class="log-asset"><span class="mono" style="color:${color}">${ticker}</span></div>
+          <div class="log-qty mono">+${qty % 1 === 0 ? qty.toLocaleString('en-US') : qty.toLocaleString('en-US', { maximumFractionDigits: 6 })}</div>
+          <div class="log-price mono">$${price.toLocaleString('en-US', { minimumFractionDigits: price < 1 ? 4 : 2, maximumFractionDigits: price < 1 ? 6 : 2 })}</div>
+          <div class="log-amount mono pos">$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div><button class="log-del-btn" title="Eliminar" onclick="window.deleteTransaction(${row.id})">🗑</button></div>
+        `;
+        container.appendChild(div);
+      });
+
+      // Apply current month filter
+      const filterEl = document.getElementById('logMonthFilter');
+      if (filterEl && typeof window.filterLogByMonth === 'function') {
+        window.filterLogByMonth(filterEl.value);
+      }
+
+      // Note: enable deletes by creating RLS policy in Supabase if needed:
+      // CREATE POLICY "Delete own entries" ON inv_journal FOR DELETE USING (auth.uid() = user_id);
+    } catch (err) {
+      console.warn('⚠️ Error cargando bitácora de compras:', err.message);
+      const container2 = document.getElementById('logScroll');
+      if (container2) container2.innerHTML = '<div class="log-empty" style="color:var(--red);padding:14px 0;text-align:center;font-size:11px">Error al cargar bitácora.</div>';
+    }
+  }
+
+  /**
+   * Elimina una transacción por ID y recarga la bitácora
+   */
+  async deleteTransaction(id) {
+    if (!confirm('¿Eliminar esta transacción?')) return;
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) return;
+
+      const { error } = await this.supabase
+        .from('inv_journal')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      await this._syncPortfolioFromSupabase();
+    } catch (err) {
+      console.warn('⚠️ Error eliminando transacción:', err.message);
+      alert('No se pudo eliminar. Verifica que la política RLS esté activa:\nCREATE POLICY "Delete own entries" ON inv_journal FOR DELETE USING (auth.uid() = user_id);');
+    }
+  }
+
+  /**
+   * Refresca el portafolio manualmente (botón ↺)
+   */
+  async refreshPortfolio() {
+    await this._syncPortfolioFromSupabase();
   }
 
   async _loadSellHistoryFromSupabase() {
@@ -517,5 +685,5 @@ window.updateSellQtyButtons = () => app.updateSellQtyButtons();
 window.setSellQuantityType = (type) => app.setSellQuantityType(type);
 window.submitBuy = () => app.submitBuy();
 window.submitSale = () => app.submitSale();
-window.submitBuy = () => app.submitBuy();
-window.submitSale = () => app.submitSale();
+window.refreshPortfolio = () => app.refreshPortfolio();
+window.deleteTransaction = (id) => app.deleteTransaction(id);

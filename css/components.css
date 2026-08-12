@@ -1,6 +1,8 @@
 /* BUTTONS */
 .pdf-btn{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
 .pdf-btn:hover{background:var(--accent);color:white}
+.refresh-portfolio-btn{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);padding:6px 10px;border-radius:8px;font-size:13px;font-weight:700;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s;line-height:1}
+.refresh-portfolio-btn:hover{background:var(--accent);color:white}
 .refresh-btn{background:var(--green-dim);color:var(--green);border:1px solid var(--green);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
 .refresh-btn:hover{background:var(--green);color:white}
 .buy-btn{background:var(--accent);color:white;border:1px solid var(--accent);padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .2s}
@@ -131,12 +133,16 @@
 .log-scroll::-webkit-scrollbar{width:4px} .log-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:2px} .log-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .log-empty{font-size:11px;color:var(--text-muted);padding:14px 0;text-align:center}
 .log-list{display:flex;flex-direction:column;gap:2px}
-.log-header{display:grid;grid-template-columns:80px 55px 90px 90px 80px;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--border);font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
-.log-row{display:grid;grid-template-columns:80px 55px 90px 90px 80px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:11px}
+.log-header{display:grid;grid-template-columns:80px 55px 90px 90px 80px 28px;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--border);font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono)}
+.log-row{display:grid;grid-template-columns:80px 55px 90px 90px 80px 28px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:11px}
 .log-row:last-child{border-bottom:none}
 .log-date{color:var(--text-muted)} .log-qty{color:var(--green);font-weight:600}
 .log-price{color:var(--text-dim)} .log-amount{font-weight:700}
 .log-note{font-size:10px}
+
+/* LOG DELETE BUTTON */
+.log-del-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px;transition:color .15s,background .15s;line-height:1}
+.log-del-btn:hover{color:var(--red);background:var(--red-dim)}
 
 /* CALENDAR */
 .cal-grid{display:flex;flex-direction:column;gap:7px}

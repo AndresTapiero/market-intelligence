@@ -50,13 +50,14 @@
 <div class="sticky-bar">
   <div class="sticky-logo">Market<span>Intel</span><span class="build-tag">v21</span></div>
   <div class="sticky-stats">
-    <div class="sticky-stat"><div class="sticky-stat-label">Total</div><div class="sticky-stat-val num">$3,131</div></div>
-    <div class="sticky-stat"><div class="sticky-stat-label">P&L</div><div class="sticky-stat-val num neg">-$1,157</div></div>
-    <div class="sticky-stat"><div class="sticky-stat-label">BTC</div><div class="sticky-stat-val num">$63,736.05</div></div>
-    <div class="sticky-stat"><div class="sticky-stat-label">vs mes</div><div class="sticky-stat-val num pos">+1.5%</div></div>
+    <div class="sticky-stat"><div class="sticky-stat-label">Total</div><div class="sticky-stat-val num" id="stickyTotal">$3,131</div></div>
+    <div class="sticky-stat"><div class="sticky-stat-label">P&L</div><div class="sticky-stat-val num neg" id="stickyPnl">-$1,157</div></div>
+    <div class="sticky-stat"><div class="sticky-stat-label">BTC</div><div class="sticky-stat-val num" id="stickyBtc">$63,736.05</div></div>
+    <div class="sticky-stat"><div class="sticky-stat-label">vs mes</div><div class="sticky-stat-val num pos" id="stickyVsMes">+1.5%</div></div>
   </div>
   <div class="header-actions">
     <button class="reg-submit-btn is-buy" id="regSubmitBtn" onclick="openRegModal()" aria-label="Registrar compra o venta">📥 Registrar</button>
+    <button class="refresh-portfolio-btn" onclick="window.app?.refreshPortfolio()" title="Sincronizar portafolio">↺</button>
     <a class="refresh-btn" href="https://github.com/AndresTapiero/market-intelligence/actions/workflows/weekly-analysis.yml" target="_blank" rel="noopener" title="Lanzar nuevo analisis en GitHub Actions">↻ Ejecutar análisis</a>
     <button class="pdf-btn" onclick="exportPDF()" aria-label="Descargar reporte en PDF">⬇ PDF</button>
     <span id="authStatus" style="font-size:11px; color:var(--text-muted); margin-left:16px;">⏳ Conectando...</span>
@@ -258,6 +259,8 @@
     </div>
   </div>
 </div>
+
+<div class="sync-loader" id="syncLoader"><div class="sync-dot"></div>Sincronizando...</div>
 
 </body>
 </html>
