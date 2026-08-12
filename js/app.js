@@ -7,6 +7,7 @@
 import { SUPABASE_CONFIG } from './config.js';
 import { AuthService } from './auth-service.js';
 import { PortfolioService } from './portfolio-service.js';
+import { PortfolioHistoryService } from './portfolio-history-service.js';
 import { TransactionService } from './transaction-service.js';
 import { UIManager } from './ui-manager.js';
 
@@ -15,6 +16,7 @@ class InvestmentApp {
     this.supabase = null;
     this.authService = null;
     this.portfolioService = null;
+    this.portfolioHistoryService = null;
     this.transactionService = null;
     this.uiManager = null;
   }
@@ -31,6 +33,7 @@ class InvestmentApp {
       // Crear servicios (Dependency Injection)
       this.authService = new AuthService(this.supabase);
       this.portfolioService = new PortfolioService(this.supabase, this.authService);
+      this.portfolioHistoryService = new PortfolioHistoryService(this.supabase, this.authService);
       this.transactionService = new TransactionService(this.supabase, this.authService);
       this.uiManager = new UIManager(this.authService);
 
@@ -46,6 +49,7 @@ class InvestmentApp {
       // Cargar datos
       if (this.authService.isAuthenticated()) {
         await this.portfolioService.loadTransactions();
+        await this.portfolioHistoryService.loadHistoricalReports();
         this.uiManager.updateAuthStatus();
       }
     } catch (err) {
@@ -108,6 +112,19 @@ class InvestmentApp {
     if (asset) {
       this.uiManager.setSellQuantityType(type, asset.qty);
     }
+  }
+
+  // === Historial ===
+  async getHistoricalReports() {
+    return await this.portfolioHistoryService.loadHistoricalReports();
+  }
+
+  async getLatestReport() {
+    return await this.portfolioHistoryService.getLatestReport();
+  }
+
+  async getPortfolioComposition(reportId) {
+    return await this.portfolioHistoryService.loadPortfolioComposition(reportId);
   }
 
   // === Transacciones ===

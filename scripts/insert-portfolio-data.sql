@@ -1,0 +1,166 @@
+-- Insertar datos de portfolio_history
+INSERT INTO portfolio_history (
+  user_id, report_date, week, timestamp, analyst_opinion,
+  risk_profile, macro_data, portfolio_snapshot, actions
+) VALUES
+-- Reporte 1: 2026-06-11
+(
+  '56272fef-8fd2-4adf-af86-ff9ed10cbed1',
+  '2026-06-11',
+  '2026-W24',
+  '2026-06-11T17:41:04.787Z',
+  NULL,
+  NULL,
+  jsonb_build_object(
+    'usdcop', '$3,892 COP',
+    'fed_rate', '4.50%',
+    'btc_dominance', '54.2%',
+    'fear_greed_index', '42',
+    'fear_greed_label', 'Fear',
+    'narrative', 'Fed pauso ciclo de recortes en junio tras datos inflacion mixtos. Mercados descuentan 1-2 recortes en H2 2026. Dolar fuerte presiona emergentes incluyendo COP. BTC dominance subiendo indica rotation defensiva en crypto. Fear index sugiere oportunidad acumulacion pero NO antes de liquidar deuda TC.'
+  ),
+  NULL,
+  jsonb_build_array(
+    jsonb_build_object('num', '01', 'text', 'Calcular cuanto falta para liquidar $5,140,477 COP total en tarjetas. Ese es tu objetivo antes de aumentar DCA. Proyecta timeline de pago agresivo.'),
+    jsonb_build_object('num', '02', 'text', 'Ejecutar DCA acciones $50 USD el 30 junio en VOO o QQQ (alternar o dividir). No saltar este DCA pese a deuda - mantener disciplina pero no aumentar monto.'),
+    jsonb_build_object('num', '03', 'text', 'NO anticipar DCA BTC de julio. Precio actual $67k vs tu avg $82k es tentador pero liquidez debe ir a TC primero. Stick to the plan: 1 julio proximo DCA.'),
+    jsonb_build_object('num', '04', 'text', 'Revisar tasa interes Davivienda vs Rappi. Pagar primero la que tenga mayor tasa. Considera transferir saldo a credito con menor tasa si disponible. Cada peso a interes es peso que no inviertes.')
+  )
+),
+-- Reporte 2: 2026-07-17
+(
+  '56272fef-8fd2-4adf-af86-ff9ed10cbed1',
+  '2026-07-17',
+  '2026-W29',
+  '2026-07-17T17:00:09.203Z',
+  'El nucleo DCA de $50 en BTC y $50 en VOO/QQQ sigue funcionando bien porque BTC muestra una correccion sana ligada a tension geopolitica en Medio Oriente mas que a debilidad estructural, mientras que las acciones USA (VOO, QQQ, NVDA) mantienen un sesgo alcista de fondo por el ciclo de IA. Lo que arrastra el portafolio es el bloque de altcoins en HOLD, la mayoria en rojo en la semana, y el hecho de que el indice de miedo y codicia esta en zona de Fear/Extreme Fear, lo cual castiga el sentimiento de corto plazo. La recomendacion del mes es no desviarse del plan: seguir el DCA en BTC y VOO/QQQ, evitar nuevas altcoins, y usar la fortaleza actual del peso colombiano (TRM en minimos de 7 anos) para acelerar el pago de la deuda de tarjeta de credito antes de aumentar exposicion cripto. El perfil moderado-agresivo de Andres sigue siendo coherente con esta disciplina: tolerar volatilidad en lo que ya tiene, pero priorizar deuda y entradas escalonadas en vez de comprar en panico o en euforia.',
+  'Moderado-Agresivo',
+  jsonb_build_object(
+    'usdcop', '$3,221.41 COP',
+    'fed_rate', '3.75%',
+    'btc_dominance', '56.3%',
+    'fear_greed_index', '36',
+    'fear_greed_label', 'Fear',
+    'narrative', 'La tasa de intervencion del Banco de la Republica esta en 12% tras un alza de 75 puntos basicos, y con la Fed en 3.75% el diferencial de tasas favorece al peso colombiano. La TRM oficial de hoy viernes 17 de julio quedo en $3,221.41, el nivel mas bajo en mas de 7 anos, mientras el petroleo sube por la tension entre EEUU e Iran.'
+  ),
+  jsonb_build_object(
+    'totalCrypto', 2314.86,
+    'totalStocks', 624.82,
+    'cash', 200,
+    'total', 3139.68
+  ),
+  jsonb_build_array(
+    jsonb_build_object('num', '01', 'text', 'Mantener el DCA mensual de $50 en BTC aprovechando la correccion actual ligada a Medio Oriente, sin aumentar el monto todavia.'),
+    jsonb_build_object('num', '02', 'text', 'Usar la fortaleza actual del peso colombiano (TRM en minimos de 7 anos) para acelerar pagos extra a la deuda de tarjeta de credito antes de abrir nuevas posiciones.'),
+    jsonb_build_object('num', '03', 'text', 'Si se libera flujo de caja tras reducir la deuda, iniciar una posicion inicial pequena en VTI desde la watchlist, priorizando VTI sobre SCHD por su mejor punto de entrada actual.')
+  )
+),
+-- Reporte 3: 2026-07-26
+(
+  '56272fef-8fd2-4adf-af86-ff9ed10cbed1',
+  '2026-07-26',
+  '2026-W31',
+  '2026-07-26T12:55:45.827Z',
+  'El portafolio sigue solido gracias al DCA mensual en BTC y VOO/QQQ, que compra disciplina en medio de la volatilidad reciente causada por el ruido de tasas de la Fed y el selloff de julio en tech. Las altcoins en HOLD (ETH, SOL, TAO, UNI, BNB, SUI, SEI, ENA, AVAX) siguen arrastrando el portafolio con caidas moderadas esta semana, especialmente AVAX y GIGA, pero la regla de no vender con perdida protege de decisiones emocionales. NVDA cayo a zona de $206, una correccion sana dentro de la tesis de IA que abre una oportunidad de entrada. La recomendacion del mes es mantener el DCA sin cambios, evaluar VOO/QQQ como compra en la debilidad reciente, y seguir priorizando la eliminacion de deuda de tarjeta de credito antes de aumentar exposicion nueva.',
+  'Moderado-Agresivo',
+  jsonb_build_object(
+    'usdcop', '$3,210.56 COP',
+    'fed_rate', '3.50%-3.75%',
+    'btc_dominance', '56.9%',
+    'fear_greed_index', '45',
+    'fear_greed_label', 'Neutral',
+    'narrative', 'La Fed mantiene su tasa en el rango 3.50%-3.75% con especulacion de una posible subida en la reunion del 28-29 de julio, lo que genera cautela en mercados de riesgo. El peso colombiano se fortalece a niveles minimos de siete anos frente al dolar, favoreciendo el poder adquisitivo local para nuevas compras en USD.'
+  ),
+  jsonb_build_object(
+    'totalCrypto', 2145.55,
+    'totalStocks', 841.55,
+    'cash', 200,
+    'total', 3187.1
+  ),
+  jsonb_build_array(
+    jsonb_build_object('num', '01', 'text', 'Continuar el DCA mensual de $50 en BTC y $50 en VOO/QQQ sin interrupciones, aprovechando la debilidad reciente en NVDA y el rango de BTC.'),
+    jsonb_build_object('num', '02', 'text', 'Priorizar el pago de la deuda de tarjeta de credito antes de considerar nuevas posiciones en MU, GLD o BTC adicional.'),
+    jsonb_build_object('num', '03', 'text', 'Mantener todas las altcoins en HOLD sin comprar mas, y revisar VTI como candidato de entrada para diversificar mas alla de VOO/QQQ una vez saldada la deuda.')
+  )
+),
+-- Reporte 4: 2026-08-04
+(
+  '56272fef-8fd2-4adf-af86-ff9ed10cbed1',
+  '2026-08-04',
+  '2026-W32',
+  '2026-08-04T15:14:07.318Z',
+  'El portafolio muestra una base solida: el DCA mensual en BTC y VOO/QQQ sigue funcionando bien porque compra disciplinadamente sin importar el ruido de corto plazo, y BTC se mantiene estable cerca de $63,700 con dominancia alta (56.4%) lo cual favorece a los holders de largo plazo. El lastre principal sigue siendo la deuda de tarjeta de credito, que debe ser la prioridad absoluta antes de abrir nuevas posiciones, y el bloque de altcoins en HOLD (SUI, SEI, ENA, AVAX, UNI) sigue debil frente a BTC en este ciclo de fear index bajo (27, zona de miedo). Recomendacion del mes: mantener el DCA de $50/$50 sin modificar, no tocar las altcoins, y usar cualquier excedente extra en pagar deuda antes de considerar las oportunidades nuevas listadas abajo.',
+  'Moderado-Agresivo',
+  jsonb_build_object(
+    'usdcop', '$3,230.44 COP',
+    'fed_rate', '4.25%-4.50%',
+    'btc_dominance', '56.4%',
+    'fear_greed_index', '27',
+    'fear_greed_label', 'Fear',
+    'narrative', 'El Banco de la Republica fijo la TRM de hoy en $3,230.44, el nivel mas alto en mas de una semana, tras subir 86.3 pesos frente al dia anterior. En cripto, el Fear and Greed Index se ubica en 27 (zona de miedo), mientras la dominancia de BTC en 56.4% confirma que el capital sigue rotando hacia el activo mas seguro del ecosistema.'
+  ),
+  jsonb_build_object(
+    'totalCrypto', 2295.06,
+    'totalStocks', 836.74,
+    'cash', 200,
+    'total', 3331.8
+  ),
+  jsonb_build_array(
+    jsonb_build_object('num', '01', 'text', 'Mantener el DCA mensual de $50 en BTC y $50 en VOO/QQQ sin interrupciones, aprovechando la debilidad reciente en NVDA y el rango de BTC.'),
+    jsonb_build_object('num', '02', 'text', 'Usar la fortaleza actual del peso colombiano (TRM en minimos de 7 anos) para acelerar pagos extra a la deuda de tarjeta de credito antes de abrir nuevas posiciones.'),
+    jsonb_build_object('num', '03', 'text', 'Si se libera flujo de caja tras reducir la deuda, iniciar una posicion inicial pequena en VTI desde la watchlist, priorizando VTI sobre SCHD por su mejor punto de entrada actual.')
+  )
+);
+
+-- Insertar datos de portfolio_assets para cada reporte
+-- Reporte 1 (2026-06-11)
+INSERT INTO portfolio_assets (report_id, asset_key, price, change_7d, signal, context)
+SELECT id, 'btc', '$67,234', '-2.3%', 'BUY', 'BTC corrigiendo desde maximos de mayo. Tu costo promedio $82,716 esta 23% arriba del precio actual. Mantener DCA julio como planeado, no anticipar compras mientras deuda TC activa. Capitulacion de mineros y ETFs con salidas netas podrian indicar suelo cercano.' FROM portfolio_history WHERE report_date = '2026-06-11'
+UNION ALL
+SELECT id, 'eth', '$3,521', '-3.1%', 'HOLD', 'ETH bajo presion vs BTC, ratio ETH/BTC en minimos de 18 meses. Tu posicion sigue en perdida como indicaste. No vender. Upgrade Pectra programado Q3 2026 podria catalizar recuperacion. Paciencia hasta que narrative institucional regrese a ETH.' FROM portfolio_history WHERE report_date = '2026-06-11'
+UNION ALL
+SELECT id, 'voo', '$512', '+1.2%', 'BUY', 'S&P 500 en rally post-pausa Fed. Tu ganancia +30% es solida. Continuar DCA fin de mes (junio 30). Rotacion sectorial favorece value y financieras pero diversificacion amplia de VOO mitiga riesgo concentracion vs QQQ/NVDA.' FROM portfolio_history WHERE report_date = '2026-06-11'
+UNION ALL
+SELECT id, 'qqq', '$485', '+0.8%', 'BUY', 'Nasdaq resiliente pese a toma de ganancias en mega-caps. Tu +26% refleja rally tech 2025-2026. Mantener DCA programado. Valuaciones altas pero momentum intacto si Fed mantiene politica acomodaticia segundo semestre.' FROM portfolio_history WHERE report_date = '2026-06-11'
+UNION ALL
+SELECT id, 'nvda', '$128', '-1.5%', 'HOLD', 'NVDA consolida post-split y post-rally IA. Tu +67% es ganancia excepcional. No agregar posicion individual, dejar que DCA en QQQ/VOO maneje exposicion. Resultados Q2 en agosto seran catalizador clave. Evitar concentracion excesiva en single stock.' FROM portfolio_history WHERE report_date = '2026-06-11'
+UNION ALL
+SELECT id, 'nu', '$15.80', '+2.1%', 'HOLD', 'Nubank supera tu precio de entrada, +76% es excelente retorno. Expansion en Mexico y Colombia avanza. Mantener posicion actual via DCA en QQQ/VOO en lugar de aumentar individual. Fintech latam con vientos a favor pero ya tienes exposicion suficiente.' FROM portfolio_history WHERE report_date = '2026-06-11'
+ON CONFLICT (report_id, asset_key) DO NOTHING;
+
+-- Reporte 2 (2026-07-17) - Activos principales
+INSERT INTO portfolio_assets (report_id, asset_key, price, change_7d, signal, context)
+SELECT id, 'btc', '$63,130', '-1.5%', 'BUY', 'Bitcoin abrio en $63,788.52 este viernes y cayo a $63,130.40 hacia las 8:33 am ET, presionado por la escalada de ataques de Estados Unidos contra Iran y el cierre efectivo del Estrecho de Ormuz. Es una correccion por geopolitica, no por deterioro de la tesis de fondo, asi que el DCA mensual de $50 se mantiene sin cambios.' FROM portfolio_history WHERE report_date = '2026-07-17'
+UNION ALL
+SELECT id, 'eth', '$1,832', '-3.5%', 'HOLD', NULL FROM portfolio_history WHERE report_date = '2026-07-17'
+UNION ALL
+SELECT id, 'sol', '$75.86', '-4.5%', 'HOLD', NULL FROM portfolio_history WHERE report_date = '2026-07-17'
+UNION ALL
+SELECT id, 'voo', '$690.14', '-0.5%', 'BUY', 'VOO cotiza en $690.14 con un rango de 52 semanas de 569.29 a 699.15, muy cerca de maximos historicos. El mercado de acciones esta en un tono mas alcista de cara al segundo semestre segun estrategas de Wall Street, lo que respalda mantener el DCA mensual pese a la volatilidad de corto plazo por Medio Oriente.' FROM portfolio_history WHERE report_date = '2026-07-17'
+UNION ALL
+SELECT id, 'qqq', '$705.94', '-1.6%', 'BUY', 'QQQ se ubica en $705.94 tras una caida diaria de 1.64%, arrastrado por el selloff de semiconductores y la tension geopolitica. La incorporacion de nuevos nombres de infraestructura de IA al Nasdaq-100 sugiere flujos pasivos adicionales de largo plazo que favorecen mantener la posicion.' FROM portfolio_history WHERE report_date = '2026-07-17'
+UNION ALL
+SELECT id, 'nvda', '$185.00', '+3.0%', 'BUY', 'NVIDIA sigue beneficiandose del auge de demanda de infraestructura de IA en centros de datos, con backlogs de clientes hyperscale como Google en niveles record. El riesgo de corto plazo es volatilidad por rotacion sectorial, pero la tesis estructural de IA sigue intacta.' FROM portfolio_history WHERE report_date = '2026-07-17'
+ON CONFLICT (report_id, asset_key) DO NOTHING;
+
+-- Reporte 3 (2026-07-26) - Activos principales
+INSERT INTO portfolio_assets (report_id, asset_key, price, change_7d, signal, context)
+SELECT id, 'btc', '$64,250', '-1.2%', 'BUY', 'Bitcoin se mantiene rangebound cerca de $64k mientras el mercado espera definicion de la Fed sobre tasas. El DCA mensual de $50 sigue siendo la estrategia correcta para acumular en esta fase de consolidacion.' FROM portfolio_history WHERE report_date = '2026-07-26'
+UNION ALL
+SELECT id, 'voo', '$679.14', '+0.3%', 'BUY', 'VOO se mantiene cerca de maximos con el S&P 500 sostenido por resultados corporativos solidos. Buen punto para continuar el DCA mensual sin necesidad de timing adicional.' FROM portfolio_history WHERE report_date = '2026-07-26'
+UNION ALL
+SELECT id, 'qqq', '$684.23', '-0.5%', 'BUY', 'QQQ retrocede levemente arrastrado por la correccion de semiconductores y tech de alto crecimiento. La debilidad relativa favorece seguir con el DCA mensual planificado.' FROM portfolio_history WHERE report_date = '2026-07-26'
+UNION ALL
+SELECT id, 'nvda', '$206.84', '-4.5%', 'BUY', 'NVDA corrige a la zona de $206 tras un julio de ventas fuertes en lideres de mercado, pese a nuevos acuerdos de IA como el de SK Group por mas de 500 mil millones. La tesis de infraestructura de IA sigue intacta y la caida representa una oportunidad de entrada para posicion adicional fuera del DCA regular.' FROM portfolio_history WHERE report_date = '2026-07-26'
+ON CONFLICT (report_id, asset_key) DO NOTHING;
+
+-- Reporte 4 (2026-08-04) - Activos principales
+INSERT INTO portfolio_assets (report_id, asset_key, price, change_7d, signal, context)
+SELECT id, 'btc', '$63,736.05', '+0.7%', 'BUY', 'BTC subio cerca de 2% este martes en la manana y se mantiene estable respecto a hace una semana, con dominancia de mercado en 56.4% lo que refuerza su rol defensivo dentro del portafolio cripto. El fear index en zona de miedo (27) historicamente ha sido un buen punto de entrada para DCA en BTC, por lo que continuar el aporte mensual de $50 tiene sentido.' FROM portfolio_history WHERE report_date = '2026-08-04'
+UNION ALL
+SELECT id, 'voo', '$696.41', '+1.4%', 'BUY', 'VOO cotiza en 696.41 cerca de su maximo de 52 semanas (699.15), con un rango diario reciente entre 688.61 y 697.31, senal tecnica de Strong Buy segun promedios moviles. El aporte mensual de $50 debe continuar sin cambios, ya que el S&P 500 sigue en tendencia alcista de fondo pese a la cercania al techo historico.' FROM portfolio_history WHERE report_date = '2026-08-04'
+UNION ALL
+SELECT id, 'qqq', '$612.35', '+1.8%', 'BUY', 'QQQ avanzo cerca de 1.76% recientemente impulsado por el rebote en semiconductores y tecnologia, en linea con el momentum de NVDA. Sigue siendo un vehiculo solido para el DCA mensual dado el peso de las megacaps de IA en el indice.' FROM portfolio_history WHERE report_date = '2026-08-04'
+UNION ALL
+SELECT id, 'nvda', '$206.83', '-0.4%', 'BUY', 'NVDA cotiza en 206.83 con maximo de 52 semanas en 236.54, y su capitalizacion se mantiene practicamente plana la ultima semana (-0.35%). El proximo reporte de resultados el 26 de agosto es un catalizador clave a vigilar antes de anadir exposicion adicional.' FROM portfolio_history WHERE report_date = '2026-08-04'
+ON CONFLICT (report_id, asset_key) DO NOTHING;

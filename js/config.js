@@ -14,5 +14,7 @@ export const AUTH_CONFIG = {
 };
 
 export const TABLES = {
-  JOURNAL: 'inv_journal'
+  JOURNAL: 'inv_journal',
+  PORTFOLIO_HISTORY: 'portfolio_history',
+  PORTFOLIO_ASSETS: 'portfolio_assets'
 };
