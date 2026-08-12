@@ -220,15 +220,20 @@ class InvestmentApp {
       }
 
       const commission = parseFloat(document.getElementById('sellCommission')?.value) || 0;
-      const costAvgAtSale = asset.costAvg;
+      const costAvgAtSale = parseFloat(document.getElementById('sellCostAvg')?.value) || asset.costAvg;
+      const gross = qty * price;
+      const net = gross - commission;
+      const cost = qty * costAvgAtSale;
+      const pnl = net - cost;
+      const pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
 
       this.uiManager.setButtonLoading('#sellModalOverlay .modal-submit', true);
 
-      const result = await this.transactionService.recordSale(key, qty, price, reason, observations, date, commission);
+      const result = await this.transactionService.recordSale(key, qty, price, reason, observations, date, commission, costAvgAtSale, pnlPct);
 
       if (result.success) {
         this.uiManager.setButtonSuccess('#sellModalOverlay .modal-submit');
-        this._addToSellHistory({ key, qty, price, commission, costAvg: costAvgAtSale });
+        this._addToSellHistory({ key, qty, price, commission, costAvg: costAvgAtSale, pnl, pnlPct });
         setTimeout(() => {
           this.closeSellModal();
           this._refreshBalanceAfterSell(key, qty);
@@ -278,13 +283,10 @@ class InvestmentApp {
     this._rerenderPortfolio();
   }
 
-  _addToSellHistory({ key, qty, price, commission, costAvg }) {
+  _addToSellHistory({ key, qty, price, commission, costAvg, pnl, pnlPct }) {
     if (!window.SELL_HISTORY) window.SELL_HISTORY = [];
     const gross = qty * price;
     const net = gross - commission;
-    const cost = qty * costAvg;
-    const pnl = net - cost;
-    const pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
     window.SELL_HISTORY.push({
       key,
       ticker: key.toUpperCase(),

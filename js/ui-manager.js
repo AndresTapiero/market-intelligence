@@ -75,12 +75,15 @@ export class UIManager {
     const modal = document.getElementById('sellModalOverlay');
     if (!modal) return;
 
+    document.getElementById('sellAssetSelect').value = '';
     document.getElementById('sellQty').value = '';
     document.getElementById('sellPrice').value = '';
+    document.getElementById('sellCostAvg').value = '';
     document.getElementById('sellCommission').value = '';
     document.getElementById('sellReason').value = 'Toma de ganancias';
     document.getElementById('sellObservations').value = '';
     document.getElementById('sellPreview').style.display = 'none';
+    document.getElementById('sellQtyHint').textContent = '';
     const today = new Date().toISOString().split('T')[0];
     const sellDateEl = document.getElementById('sellDate');
     if (sellDateEl) sellDateEl.value = today;
@@ -133,10 +136,11 @@ export class UIManager {
   /**
    * Actualiza preview de venta
    */
-  updateSellPreview(availableQuantity, costAvg = 0) {
+  updateSellPreview(availableQuantity, costAvgParam = 0) {
     const qty = parseFloat(document.getElementById('sellQty')?.value) || 0;
     const price = parseFloat(document.getElementById('sellPrice')?.value) || 0;
     const commission = parseFloat(document.getElementById('sellCommission')?.value) || 0;
+    const costAvg = parseFloat(document.getElementById('sellCostAvg')?.value) || costAvgParam;
     const previewEl = document.getElementById('sellPreview');
 
     if (qty > 0 && price > 0 && qty <= availableQuantity) {

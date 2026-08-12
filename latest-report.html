@@ -1083,9 +1083,14 @@
           <div id="sellQtyHint" style="font-size:10px;color:var(--text-muted);margin-top:5px"></div>
         </div>
         <div class="modal-field">
-          <label>Precio unitario (USD)</label>
-          <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="updateSellPreview()">
+          <label>Precio de venta (USD)</label>
+          <input type="number" id="sellPrice" placeholder="0.00" step="any" oninput="window.app?.updateSellPreview?.()">
         </div>
+      </div>
+      <div class="modal-field">
+        <label>Precio de entrada / costo promedio</label>
+        <input type="number" id="sellCostAvg" placeholder="0.00" step="any" oninput="window.app?.updateSellPreview?.()">
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Auto-calculado desde tu promedio — editable si tu costo real es diferente</div>
       </div>
       <div class="modal-field">
         <label>Fecha de venta</label>
@@ -1109,8 +1114,8 @@
         </div>
       </div>
       <div class="modal-field">
-        <label>Observaciones (opcional)</label>
-        <textarea id="sellObservations" rows="2" placeholder="Detalles adicionales sobre la venta..."></textarea>
+        <label>Fundamento de la venta (opcional)</label>
+        <textarea id="sellObservations" rows="2" placeholder="¿Por qué vendes? Toma de ganancias, stop loss, rebalanceo..."></textarea>
       </div>
       <div class="sell-preview" id="sellPreview" style="display:none">
         <div class="sell-preview-row"><span>💵 Monto bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
@@ -1701,8 +1706,10 @@ function onSellAssetChange() {
   const asset = key && EXISTING_ASSETS[key];
   const hint = document.getElementById('sellQtyHint');
   const qtyEl = document.getElementById('sellQty');
+  const costAvgEl = document.getElementById('sellCostAvg');
   if (hint) hint.textContent = asset ? 'Disponible: ' + formatQty(asset.qty) + ' unidades' : '';
   if (qtyEl) { qtyEl.value = ''; qtyEl.max = asset ? asset.qty : ''; }
+  if (costAvgEl) costAvgEl.value = asset ? asset.costAvg : '';
   document.getElementById('sellPreview').style.display = 'none';
 }
 

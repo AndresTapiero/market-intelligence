@@ -51,7 +51,7 @@ export class TransactionService {
   /**
    * Registra una venta
    */
-  async recordSale(ticker, quantity, price, reason = 'Otro', observations = null, date = null, commission = 0) {
+  async recordSale(ticker, quantity, price, reason = 'Otro', observations = null, date = null, commission = 0, costAvg = 0, pnlPct = null) {
     const user = this.authService.getCurrentUser();
     if (!user) throw new Error('No autenticado');
 
@@ -65,8 +65,9 @@ export class TransactionService {
       categoria: 'venta',
       inversion_monto: montoBruto,
       numero_acciones: quantity,
-      precio_entrada: 0,
+      precio_entrada: costAvg || 0,
       precio_salida: price,
+      ganancia_perdida_pct: pnlPct !== null ? parseFloat(pnlPct.toFixed(2)) : null,
       fecha_venta: date || new Date().toISOString().split('T')[0],
       razon_venta: reason || null,
       comision: commission > 0 ? commission : null,
