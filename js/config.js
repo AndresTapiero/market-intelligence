@@ -5,7 +5,7 @@
 
 export const SUPABASE_CONFIG = {
   url: 'https://mfixkkqtjyjcigeqhlvz.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nbGNmd2ttd2JsaWhicG5qdXdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAyMDY0MDksImV4cCI6MjAzNTc4MjQwOX0.bBYDgKt0S3pKvI0-U5PzwRaHBn9GjNuW3MH7MvFzlXc'
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1maXhra3F0anlqY2lnZXFobHZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MDIyNjksImV4cCI6MjEwMTE3ODI2OX0.pOUEIF-xT0zaQGTiFc9MHTvwmMVmKt5iMb2jzJ4pWog'
 };
 
 export const AUTH_CONFIG = {
