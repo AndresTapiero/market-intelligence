@@ -302,6 +302,12 @@
   .sell-hist-table td{padding:9px 10px;border-bottom:1px solid var(--border-subtle)}
   .sell-hist-table tr:last-child td{border-bottom:none}
   .sell-hist-table tr:hover td{background:var(--surface2)}
+  .sell-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .sell-stat{background:var(--surface2);border-radius:10px;padding:12px 14px}
+  .sell-stat-label{font-size:9px;letter-spacing:.7px;text-transform:uppercase;color:var(--text-muted);font-family:var(--mono);font-weight:600;margin-bottom:5px}
+  .sell-stat-val{font-size:18px;font-weight:800;font-family:var(--mono);letter-spacing:-.5px;line-height:1}
+  .sell-stat-sub{font-size:10px;color:var(--text-muted);margin-top:3px}
+  @media(max-width:600px){.sell-summary{grid-template-columns:repeat(2,1fr)}}
 
   /* MACRO + DECISIONS */
   .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
@@ -883,6 +889,28 @@
 
 <div class="card mb" id="sellHistoryCard" style="display:none">
   <h3 class="section-title">Historial de ventas (sesión)</h3>
+  <div class="sell-summary">
+    <div class="sell-stat">
+      <div class="sell-stat-label">P&amp;L realizado</div>
+      <div class="sell-stat-val" id="summaryPnL">$0</div>
+      <div class="sell-stat-sub" id="summaryPnLSub">neto de comisiones</div>
+    </div>
+    <div class="sell-stat">
+      <div class="sell-stat-label">Comisiones pagadas</div>
+      <div class="sell-stat-val" style="color:var(--red)" id="summaryComm">$0.00</div>
+      <div class="sell-stat-sub" id="summaryCommSub">costo del broker</div>
+    </div>
+    <div class="sell-stat">
+      <div class="sell-stat-label">Efectividad</div>
+      <div class="sell-stat-val" id="summaryWinRate">—</div>
+      <div class="sell-stat-sub" id="summaryWinSub">ventas ganadoras</div>
+    </div>
+    <div class="sell-stat">
+      <div class="sell-stat-label">Retorno promedio</div>
+      <div class="sell-stat-val" id="summaryAvgReturn">—</div>
+      <div class="sell-stat-sub">por operación</div>
+    </div>
+  </div>
   <div style="overflow-x:auto">
     <table class="sell-hist-table">
       <thead><tr><th>Fecha</th><th>Activo</th><th>Cantidad</th><th>P. Venta</th><th>Bruto</th><th>Comisión</th><th>Neto</th><th>P&amp;L</th></tr></thead>
@@ -1856,6 +1884,38 @@ function renderSellHistory() {
   if (!card || !body) return;
   if (!window.SELL_HISTORY.length) { card.style.display = 'none'; return; }
   card.style.display = 'block';
+
+  // Calcular métricas acumuladas
+  let totalPnL = 0, totalComm = 0, winners = 0;
+  const pcts = [];
+  window.SELL_HISTORY.forEach(s => {
+    totalPnL  += s.pnl;
+    totalComm += s.commission;
+    if (s.pnl >= 0) winners++;
+    pcts.push(s.pnlPct);
+  });
+  const n = window.SELL_HISTORY.length;
+  const avgReturn = pcts.reduce((a, b) => a + b, 0) / n;
+  const winRate = Math.round(winners / n * 100);
+  const isPnLPos = totalPnL >= 0;
+
+  const fmt = v => '$' + Math.abs(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const el = id => document.getElementById(id);
+  el('summaryPnL').textContent   = (isPnLPos ? '+' : '-') + fmt(totalPnL);
+  el('summaryPnL').style.color   = isPnLPos ? 'var(--green)' : 'var(--red)';
+  el('summaryPnLSub').textContent = 'en ' + n + (n === 1 ? ' venta' : ' ventas');
+  el('summaryComm').textContent   = totalComm > 0 ? '-' + fmt(totalComm) : '$0.00';
+  el('summaryCommSub').textContent = totalComm > 0
+    ? ((totalComm / Math.abs(totalPnL + totalComm)) * 100).toFixed(1) + '% del bruto'
+    : 'sin comisiones';
+  el('summaryWinRate').textContent   = winners + '/' + n;
+  el('summaryWinRate').style.color   = winRate >= 50 ? 'var(--green)' : 'var(--red)';
+  el('summaryWinSub').textContent    = winRate + '% de efectividad';
+  el('summaryAvgReturn').textContent = (avgReturn >= 0 ? '+' : '') + avgReturn.toFixed(1) + '%';
+  el('summaryAvgReturn').style.color = avgReturn >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Tabla de detalle
   body.innerHTML = '';
   window.SELL_HISTORY.slice().reverse().forEach(s => {
     const isPos = s.pnl >= 0;
@@ -1867,7 +1927,7 @@ function renderSellHistory() {
       `<td class="mono num">${formatQty(s.qty)}</td>` +
       `<td class="mono num">${fmtPrice(s.price)}</td>` +
       `<td class="mono num">$${s.gross.toFixed(2)}</td>` +
-      `<td class="mono num neg">${s.commission > 0 ? '-$'+s.commission.toFixed(2) : '—'}</td>` +
+      `<td class="mono num" style="color:var(--red)">${s.commission > 0 ? '-$'+s.commission.toFixed(2) : '—'}</td>` +
       `<td class="mono num">$${s.net.toFixed(2)}</td>` +
       `<td class="mono num ${isPos?'pos':'neg'}">${isPos?'+':''}$${Math.abs(s.pnl).toFixed(2)} (${isPos?'+':''}${s.pnlPct.toFixed(1)}%)</td>`;
     body.appendChild(tr);
