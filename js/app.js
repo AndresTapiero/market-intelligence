@@ -172,6 +172,9 @@ class InvestmentApp {
       const price = parseFloat(document.getElementById('buyPrice')?.value) || 0;
       const date = document.getElementById('buyDate')?.value || new Date().toISOString().split('T')[0];
       const fundamento = document.getElementById('buyFundamento')?.value.trim() || null;
+      const targetPrice = parseFloat(document.getElementById('buyTargetPrice')?.value) || null;
+      const isNew = document.getElementById('buyAssetSelect')?.value === '__new__';
+      const newType = document.getElementById('buyNewType')?.value || 'crypto';
 
       if (!key || qty <= 0 || price <= 0) {
         this.uiManager.showError('Completa el activo, la cantidad y el precio.');
@@ -180,13 +183,13 @@ class InvestmentApp {
 
       this.uiManager.setButtonLoading('#buyModalOverlay .modal-submit', true);
 
-      const result = await this.transactionService.recordBuy(key, qty, price, fundamento, date);
+      const result = await this.transactionService.recordBuy(key, qty, price, fundamento, date, targetPrice, newType);
 
       if (result.success) {
         this.uiManager.setButtonSuccess('#buyModalOverlay .modal-submit');
         setTimeout(() => {
           this.closeBuyModal();
-          this._refreshBalanceAfterBuy(key, qty, price);
+          this._refreshBalanceAfterBuy(key, qty, price, isNew, newType);
         }, 1000);
       } else {
         this.uiManager.showError(result.error);
@@ -242,13 +245,37 @@ class InvestmentApp {
     }
   }
 
-  _refreshBalanceAfterBuy(key, qty, price) {
+  _refreshBalanceAfterBuy(key, qty, price, isNew = false, rawType = 'crypto') {
     const assets = window.EXISTING_ASSETS;
+    const type = rawType === 'etf' ? 'stock' : rawType;
+
     if (assets?.[key]) {
       const prev = assets[key];
       const newQty = prev.qty + qty;
       assets[key].costAvg = (prev.qty * prev.costAvg + qty * price) / newQty;
       assets[key].qty = newQty;
+    } else {
+      // Activo nuevo: agregar a EXISTING_ASSETS
+      const label = key.toUpperCase();
+      assets[key] = { qty, costAvg: price, type, label };
+
+      // Agregar a ASSET_DATA para que aparezca en PnL y Composición
+      window.ASSET_DATA?.push({
+        ticker: label,
+        label,
+        icon: label[0],
+        type,
+        signal: 'hold',
+        price,
+        change: '0%',
+        costAvg: price,
+        current: price,
+        invested: qty * price,
+        actual: qty * price,
+        delta: '0',
+        context: '',
+        class: 'asset-' + key
+      });
     }
     this._rerenderPortfolio();
   }

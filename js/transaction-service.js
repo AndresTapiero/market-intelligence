@@ -14,22 +14,22 @@ export class TransactionService {
   /**
    * Registra una compra
    */
-  async recordBuy(ticker, quantity, price, fundamento = null, date = null) {
+  async recordBuy(ticker, quantity, price, fundamento = null, date = null, targetPrice = null, assetType = 'crypto') {
     const user = this.authService.getCurrentUser();
     if (!user) throw new Error('No autenticado');
+
+    const categoria = assetType === 'stock' || assetType === 'etf' ? 'core' : 'satelite';
 
     const entry = {
       user_id: user.id,
       fecha: date || new Date().toISOString().split('T')[0],
       ticker: ticker.toUpperCase(),
-      categoria: 'satelite',
+      categoria,
       inversion_monto: quantity * price,
       numero_acciones: quantity,
       precio_entrada: price,
-      tesis_inversion: fundamento,
-      fuentes_valoracion: null,
-      precio_objetivo: null,
-      margen_seguridad_pct: null
+      tesis_inversion: fundamento || null,
+      precio_objetivo: targetPrice || null
     };
 
     try {
