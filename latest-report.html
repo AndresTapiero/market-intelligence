@@ -1358,10 +1358,57 @@ function renderPnl() {
   if (cBadge) { cBadge.textContent = (cPnl >= 0 ? '+$' : '-$') + Math.abs(cPnl).toFixed(0) + ' (' + (cPnl >= 0 ? '+' : '') + cPct + '%)'; cBadge.className = 'pnl-total-badge ' + (cPnl >= 0 ? 'pos' : 'neg'); }
 }
 
+function renderComp() {
+  const stocksEl = document.getElementById('stocksCompContainer');
+  const cryptoEl = document.getElementById('cryptoCompContainer');
+  const tmpl = document.getElementById('compRowTemplate');
+  if (!stocksEl || !cryptoEl || !tmpl) return;
+
+  const stocks = [], cryptos = [];
+  let sTotal = 0, cTotal = 0;
+
+  ASSET_DATA.forEach(asset => {
+    const key = asset.ticker.toLowerCase();
+    const holding = EXISTING_ASSETS[key];
+    if (!holding) return;
+    const actual = holding.qty * asset.price;
+    const entry = { ticker: asset.ticker, actual, color: ASSET_COLORS[key] || 'var(--accent)' };
+    if (asset.type === 'stock') { stocks.push(entry); sTotal += actual; }
+    else { cryptos.push(entry); cTotal += actual; }
+  });
+
+  stocks.sort((a,b) => b.actual - a.actual);
+  cryptos.sort((a,b) => b.actual - a.actual);
+
+  const fill = (container, items, groupTotal) => {
+    items.forEach(item => {
+      const pct = groupTotal > 0 ? item.actual / groupTotal * 100 : 0;
+      const clone = tmpl.content.cloneNode(true);
+      clone.querySelector('.comp-dot').style.background = item.color;
+      clone.querySelector('.comp-label .mono').textContent = item.ticker;
+      const bar = clone.querySelector('.comp-bar');
+      bar.style.background = item.color;
+      bar.style.width = pct.toFixed(1) + '%';
+      clone.querySelector('.comp-pct').textContent = pct.toFixed(1) + '%';
+      clone.querySelector('.comp-val').textContent = '$' + item.actual.toFixed(0);
+      container.appendChild(clone);
+    });
+  };
+
+  fill(stocksEl, stocks, sTotal);
+  fill(cryptoEl, cryptos, cTotal);
+
+  const sCard = stocksEl.closest('.card');
+  const cCard = cryptoEl.closest('.card');
+  if (sCard) sCard.querySelector('.section-title').textContent = 'Acciones · $' + sTotal.toFixed(0);
+  if (cCard) cCard.querySelector('.section-title').textContent = 'Crypto · $' + cTotal.toFixed(0);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const select = document.getElementById('logMonthFilter');
   if (select) filterLogByMonth(select.value);
   renderPnl();
+  renderComp();
 });
 
 let regAction = 'buy';
