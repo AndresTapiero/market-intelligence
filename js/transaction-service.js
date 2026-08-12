@@ -5,6 +5,9 @@
 
 import { TABLES } from './config.js';
 
+const CATEGORIAS_VALIDAS = ['core', 'satelite', 'legado'];
+const safeCategoria = c => CATEGORIAS_VALIDAS.includes(c) ? c : 'satelite';
+
 export class TransactionService {
   constructor(supabaseClient, authService) {
     this.supabase = supabaseClient;
@@ -18,7 +21,7 @@ export class TransactionService {
     const user = this.authService.getCurrentUser();
     if (!user) throw new Error('No autenticado');
 
-    const categoria = assetType === 'stock' || assetType === 'etf' ? 'core' : 'satelite';
+    const categoria = safeCategoria(assetType === 'stock' || assetType === 'etf' ? 'core' : 'satelite');
 
     const entry = {
       user_id: user.id,
@@ -62,7 +65,7 @@ export class TransactionService {
       user_id: user.id,
       fecha: date || new Date().toISOString().split('T')[0],
       ticker: ticker.toUpperCase(),
-      categoria: 'satelite',
+      categoria: safeCategoria('satelite'),
       inversion_monto: montoBruto,
       numero_acciones: quantity,
       precio_entrada: costAvg || 0,
