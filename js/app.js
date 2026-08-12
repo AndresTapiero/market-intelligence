@@ -41,19 +41,56 @@ class InvestmentApp {
 
       // Intentar obtener sesión existente
       const session = await this.authService.getSession();
-      if (!session) {
-        console.log('ℹ️ No hay sesión, usando login de desarrollo...');
-        await this.authService.devLogin();
-      }
-
-      // Cargar datos
-      if (this.authService.isAuthenticated()) {
-        await this.portfolioService.loadTransactions();
-        await this.portfolioHistoryService.loadHistoricalReports();
-        this.uiManager.updateAuthStatus();
+      if (session) {
+        await this.afterLogin();
+      } else {
+        document.getElementById('login-gate').style.display = 'flex';
+        document.getElementById('login-email').focus();
       }
     } catch (err) {
       console.error('❌ Error inicializando app:', err.message);
+    }
+  }
+
+  async afterLogin() {
+    document.getElementById('login-gate').style.display = 'none';
+    await this.portfolioService.loadTransactions();
+    await this.portfolioHistoryService.loadHistoricalReports();
+    this.uiManager.updateAuthStatus();
+  }
+
+  async doLogin() {
+    const btn = document.getElementById('login-btn');
+    const errEl = document.getElementById('login-error');
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    errEl.style.display = 'none';
+    if (!email || !password) {
+      errEl.textContent = 'Ingresa tu correo y contraseña para continuar.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Conectando…';
+    try {
+      await this.authService.signInWithPassword(email, password);
+      await this.afterLogin();
+    } catch (err) {
+      const msg = (err?.message || '').toLowerCase();
+      if (msg.includes('invalid login credentials')) {
+        errEl.textContent = 'Correo o contraseña incorrectos.';
+      } else if (msg.includes('email not confirmed')) {
+        errEl.textContent = 'Confirma tu correo antes de continuar — revisa tu bandeja de entrada.';
+      } else if (msg.includes('network') || msg.includes('fetch')) {
+        errEl.textContent = 'Sin conexión. Verifica tu red e intenta de nuevo.';
+      } else {
+        errEl.textContent = 'No se pudo iniciar sesión. Intenta de nuevo.';
+      }
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
     }
   }
 
