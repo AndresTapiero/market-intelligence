@@ -159,21 +159,31 @@ export class UIManager {
       document.getElementById('sellPreviewRemaining').textContent =
         remaining.toLocaleString('en-US', { maximumFractionDigits: 8 });
 
-      const pnlEl = document.getElementById('sellPreviewPnL');
-      const pnlPctEl = document.getElementById('sellPreviewPnLPct');
+      const pnlEl      = document.getElementById('sellPreviewPnL');
+      const pnlPctEl   = document.getElementById('sellPreviewPnLPct');
       const pnlLabelEl = document.getElementById('sellPreviewPnLLabel');
+      const roiCard    = document.getElementById('roiCard');
+      const roiArrow   = document.getElementById('roiArrow');
+
+      const fmtUnit = v => {
+        const abs = Math.abs(v);
+        if (abs >= 1000) return '$' + abs.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+        if (abs >= 1)    return '$' + abs.toFixed(2);
+        if (abs >= 0.01) return '$' + abs.toFixed(4);
+        return '$' + abs.toFixed(6);
+      };
+
       if (pnlEl) {
-        pnlEl.textContent = (isPos ? '+' : '') + fmt(pnl);
-        pnlEl.className = 'mono num ' + (isPos ? 'pos' : 'neg');
+        pnlEl.textContent = (isPos ? '+' : '-') + fmt(pnl);
+        pnlEl.style.color = isPos ? 'var(--green)' : 'var(--red)';
       }
       if (pnlPctEl) {
         pnlPctEl.textContent = (isPos ? '+' : '') + pnlPct.toFixed(2) + '%';
-        pnlPctEl.className = 'mono num ' + (isPos ? 'pos' : 'neg');
-        pnlPctEl.style.fontSize = '10px';
+        pnlPctEl.style.color = isPos ? 'var(--green)' : 'var(--red)';
       }
-      if (pnlLabelEl) {
-        pnlLabelEl.textContent = isPos ? '📈 Ganancia' : '📉 Pérdida';
-      }
+      if (pnlLabelEl) pnlLabelEl.textContent = isPos ? 'Ganancia' : 'Pérdida';
+      if (roiCard)    { roiCard.className = 'roi-card ' + (isPos ? 'pos' : 'neg'); }
+      if (roiArrow)   roiArrow.textContent = fmtUnit(costAvg) + ' → ' + fmtUnit(price) + ' por unidad';
 
       if (previewEl) previewEl.style.display = 'flex';
     } else if (previewEl) {

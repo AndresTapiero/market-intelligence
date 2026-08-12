@@ -136,9 +136,18 @@
   #sellModalOverlay .modal-title{color:var(--red)}
   #sellModalOverlay .modal-submit{background:var(--red)}
   #sellModalOverlay .modal-submit:hover{background:#ff3d5b}
-  .sell-preview{background:rgba(255,85,117,0.08);border-radius:var(--r-sm);padding:12px 14px;display:flex;flex-direction:column;gap:6px;border-left:3px solid var(--red)}
-  .sell-preview-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)}
-  .sell-preview-row .num{font-weight:700;color:var(--red)}
+  .sell-preview{background:var(--surface2);border-radius:var(--r-sm);padding:14px;display:flex;flex-direction:column;gap:10px}
+  .roi-card{border-radius:10px;padding:16px 14px;text-align:center}
+  .roi-card.pos{background:rgba(0,217,163,0.08);border:1px solid rgba(0,217,163,0.2)}
+  .roi-card.neg{background:rgba(255,85,117,0.08);border:1px solid rgba(255,85,117,0.2)}
+  .roi-main{display:flex;align-items:baseline;justify-content:center;gap:14px;margin-bottom:6px}
+  .roi-amount{font-size:26px;font-weight:800;font-family:var(--mono);letter-spacing:-1px;line-height:1}
+  .roi-pct{font-size:18px;font-weight:700;font-family:var(--mono)}
+  .roi-arrow{font-size:11px;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px}
+  .roi-label{font-size:9px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;opacity:.7}
+  .sell-detail-rows{display:flex;flex-direction:column;gap:4px}
+  .sell-preview-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim)}
+  .sell-preview-row strong{color:var(--text)}
   .sell-quantity-options{display:flex;gap:8px;margin:8px 0}
   .sell-qty-btn{flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:8px;background:transparent;color:var(--text);cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
   .sell-qty-btn:hover{border-color:var(--red);color:var(--red)}
@@ -1118,17 +1127,20 @@
         <textarea id="sellObservations" rows="2" placeholder="¿Por qué vendes? Toma de ganancias, stop loss, rebalanceo..."></textarea>
       </div>
       <div class="sell-preview" id="sellPreview" style="display:none">
-        <div class="sell-preview-row"><span>💵 Monto bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
-        <div class="sell-preview-row"><span>🏦 Comisión broker</span><span class="mono num neg" id="sellPreviewCommission">$0</span></div>
-        <div class="sell-preview-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:2px"><span><strong>💰 Monto neto</strong></span><span class="mono num" id="sellPreviewNet">$0</span></div>
-        <div class="sell-preview-row" style="border-top:1px solid var(--border-subtle);padding-top:8px;margin-top:2px">
-          <span id="sellPreviewPnLLabel">📈 Ganancia</span>
-          <div style="text-align:right">
-            <div class="mono num" id="sellPreviewPnL">$0</div>
-            <div class="mono num" style="font-size:10px" id="sellPreviewPnLPct">0%</div>
+        <div class="roi-card" id="roiCard">
+          <div class="roi-main">
+            <span class="roi-amount" id="sellPreviewPnL">$0</span>
+            <span class="roi-pct" id="sellPreviewPnLPct">0%</span>
           </div>
+          <div class="roi-arrow" id="roiArrow">— → —</div>
+          <div class="roi-label" id="sellPreviewPnLLabel">Retorno</div>
         </div>
-        <div class="sell-preview-row"><span>📊 Cantidad restante</span><span class="mono num" id="sellPreviewRemaining">0</span></div>
+        <div class="sell-detail-rows">
+          <div class="sell-preview-row"><span>Bruto</span><span class="mono num" id="sellPreviewTotal">$0</span></div>
+          <div class="sell-preview-row"><span>Comisión</span><span class="mono num" id="sellPreviewCommission" style="color:var(--red)">$0</span></div>
+          <div class="sell-preview-row"><span><strong>Neto</strong></span><span class="mono num" id="sellPreviewNet"><strong>$0</strong></span></div>
+          <div class="sell-preview-row" style="border-top:1px solid var(--border-subtle);padding-top:6px;margin-top:2px"><span>Cantidad restante</span><span class="mono num" id="sellPreviewRemaining">0</span></div>
+        </div>
       </div>
       <button class="modal-submit" onclick="window.submitSale()">📤 Registrar venta</button>
     </div>
