@@ -177,6 +177,12 @@ class InvestmentApp {
       if (!reports?.length) return;
       const report = reports[0];
 
+      // Cargar cash desde el snapshot (fuente de verdad)
+      if (report.portfolio_snapshot?.cash !== undefined) {
+        window.CURRENT_CASH = report.portfolio_snapshot.cash;
+        if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
+      }
+
       // Obtener activos del último reporte
       const { data: assets } = await this.supabase
         .from('portfolio_assets')
