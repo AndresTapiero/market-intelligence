@@ -3,7 +3,7 @@
 // regenera mensualmente), y solo se sirve el cache cuando no hay red.
 // IMPORTANTE: sube este numero cada vez que la lista de abajo cambie —
 // un CACHE_NAME distinto fuerza a borrar el cache viejo en 'activate'.
-const CACHE_NAME = 'market-intel-cache-v2';
+const CACHE_NAME = 'market-intel-cache-v3';
 const urlsToCache = [
   './latest-report.html',
   './manifest.json',
