@@ -101,6 +101,7 @@
       if (select && typeof window.filterLogByMonth === 'function') window.filterLogByMonth(select.value);
       if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
       if (typeof window.renderSellHistory === 'function') window.renderSellHistory();
+      if (window.app && typeof window.app._loadBuyHistory === 'function') window.app._loadBuyHistory();
     }
     if (e.detail && e.detail.tab === 'analisis') {
       if (window.app && typeof window.app._updateAnalisisTab === 'function') window.app._updateAnalisisTab();
