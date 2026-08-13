@@ -232,109 +232,164 @@ class InvestmentApp {
       const wrap = document.getElementById('chartSvgWrap');
       if (!wrap) return;
 
-      // Recopilar puntos históricos desde portfolio_history
+      // ── 1. Recopilar puntos históricos ─────────────────────────────────────
       const reports = this._historicalReports || [];
       const points  = [];
-
-      // Obtener reportes ordenados cronológicamente
       const hist = [...(Array.isArray(reports) ? reports : [])].sort((a,b) =>
-        new Date(a.report_date) - new Date(b.report_date)
-      );
+        new Date(a.report_date) - new Date(b.report_date));
       hist.forEach(r => {
         const total = r.portfolio_snapshot?.total;
-        if (total && r.report_date) {
-          points.push({
-            date:  r.report_date,
-            total: parseFloat(total),
-            label: new Date(r.report_date).toLocaleDateString('es-CO', { month:'short', year:'2-digit' })
-          });
-        }
+        if (total && r.report_date)
+          points.push({ date: r.report_date, total: parseFloat(total),
+            label: new Date(r.report_date).toLocaleDateString('es-CO',{ month:'short', year:'2-digit' }) });
       });
 
-      // Calcular valor actual desde EXISTING_ASSETS
+      // ── 2. Valor actual en tiempo real ─────────────────────────────────────
       let currentTotal = 0;
-      (window.ASSET_DATA || []).forEach(a => {
-        const h = (window.EXISTING_ASSETS || {})[a.ticker.toLowerCase()];
+      (window.ASSET_DATA||[]).forEach(a => {
+        const h = (window.EXISTING_ASSETS||{})[a.ticker.toLowerCase()];
         if (h && h.qty > 0) currentTotal += h.qty * a.price;
       });
       currentTotal += window.CURRENT_CASH || 0;
 
-      // Añadir "Hoy" si tiene valor
+      // Costo base para línea de referencia
+      let costBase = 0;
+      Object.values(window.EXISTING_ASSETS||{}).forEach(h => {
+        if (h.qty > 0) costBase += h.qty * h.costAvg;
+      });
+
       if (currentTotal > 0) {
         const lastDate = points.length ? points[points.length-1].date : null;
         const todayStr = new Date().toISOString().split('T')[0];
         if (lastDate === todayStr) {
-          points[points.length-1].total = currentTotal;
-          points[points.length-1].isToday = true;
+          points[points.length-1].total = currentTotal; points[points.length-1].isToday = true;
         } else {
           points.push({ date: todayStr, total: currentTotal, label: 'Hoy', isToday: true });
         }
       }
 
       if (points.length < 2) {
-        wrap.innerHTML = '<span style="color:var(--text-muted);font-size:12px;padding:20px">Sin historial suficiente — el reporte mensual genera los puntos de la gráfica.</span>';
-        if (currentTotal > 0) {
-          const cv = document.getElementById('chartCurrentVal');
-          if (cv) cv.textContent = '$' + Math.round(currentTotal).toLocaleString('en-US');
-        }
+        wrap.innerHTML = '<span style="color:var(--text-muted);font-size:12px;padding:20px">Sin historial — la gráfica se llena con los reportes mensuales.</span>';
+        const cv = document.getElementById('chartCurrentVal');
+        if (cv && currentTotal > 0) cv.textContent = '$' + Math.round(currentTotal).toLocaleString('en-US');
         return;
       }
 
-      // Dimensiones
-      const W=600, H=180, pL=8, pR=8, pT=24, pB=32;
+      // ── 3. Dimensiones ──────────────────────────────────────────────────────
+      const W=640, H=200, pL=56, pR=12, pT=20, pB=38;
       const cW=W-pL-pR, cH=H-pT-pB;
-      const vals = points.map(p => p.total);
-      const minV = Math.min(...vals) * 0.96;
-      const maxV = Math.max(...vals) * 1.04;
-      const rng  = maxV - minV || 1;
-      const n    = points.length;
+      const vals  = points.map(p=>p.total);
+      const minV  = Math.min(...vals) * 0.94;
+      const maxV  = Math.max(...vals) * 1.06;
+      const rng   = maxV - minV || 1;
+      const n     = points.length;
+      const xOf   = i => pL + (i/(n-1))*cW;
+      const yOf   = v => pT + cH - ((v-minV)/rng)*cH;
+      const fmtK  = v => v>=1000 ? '$'+(v/1000).toFixed(1)+'k' : '$'+Math.round(v);
+      const uid   = 'cg'+Date.now();
 
-      const xOf = i => pL + (i/(n-1)) * cW;
-      const yOf = v => pT + cH - ((v-minV)/rng) * cH;
+      const first=points[0].total, last=points[n-1].total;
+      const isPos=last>=first;
+      const clr   = isPos ? '#00d9a3' : '#ff5575';
+      const rgb   = isPos ? '0,217,163' : '255,85,117';
+      const growth = first>0 ? ((last-first)/first*100) : 0;
 
-      const first = points[0].total, last = points[n-1].total;
-      const isPos = last >= first;
-      const color = isPos ? '#00d9a3' : '#ff5575';
-      const areaRgb = isPos ? '0,217,163' : '255,85,117';
-      const growth  = first > 0 ? ((last-first)/first*100) : 0;
-      const uid     = 'cg' + Date.now();
+      // ── 4. Grid lines (3–4 niveles) ─────────────────────────────────────────
+      const rawStep = (maxV - minV) / 4;
+      const mag     = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const step    = Math.ceil(rawStep / mag) * mag;
+      const gridStart = Math.ceil(minV / step) * step;
+      let gridHtml = '';
+      for (let v = gridStart; v <= maxV; v += step) {
+        const y = yOf(v).toFixed(1);
+        gridHtml += `<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+        gridHtml += `<text x="${pL-6}" y="${parseFloat(y)+4}" text-anchor="end" class="chart-val-label">${fmtK(v)}</text>`;
+      }
 
-      // Camino de la línea
-      const linePts = points.map((p,i) => `${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOf(p.total).toFixed(1)}`).join(' ');
+      // ── 5. Línea de costo base (dashed) ────────────────────────────────────
+      let costLineHtml = '';
+      if (costBase > minV && costBase < maxV) {
+        const yc = yOf(costBase).toFixed(1);
+        costLineHtml = `<line x1="${pL}" y1="${yc}" x2="${W-pR}" y2="${yc}" stroke="rgba(255,255,255,0.25)" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="${pL+4}" y="${parseFloat(yc)-4}" class="chart-val-label" fill="rgba(255,255,255,0.45)">Invertido</text>`;
+      }
+
+      // ── 6. Rutas de la línea y relleno ──────────────────────────────────────
+      const linePts = points.map((p,i)=>`${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOf(p.total).toFixed(1)}`).join(' ');
       const areaPts = `${linePts} L${xOf(n-1).toFixed(1)},${(pT+cH).toFixed(1)} L${xOf(0).toFixed(1)},${(pT+cH).toFixed(1)} Z`;
 
-      // Puntos
-      const dotsHtml = points.map((p,i) => {
-        const r    = p.isToday ? 6 : 3.5;
-        const fill = p.isToday ? color : 'var(--surface)';
-        const lbl  = `<text x="${xOf(i).toFixed(1)}" y="${(yOf(p.total)-10).toFixed(1)}" text-anchor="middle" class="chart-val-label">$${p.total>=1000?(p.total/1000).toFixed(1)+'k':Math.round(p.total)}</text>`;
-        const xLbl = `<text x="${xOf(i).toFixed(1)}" y="${H-4}" text-anchor="middle" class="chart-x-label">${p.label}</text>`;
-        const dot  = `<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(p.total).toFixed(1)}" r="${r}" fill="${fill}" stroke="${color}" stroke-width="2"/>`;
-        const showLbl = i===0 || i===n-1 || (n<=6) || (n>6 && i%Math.ceil(n/5)===0);
-        return dot + (showLbl ? lbl+xLbl : '');
-      }).join('');
+      // ── 7. Deltas entre puntos consecutivos ────────────────────────────────
+      let deltaHtml = '';
+      for (let i=1; i<n; i++) {
+        const diff = points[i].total - points[i-1].total;
+        if (Math.abs(diff) < 1) continue;
+        const mx = ((xOf(i-1)+xOf(i))/2).toFixed(1);
+        const my = (Math.min(yOf(points[i-1].total), yOf(points[i].total)) - 12).toFixed(1);
+        const dc = diff >= 0 ? '#00d9a3' : '#ff5575';
+        const dt = (diff>=0?'+':'')+fmtK(diff).replace('$','').replace('$-','-');
+        deltaHtml += `<text x="${mx}" y="${my}" text-anchor="middle" font-size="8" fill="${dc}" font-weight="700">${diff>=0?'▲':'▼'} $${Math.abs(diff).toFixed(0)}</text>`;
+      }
 
+      // ── 8. Puntos y etiquetas ───────────────────────────────────────────────
+      const minIdx = vals.indexOf(Math.min(...vals));
+      const maxIdx = vals.indexOf(Math.max(...vals));
+      let dotsHtml = '';
+      points.forEach((p,i) => {
+        const cx=xOf(i).toFixed(1), cy=yOf(p.total).toFixed(1);
+        const isToday=p.isToday, isMin=i===minIdx&&i!==0&&i!==n-1, isMax=i===maxIdx&&i!==0&&i!==n-1;
+        const r = isToday ? 7 : isMin||isMax ? 5 : 4;
+
+        // Glow para el punto actual
+        if (isToday) dotsHtml += `<circle cx="${cx}" cy="${cy}" r="14" fill="${clr}" fill-opacity="0.15"/>`;
+        dotsHtml += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${isToday?clr:'var(--surface)'}" stroke="${clr}" stroke-width="2"/>`;
+
+        // Etiqueta de valor
+        const showVal = i===0||i===n-1||isMin||isMax;
+        if (showVal) {
+          const anchor = i===0?'start':i===n-1?'end':'middle';
+          const ly = (parseFloat(cy)-10).toFixed(1);
+          dotsHtml += `<text x="${cx}" y="${ly}" text-anchor="${anchor}" class="chart-val-label" ${isToday?`fill="${clr}" font-weight="700"`:''}>${fmtK(p.total)}</text>`;
+        }
+
+        // Etiqueta de eje X
+        const showX = i===0||i===n-1||(n<=6)||(n>6&&i%Math.ceil(n/5)===0);
+        if (showX) dotsHtml += `<text x="${cx}" y="${H-6}" text-anchor="${i===0?'start':i===n-1?'end':'middle'}" class="chart-x-label">${p.label}</text>`;
+
+        // Marcar min/max
+        if (isMin) dotsHtml += `<text x="${cx}" y="${(parseFloat(cy)+16).toFixed(1)}" text-anchor="middle" font-size="7" fill="#ff5575">mín</text>`;
+        if (isMax) dotsHtml += `<text x="${cx}" y="${(parseFloat(cy)-16).toFixed(1)}" text-anchor="middle" font-size="7" fill="#00d9a3">máx</text>`;
+      });
+
+      // ── 9. Ensamblar SVG ─────────────────────────────────────────────────────
       const svg = `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMidYMid meet">
   <defs>
     <linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="rgb(${areaRgb})" stop-opacity="0.2"/>
-      <stop offset="100%" stop-color="rgb(${areaRgb})" stop-opacity="0"/>
+      <stop offset="0%" stop-color="rgb(${rgb})" stop-opacity="0.22"/>
+      <stop offset="80%" stop-color="rgb(${rgb})" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="rgb(${rgb})" stop-opacity="0"/>
     </linearGradient>
+    <style>
+      .cl-${uid}{stroke-dasharray:2000;stroke-dashoffset:2000;animation:draw-${uid} 1.4s cubic-bezier(.4,0,.2,1) forwards}
+      @keyframes draw-${uid}{to{stroke-dashoffset:0}}
+    </style>
   </defs>
+  ${gridHtml}
+  ${costLineHtml}
   <path d="${areaPts}" fill="url(#${uid})"/>
-  <path d="${linePts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="${linePts}" fill="none" stroke="${clr}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="cl-${uid}"/>
+  ${deltaHtml}
   ${dotsHtml}
 </svg>`;
 
       wrap.innerHTML = svg;
 
-      // Header dinámico
+      // ── 10. Header ───────────────────────────────────────────────────────────
       const cvEl = document.getElementById('chartCurrentVal');
       const grEl = document.getElementById('chartGrowth');
       if (cvEl) cvEl.textContent = '$' + Math.round(last).toLocaleString('en-US');
       if (grEl) {
-        grEl.textContent = (isPos?'+':'') + growth.toFixed(1) + '% desde inicio · ' + (n-1) + ' reportes';
-        grEl.className   = 'chart-growth ' + (isPos?'pos':'neg');
+        grEl.textContent = (isPos?'+':'')+growth.toFixed(1)+'% desde inicio · '+(n-1)+' reportes';
+        grEl.className = 'chart-growth '+(isPos?'pos':'neg');
       }
     } catch(err) {
       console.warn('⚠️ Error renderizando gráfica:', err.message);
