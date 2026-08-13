@@ -22,6 +22,7 @@ function updateCashAfterTrade(delta) {
   window.CURRENT_CASH = Math.max(0, window.CURRENT_CASH + delta);
   localStorage.setItem('hapi_cash', window.CURRENT_CASH.toFixed(2));
   updateCashDisplay(delta);
+  _syncCashToResumen();
 }
 window.updateCashAfterTrade = updateCashAfterTrade;
 
@@ -51,12 +52,23 @@ function updateCashPreview() {
 }
 window.updateCashPreview = updateCashPreview;
 
+function _syncCashToResumen() {
+  const fmtD = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 });
+  const rc = document.getElementById('resumeCash');
+  if (rc) rc.textContent = fmtD(window.CURRENT_CASH);
+  // Recalcular total del resumen si está disponible
+  if (window.app && typeof window.app._updateResumenCards === 'function') {
+    window.app._updateResumenCards();
+  }
+}
+
 function saveCash() {
   const real = parseFloat(document.getElementById('cashReal').value);
   if (isNaN(real) || real < 0) return;
   window.CURRENT_CASH = real;
   localStorage.setItem('hapi_cash', real.toFixed(2));
   updateCashDisplay();
+  _syncCashToResumen();
   closeCashModal();
 }
 window.saveCash = saveCash;

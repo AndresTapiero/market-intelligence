@@ -52,7 +52,8 @@ function renderSellHistory() {
       '<td class="mono num">$' + s.gross.toFixed(2) + '</td>' +
       '<td class="mono num" style="color:var(--red)">' + (s.commission > 0 ? '-$' + s.commission.toFixed(2) : '—') + '</td>' +
       '<td class="mono num">$' + s.net.toFixed(2) + '</td>' +
-      '<td class="mono num ' + (isPos ? 'pos' : 'neg') + '">' + (isPos ? '+' : '') + '$' + Math.abs(s.pnl).toFixed(2) + ' (' + (isPos ? '+' : '') + s.pnlPct.toFixed(1) + '%)</td>';
+      '<td class="mono num ' + (isPos ? 'pos' : 'neg') + '" style="font-weight:700">' + (isPos ? '+$' : '-$') + Math.abs(s.pnl).toFixed(2) + '</td>' +
+      '<td class="mono num ' + (isPos ? 'pos' : 'neg') + '">' + (isPos ? '+' : '') + s.pnlPct.toFixed(1) + '%</td>';
     body.appendChild(tr);
   });
 }
