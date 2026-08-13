@@ -17,7 +17,8 @@ window.ASSET_DATA = [
   { ticker: 'AVAX', label: 'Avalanche', icon: 'A', type: 'crypto', signal: 'hold', price: 6.87, change: '-9.0%', costAvg: 18.93, current: 6.87, invested: 45, actual: 16, delta: '+1.48', context: '—', class: 'asset-avax' },
   { ticker: 'GIGA', label: 'GIGA', icon: 'G', type: 'crypto', signal: 'hold', price: 0.0023, change: '-10.0%', costAvg: 0.0639, current: 0.0023, invested: 55, actual: 2, delta: '+0.24', context: '—', class: 'asset-giga' },
   { ticker: 'TRUMP', label: 'TRUMP', icon: 'T', type: 'crypto', signal: 'hold', price: 1.48, change: '-15.0%', costAvg: 36.07, current: 1.48, invested: 41, actual: 1, delta: '-0.10', context: '—', class: 'asset-trump' },
-  { ticker: 'SPX6900', label: 'SPX6900', icon: 'S', type: 'crypto', signal: 'hold', price: 0.35, change: '-6.0%', costAvg: 1.15, current: 0.3500, invested: 43, actual: 13, delta: '+0.37', context: '—', class: 'asset-spx6900' }
+  { ticker: 'SPX6900', label: 'SPX6900', icon: 'S', type: 'crypto', signal: 'hold', price: 0.35, change: '-6.0%', costAvg: 1.15, current: 0.3500, invested: 43, actual: 13, delta: '+0.37', context: '—', class: 'asset-spx6900' },
+  { ticker: 'META', label: 'META', icon: 'M', type: 'stock', signal: 'hold', price: 586.21, change: '0%', costAvg: 586.21, current: 586, invested: 120, actual: 120, delta: '0', context: '—', class: 'asset-meta' }
 ];
 
 window.EXISTING_ASSETS = {
@@ -37,6 +38,7 @@ window.EXISTING_ASSETS = {
   "voo": { type: "etf", label: "VOO", qty: 0.36947, costAvg: 508.99, fundamento: "" },
   "qqq": { type: "etf", label: "QQQ", qty: 0.15618, costAvg: 533.7, fundamento: "" },
   "nvda": { type: "stock", label: "NVIDIA", qty: 1.10855, costAvg: 119.11, fundamento: "" },
+  "meta": { type: "stock", label: "META", qty: 0, costAvg: 0, fundamento: "" },
   // NU y TSLA vendidos — eliminados del baseline. El sync los ignorará si aparecen en inv_journal.
 };
 
@@ -50,6 +52,6 @@ window.VALUATIONS = VALUATIONS;
 const ASSET_COLORS = {
   btc:'#f7931a',eth:'#627eea',sol:'#9945ff',tao:'#38bdf8',uni:'#ff007a',bnb:'#f3ba2f',
   sui:'#6fbcf0',sei:'#e84142',ena:'#00d4ff',avax:'#e84142',giga:'#00d4ff',trump:'#8250ff',
-  spx6900:'#00d4a0',voo:'#00d4a0',qqq:'#4d8fff',nvda:'#76b900'
+  spx6900:'#00d4a0',voo:'#00d4a0',qqq:'#4d8fff',nvda:'#76b900',meta:'#0081fb'
 };
 window.ASSET_COLORS = ASSET_COLORS;
