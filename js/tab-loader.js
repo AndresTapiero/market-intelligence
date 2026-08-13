@@ -68,6 +68,7 @@
     if (window.app) {
       if (typeof window.app._updateStickyBar    === 'function') window.app._updateStickyBar();
       if (typeof window.app._updateResumenCards === 'function') window.app._updateResumenCards();
+      if (typeof window.app._updateAnalisisTab  === 'function') window.app._updateAnalisisTab();
     }
     // Activos tab
     var activosEl = document.getElementById('tab-activos');
@@ -100,8 +101,8 @@
       if (typeof window.renderSellHistory === 'function') window.renderSellHistory();
     }
     if (e.detail && e.detail.tab === 'analisis') {
-      // Initialize COP widget after analisis tab loads
-      if (typeof window.initCopWidget === 'function') window.initCopWidget();
+      if (window.app && typeof window.app._updateAnalisisTab === 'function') window.app._updateAnalisisTab();
+      else if (typeof window.initCopWidget === 'function') window.initCopWidget();
     }
   });
 })();

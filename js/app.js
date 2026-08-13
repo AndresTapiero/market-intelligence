@@ -125,6 +125,7 @@ class InvestmentApp {
       this._rerenderPortfolio();
       this._updateStickyBar();
       this._updateResumenCards();
+      this._updateAnalisisTab();
       await this._loadBuyHistory();
       document.dispatchEvent(new CustomEvent('portfolio-synced'));
 
@@ -225,6 +226,85 @@ class InvestmentApp {
   /**
    * Calcula y actualiza los valores de la sticky bar dinámicamente
    */
+  _updateAnalisisTab() {
+    try {
+      const assets    = window.EXISTING_ASSETS || {};
+      const assetData = window.ASSET_DATA || [];
+      const cash      = window.CURRENT_CASH || 0;
+
+      // Calcular valores por categoría
+      let btcVal = 0, etfVal = 0, stockVal = 0, altVal = 0, totalCrypto = 0, totalStocks = 0;
+
+      assetData.forEach(a => {
+        const key = a.ticker.toLowerCase();
+        const h   = assets[key];
+        if (!h || h.qty <= 0) return;
+        const val = h.qty * a.price;
+
+        if (a.type === 'etf')    { etfVal    += val; totalStocks += val; }
+        else if (a.type === 'stock') { stockVal  += val; totalStocks += val; }
+        else if (key === 'btc')  { btcVal    += val; totalCrypto += val; }
+        else                     { altVal    += val; totalCrypto += val; }
+      });
+
+      const total = totalCrypto + totalStocks + cash;
+      if (total <= 0) return;
+
+      const pct = v => (v / total * 100);
+      const fmtPct = v => v.toFixed(1) + '%';
+      const gap = (actual, target) => {
+        const diff = actual - target;
+        const el_cls = diff >= 0 ? 'neg' : 'pos'; // sobre el objetivo = negativo (ya lo tienes)
+        return { text: (diff >= 0 ? '-' : '+') + Math.abs(diff).toFixed(1) + 'pp', cls: el_cls };
+      };
+
+      const setBar = (barId, pctId, gapId, val, target) => {
+        const p    = pct(val);
+        const barEl  = document.getElementById(barId);
+        const pctEl  = document.getElementById(pctId);
+        const gapEl  = document.getElementById(gapId);
+        if (barEl) barEl.style.width = Math.min(p, 100).toFixed(1) + '%';
+        if (pctEl) pctEl.textContent = fmtPct(p);
+        if (gapEl) {
+          const g = gap(p, target);
+          gapEl.textContent = g.text;
+          gapEl.className   = 'alloc-gap mono num ' + g.cls;
+        }
+      };
+
+      setBar('allocBtcBar',   'allocBtcPct',   'allocBtcGap',   btcVal,   30);
+      setBar('allocEtfBar',   'allocEtfPct',   'allocEtfGap',   etfVal,   30);
+      setBar('allocStockBar', 'allocStockPct', 'allocStockGap', stockVal, 25);
+      setBar('allocAltBar',   'allocAltPct',   'allocAltGap',   altVal,   15);
+
+      // Hint dinámico: categoría más alejada del objetivo
+      const gaps = [
+        { name: 'ETFs',            diff: 30 - pct(etfVal)   },
+        { name: 'Acciones indiv.', diff: 25 - pct(stockVal) },
+        { name: 'Altcoins',        diff: pct(altVal) - 15   },
+        { name: 'Bitcoin',         diff: pct(btcVal) - 30   },
+      ];
+      const mostNeeded = gaps.filter(g => g.diff > 0).sort((a,b) => b.diff - a.diff)[0];
+      const hintEl = document.getElementById('allocHint');
+      if (hintEl && mostNeeded) {
+        hintEl.innerHTML = '💡 Tu próxima inversión debería priorizar <strong>' + mostNeeded.name + '</strong> (' + mostNeeded.diff.toFixed(1) + ' pp por debajo del objetivo).';
+      } else if (hintEl) {
+        hintEl.textContent = '✅ Portafolio alineado con los objetivos de asignación.';
+      }
+
+      // Actualizar COP widget con valores reales
+      if (window.COP_DATA) {
+        window.COP_DATA.totalUsd  = totalCrypto + totalStocks;
+        window.COP_DATA.cryptoUsd = totalCrypto;
+        window.COP_DATA.stocksUsd = totalStocks;
+        window.COP_DATA.cashUsd   = cash;
+        if (typeof window.initCopWidget === 'function') window.initCopWidget();
+      }
+    } catch (err) {
+      console.warn('⚠️ Error actualizando análisis:', err.message);
+    }
+  }
+
   _updateResumenCards() {
     try {
       const assets    = window.EXISTING_ASSETS || {};
@@ -824,4 +904,5 @@ window.submitSale = () => app.submitSale();
 window.refreshPortfolio = () => app.refreshPortfolio();
 window.deleteTransaction = (id) => app.deleteTransaction(id);
 window.updateResumenCards = () => app._updateResumenCards();
+window.updateAnalisisTab  = () => app._updateAnalisisTab();
 window.saveCashToSupabase = (amount) => app.updateCash(amount);
