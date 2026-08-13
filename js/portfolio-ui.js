@@ -48,6 +48,12 @@ function renderPnl() {
 
     clone.querySelector('.pnl-name').textContent = asset.ticker;
     clone.querySelector('.pnl-qty').textContent = formatQty(qty);
+    var badge = clone.querySelector('.pnl-type-badge');
+    if (badge) {
+      if (asset.type === 'etf')   { badge.textContent = 'ETF';    badge.className = 'pnl-type-badge etf'; }
+      else if (asset.type === 'stock') { badge.textContent = 'Acción'; badge.className = 'pnl-type-badge stock'; }
+      else                         { badge.style.display = 'none'; }
+    }
 
     // Columna Invertido (total costo base + precio unitario de compra)
     const investedEl  = clone.querySelector('.pnl-invested');

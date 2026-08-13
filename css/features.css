@@ -1,3 +1,8 @@
+/* PNL TYPE BADGE */
+.pnl-type-badge{font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:1px 5px;border-radius:4px;line-height:1.4;flex-shrink:0}
+.pnl-type-badge.etf{background:rgba(77,143,255,.15);color:#4d8fff}
+.pnl-type-badge.stock{background:rgba(0,217,163,.12);color:#00d9a3}
+
 /* LOGIN GATE */
 #login-gate{position:fixed;inset:0;z-index:9999;background:#0a0c10;display:flex;align-items:center;justify-content:center}
 .login-box{background:#13161d;border:1px solid #232838;border-radius:16px;padding:36px 32px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:18px}
