@@ -48,6 +48,7 @@ function renderSellHistory() {
       '<td class="mono">' + s.date + '</td>' +
       '<td><span class="mono" style="color:' + color + ';font-weight:700">' + s.ticker + '</span></td>' +
       '<td class="mono num">' + window.formatQty(s.qty) + '</td>' +
+      '<td class="mono num">' + (s.costAvg ? window.fmtPrice(s.costAvg) : '—') + '</td>' +
       '<td class="mono num">' + window.fmtPrice(s.price) + '</td>' +
       '<td class="mono num">$' + s.gross.toFixed(2) + '</td>' +
       '<td class="mono num" style="color:var(--red)">' + (s.commission > 0 ? '-$' + s.commission.toFixed(2) : '—') + '</td>' +

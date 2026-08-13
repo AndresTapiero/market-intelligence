@@ -142,7 +142,7 @@ class InvestmentApp {
           const pnlPct = r.ganancia_perdida_pct ?? (costAvg > 0 ? pnl / (qty * costAvg) * 100 : 0);
           return {
             key: r.ticker.toLowerCase(), ticker: r.ticker,
-            qty, price, gross, commission: comm, net, pnl, pnlPct,
+            qty, price, costAvg, gross, commission: comm, net, pnl, pnlPct,
             date: r.fecha_venta
               ? new Date(r.fecha_venta).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' })
               : '—',
@@ -749,6 +749,7 @@ class InvestmentApp {
       ticker: key.toUpperCase(),
       qty,
       price,
+      costAvg,
       gross,
       commission,
       net,
