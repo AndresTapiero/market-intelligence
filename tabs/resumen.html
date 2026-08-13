@@ -36,38 +36,16 @@
 </div>
 
 <h2 class="section-title">Evolución del portafolio</h2>
-<div class="chart-card mb">
+<div class="chart-card mb" id="portfolioChartContainer">
   <div class="chart-header">
     <div>
-      <div class="chart-current num">$3,131</div>
-      <div class="chart-growth pos">+4.8% desde inicio del seguimiento</div>
+      <div class="chart-current num" id="chartCurrentVal">$—</div>
+      <div class="chart-growth" id="chartGrowth">Cargando historial...</div>
     </div>
   </div>
-  <svg viewBox="0 0 600 200" class="chart-svg" preserveAspectRatio="xMidYMid meet">
-    <defs>
-      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
-        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2 L564.0,164 L36.0,164 Z" fill="url(#areaGrad)"/>
-    <path d="M36.0,135.0 L168.0,105.6 L300.0,96.5 L432.0,68.4 L564.0,107.2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="36.0" cy="135.0" r="3.5" fill="var(--accent)"/>
-    <text x="36.0" y="125.0" text-anchor="middle" class="chart-val-label">$3.0k</text>
-    <text x="36.0" y="182" text-anchor="middle" class="chart-x-label">jun de 26</text>
-    <circle cx="168.0" cy="105.6" r="3.5" fill="var(--accent)"/>
-    <text x="168.0" y="95.6" text-anchor="middle" class="chart-val-label">$3.1k</text>
-    <text x="168.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
-    <circle cx="300.0" cy="96.5" r="3.5" fill="var(--accent)"/>
-    <text x="300.0" y="86.5" text-anchor="middle" class="chart-val-label">$3.2k</text>
-    <text x="300.0" y="182" text-anchor="middle" class="chart-x-label">jul de 26</text>
-    <circle cx="432.0" cy="68.4" r="3.5" fill="var(--accent)"/>
-    <text x="432.0" y="58.4" text-anchor="middle" class="chart-val-label">$3.3k</text>
-    <text x="432.0" y="182" text-anchor="middle" class="chart-x-label">ago de 26</text>
-    <circle cx="564.0" cy="107.2" r="3.5" fill="var(--accent)"/>
-    <text x="564.0" y="97.2" text-anchor="middle" class="chart-val-label">$3.1k</text>
-    <text x="564.0" y="182" text-anchor="middle" class="chart-x-label">Hoy</text>
-  </svg>
+  <div id="chartSvgWrap" style="min-height:120px;display:flex;align-items:center;justify-content:center">
+    <span style="color:var(--text-muted);font-size:12px">Cargando gráfica...</span>
+  </div>
 </div>
 
 <h2 class="section-title">Indicadores clave</h2>

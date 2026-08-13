@@ -55,7 +55,7 @@ class InvestmentApp {
   async afterLogin() {
     document.getElementById('login-gate').style.display = 'none';
     await this.portfolioService.loadTransactions();
-    await this.portfolioHistoryService.loadHistoricalReports();
+    this._historicalReports = await this.portfolioHistoryService.loadHistoricalReports();
     this.uiManager.updateAuthStatus();
     await this._syncPortfolioFromSupabase();
   }
@@ -126,6 +126,7 @@ class InvestmentApp {
       this._updateStickyBar();
       this._updateResumenCards();
       this._updateAnalisisTab();
+      this._renderPortfolioChart();
       await this._loadBuyHistory();
       document.dispatchEvent(new CustomEvent('portfolio-synced'));
 
@@ -226,6 +227,120 @@ class InvestmentApp {
   /**
    * Calcula y actualiza los valores de la sticky bar dinámicamente
    */
+  _renderPortfolioChart() {
+    try {
+      const wrap = document.getElementById('chartSvgWrap');
+      if (!wrap) return;
+
+      // Recopilar puntos históricos desde portfolio_history
+      const reports = this._historicalReports || [];
+      const points  = [];
+
+      // Obtener reportes ordenados cronológicamente
+      const hist = [...(Array.isArray(reports) ? reports : [])].sort((a,b) =>
+        new Date(a.report_date) - new Date(b.report_date)
+      );
+      hist.forEach(r => {
+        const total = r.portfolio_snapshot?.total;
+        if (total && r.report_date) {
+          points.push({
+            date:  r.report_date,
+            total: parseFloat(total),
+            label: new Date(r.report_date).toLocaleDateString('es-CO', { month:'short', year:'2-digit' })
+          });
+        }
+      });
+
+      // Calcular valor actual desde EXISTING_ASSETS
+      let currentTotal = 0;
+      (window.ASSET_DATA || []).forEach(a => {
+        const h = (window.EXISTING_ASSETS || {})[a.ticker.toLowerCase()];
+        if (h && h.qty > 0) currentTotal += h.qty * a.price;
+      });
+      currentTotal += window.CURRENT_CASH || 0;
+
+      // Añadir "Hoy" si tiene valor
+      if (currentTotal > 0) {
+        const lastDate = points.length ? points[points.length-1].date : null;
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (lastDate === todayStr) {
+          points[points.length-1].total = currentTotal;
+          points[points.length-1].isToday = true;
+        } else {
+          points.push({ date: todayStr, total: currentTotal, label: 'Hoy', isToday: true });
+        }
+      }
+
+      if (points.length < 2) {
+        wrap.innerHTML = '<span style="color:var(--text-muted);font-size:12px;padding:20px">Sin historial suficiente — el reporte mensual genera los puntos de la gráfica.</span>';
+        if (currentTotal > 0) {
+          const cv = document.getElementById('chartCurrentVal');
+          if (cv) cv.textContent = '$' + Math.round(currentTotal).toLocaleString('en-US');
+        }
+        return;
+      }
+
+      // Dimensiones
+      const W=600, H=180, pL=8, pR=8, pT=24, pB=32;
+      const cW=W-pL-pR, cH=H-pT-pB;
+      const vals = points.map(p => p.total);
+      const minV = Math.min(...vals) * 0.96;
+      const maxV = Math.max(...vals) * 1.04;
+      const rng  = maxV - minV || 1;
+      const n    = points.length;
+
+      const xOf = i => pL + (i/(n-1)) * cW;
+      const yOf = v => pT + cH - ((v-minV)/rng) * cH;
+
+      const first = points[0].total, last = points[n-1].total;
+      const isPos = last >= first;
+      const color = isPos ? '#00d9a3' : '#ff5575';
+      const areaRgb = isPos ? '0,217,163' : '255,85,117';
+      const growth  = first > 0 ? ((last-first)/first*100) : 0;
+      const uid     = 'cg' + Date.now();
+
+      // Camino de la línea
+      const linePts = points.map((p,i) => `${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOf(p.total).toFixed(1)}`).join(' ');
+      const areaPts = `${linePts} L${xOf(n-1).toFixed(1)},${(pT+cH).toFixed(1)} L${xOf(0).toFixed(1)},${(pT+cH).toFixed(1)} Z`;
+
+      // Puntos
+      const dotsHtml = points.map((p,i) => {
+        const r    = p.isToday ? 6 : 3.5;
+        const fill = p.isToday ? color : 'var(--surface)';
+        const lbl  = `<text x="${xOf(i).toFixed(1)}" y="${(yOf(p.total)-10).toFixed(1)}" text-anchor="middle" class="chart-val-label">$${p.total>=1000?(p.total/1000).toFixed(1)+'k':Math.round(p.total)}</text>`;
+        const xLbl = `<text x="${xOf(i).toFixed(1)}" y="${H-4}" text-anchor="middle" class="chart-x-label">${p.label}</text>`;
+        const dot  = `<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(p.total).toFixed(1)}" r="${r}" fill="${fill}" stroke="${color}" stroke-width="2"/>`;
+        const showLbl = i===0 || i===n-1 || (n<=6) || (n>6 && i%Math.ceil(n/5)===0);
+        return dot + (showLbl ? lbl+xLbl : '');
+      }).join('');
+
+      const svg = `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgb(${areaRgb})" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="rgb(${areaRgb})" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path d="${areaPts}" fill="url(#${uid})"/>
+  <path d="${linePts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  ${dotsHtml}
+</svg>`;
+
+      wrap.innerHTML = svg;
+
+      // Header dinámico
+      const cvEl = document.getElementById('chartCurrentVal');
+      const grEl = document.getElementById('chartGrowth');
+      if (cvEl) cvEl.textContent = '$' + Math.round(last).toLocaleString('en-US');
+      if (grEl) {
+        grEl.textContent = (isPos?'+':'') + growth.toFixed(1) + '% desde inicio · ' + (n-1) + ' reportes';
+        grEl.className   = 'chart-growth ' + (isPos?'pos':'neg');
+      }
+    } catch(err) {
+      console.warn('⚠️ Error renderizando gráfica:', err.message);
+    }
+  }
+
   _updateAnalisisTab() {
     try {
       const assets    = window.EXISTING_ASSETS || {};
@@ -904,5 +1019,6 @@ window.submitSale = () => app.submitSale();
 window.refreshPortfolio = () => app.refreshPortfolio();
 window.deleteTransaction = (id) => app.deleteTransaction(id);
 window.updateResumenCards = () => app._updateResumenCards();
-window.updateAnalisisTab  = () => app._updateAnalisisTab();
+window.updateAnalisisTab       = () => app._updateAnalisisTab();
+window.renderPortfolioChart    = () => app._renderPortfolioChart();
 window.saveCashToSupabase = (amount) => app.updateCash(amount);

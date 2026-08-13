@@ -66,9 +66,10 @@
   document.addEventListener('portfolio-synced', function() {
     // Sticky bar y cards del resumen
     if (window.app) {
-      if (typeof window.app._updateStickyBar    === 'function') window.app._updateStickyBar();
-      if (typeof window.app._updateResumenCards === 'function') window.app._updateResumenCards();
-      if (typeof window.app._updateAnalisisTab  === 'function') window.app._updateAnalisisTab();
+      if (typeof window.app._updateStickyBar      === 'function') window.app._updateStickyBar();
+      if (typeof window.app._updateResumenCards   === 'function') window.app._updateResumenCards();
+      if (typeof window.app._updateAnalisisTab    === 'function') window.app._updateAnalisisTab();
+      if (typeof window.app._renderPortfolioChart === 'function') window.app._renderPortfolioChart();
     }
     // Activos tab
     var activosEl = document.getElementById('tab-activos');
@@ -85,8 +86,9 @@
   // After activos tab loads, render PnL and composition
   document.addEventListener('tabloaded', function(e) {
     if (e.detail && e.detail.tab === 'resumen') {
-      if (window.app && typeof window.app._updateStickyBar    === 'function') window.app._updateStickyBar();
-      if (window.app && typeof window.app._updateResumenCards === 'function') window.app._updateResumenCards();
+      if (window.app && typeof window.app._updateStickyBar       === 'function') window.app._updateStickyBar();
+      if (window.app && typeof window.app._updateResumenCards    === 'function') window.app._updateResumenCards();
+      if (window.app && typeof window.app._renderPortfolioChart  === 'function') window.app._renderPortfolioChart();
     }
     if (e.detail && e.detail.tab === 'activos') {
       if (typeof window.renderPnl === 'function') window.renderPnl();
