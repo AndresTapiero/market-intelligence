@@ -99,8 +99,17 @@
   .assets-grid-crypto{grid-template-columns:1fr 1fr}
   .assets-grid-stocks{grid-template-columns:1fr 1fr}
   .total-value{font-size:19px}
-  .pnl-row{flex-direction:column;align-items:flex-start}
-  .pnl-nums{width:100%;gap:10px}
+  /* PnL móvil: activo izq + 3 métricas en grid compacto */
+  .pnl-row{flex-direction:row;align-items:center;gap:8px;padding:10px 0}
+  .pnl-asset{min-width:64px;flex-shrink:0}
+  .pnl-asset .pnl-name{font-size:12px}
+  .pnl-asset .pnl-qty{font-size:9px}
+  .pnl-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;flex:1;min-width:0}
+  .pnl-trio{min-width:0}
+  .pnl-trio .label-xs{font-size:7px;letter-spacing:.4px;margin-bottom:1px}
+  .pnl-trio .mono{font-size:11px}
+  .pnl-trio .small{font-size:9px}
+  .pnl-cost-unit,.pnl-market-unit{display:none}
   .sticky-stat:nth-child(n+3){display:none}
   .comp-row{grid-template-columns:52px 1fr 38px 52px}
   /* Log bitácora — solo 3 columnas visibles en móvil */
