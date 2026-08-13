@@ -1,9 +1,7 @@
 /**
  * AuthService.js
- * Responsabilidad única: autenticación y sesiones
+ * Responsabilidad única: autenticación y sesiones vía Supabase Auth
  */
-
-import { AUTH_CONFIG } from './config.js';
 
 export class AuthService {
   constructor(supabaseClient) {
@@ -11,9 +9,6 @@ export class AuthService {
     this.currentUser = null;
   }
 
-  /**
-   * Obtiene la sesión actual si existe
-   */
   async getSession() {
     try {
       const { data: { session } } = await this.supabase.auth.getSession();
@@ -28,18 +23,10 @@ export class AuthService {
     }
   }
 
-  /**
-   * Login con email y contraseña
-   */
   async signInWithPassword(email, password) {
     try {
-      const { data, error } = await this.supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
+      const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
       this.currentUser = data.user;
       console.log('✅ Autenticado como:', this.currentUser.email);
       return this.currentUser;
@@ -49,16 +36,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Login de desarrollo (para pruebas)
-   */
-  async devLogin() {
-    return this.signInWithPassword(AUTH_CONFIG.devEmail, AUTH_CONFIG.devPassword);
-  }
-
-  /**
-   * Logout
-   */
   async logout() {
     try {
       await this.supabase.auth.signOut();
@@ -69,17 +46,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Obtiene el usuario actual
-   */
-  getCurrentUser() {
-    return this.currentUser;
-  }
-
-  /**
-   * Verifica si hay usuario autenticado
-   */
-  isAuthenticated() {
-    return this.currentUser !== null;
-  }
+  getCurrentUser()  { return this.currentUser; }
+  isAuthenticated() { return this.currentUser !== null; }
 }
