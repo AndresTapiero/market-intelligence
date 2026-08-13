@@ -19,25 +19,25 @@
   ],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b6dff' width='192' height='192' rx='40'/><rect x='58' y='104' width='20' height='48' rx='6' fill='white'/><rect x='86' y='80' width='20' height='72' rx='6' fill='white'/><rect x='114' y='56' width='20' height='96' rx='6' fill='white'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b6dff' width='192' height='192' rx='40'/><polyline points='22,155 70,112 118,70 164,36' fill='none' stroke='white' stroke-width='18' stroke-linecap='round' stroke-linejoin='round'/><circle cx='164' cy='36' r='18' fill='white'/><circle cx='22' cy='155' r='10' fill='rgba(255,255,255,0.5)'/></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%238b6dff' width='512' height='512' rx='106'/><rect x='154' y='277' width='54' height='128' rx='16' fill='white'/><rect x='229' y='213' width='54' height='192' rx='16' fill='white'/><rect x='304' y='149' width='54' height='256' rx='16' fill='white'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%238b6dff' width='512' height='512' rx='106'/><polyline points='58,414 188,300 314,186 438,96' fill='none' stroke='white' stroke-width='48' stroke-linecap='round' stroke-linejoin='round'/><circle cx='438' cy='96' r='48' fill='white'/><circle cx='58' cy='414' r='28' fill='rgba(255,255,255,0.5)'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b6dff' width='192' height='192'/><rect x='58' y='104' width='20' height='48' rx='6' fill='white'/><rect x='86' y='80' width='20' height='72' rx='6' fill='white'/><rect x='114' y='56' width='20' height='96' rx='6' fill='white'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%238b6dff' width='192' height='192'/><polyline points='30,155 78,112 126,70 166,40' fill='none' stroke='white' stroke-width='18' stroke-linecap='round' stroke-linejoin='round'/><circle cx='166' cy='40' r='18' fill='white'/><circle cx='30' cy='155' r='10' fill='rgba(255,255,255,0.5)'/></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "maskable"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%238b6dff' width='512' height='512'/><rect x='154' y='277' width='54' height='128' rx='16' fill='white'/><rect x='229' y='213' width='54' height='192' rx='16' fill='white'/><rect x='304' y='149' width='54' height='256' rx='16' fill='white'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%238b6dff' width='512' height='512'/><polyline points='76,414 200,304 330,192 444,96' fill='none' stroke='white' stroke-width='48' stroke-linecap='round' stroke-linejoin='round'/><circle cx='444' cy='96' r='48' fill='white'/><circle cx='76' cy='414' r='28' fill='rgba(255,255,255,0.5)'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
@@ -51,7 +51,7 @@
       "url": "./latest-report.html?tab=resumen",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%234d8fff' width='96' height='96' rx='22'/><rect x='27' y='50' width='11' height='26' rx='3' fill='white'/><rect x='42' y='38' width='11' height='38' rx='3' fill='white'/><rect x='57' y='26' width='11' height='50' rx='3' fill='white'/></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%234d8fff' width='96' height='96' rx='22'/><polyline points='12,76 32,54 56,34 82,18' fill='none' stroke='white' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/><circle cx='82' cy='18' r='9' fill='white'/></svg>",
           "sizes": "96x96",
           "type": "image/svg+xml"
         }
@@ -60,7 +60,7 @@
     {
       "name": "Activos",
       "short_name": "Activos",
-      "description": "Senales de mercado, tus posiciones y P&L",
+      "description": "Señales de mercado, tus posiciones y P&L",
       "url": "./latest-report.html?tab=activos",
       "icons": [
         {
