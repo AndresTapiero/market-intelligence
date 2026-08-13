@@ -68,7 +68,7 @@ function renderPnl() {
     pctEl.textContent    = (isPos ? '+' : '') + pnlP.toFixed(1) + '%';
     pctEl.className      = 'mono num small pnl-pct ' + (isPos ? 'pos' : 'neg');
 
-    if (asset.type === 'stock') {
+    if (asset.type === 'stock' || asset.type === 'etf') {
       stocksEl.appendChild(clone);
       sInv += invested; sAct += actual; sCount++;
     } else {
@@ -97,7 +97,7 @@ function renderPnl() {
   // Update title counts
   var sTitleEl = document.getElementById('stocksPnlTitle');
   var cTitleEl = document.getElementById('cryptoPnlTitle');
-  if (sTitleEl) sTitleEl.textContent = 'Acciones · ' + sCount;
+  if (sTitleEl) sTitleEl.textContent = 'Acc. / ETFs · ' + sCount;
   if (cTitleEl) cTitleEl.textContent = 'Crypto · ' + cCount;
 
   // Update badges
@@ -123,7 +123,7 @@ function renderComp() {
     if (!holding || holding.qty <= 0) return;
     const actual = holding.qty * asset.price;
     const entry = { ticker: asset.ticker, actual: actual, color: (window.ASSET_COLORS || {})[key] || 'var(--accent)' };
-    if (asset.type === 'stock') { stocks.push(entry); sTotal += actual; }
+    if (asset.type === 'stock' || asset.type === 'etf') { stocks.push(entry); sTotal += actual; }
     else { cryptos.push(entry); cTotal += actual; }
   });
 
@@ -150,7 +150,7 @@ function renderComp() {
 
   const sCard = stocksEl.closest('.card');
   const cCard = cryptoEl.closest('.card');
-  if (sCard) sCard.querySelector('.section-title').textContent = 'Acciones · $' + sTotal.toFixed(0);
+  if (sCard) sCard.querySelector('.section-title').textContent = 'Acc. / ETFs · $' + sTotal.toFixed(0);
   if (cCard) cCard.querySelector('.section-title').textContent = 'Crypto · $' + cTotal.toFixed(0);
 }
 window.renderComp = renderComp;

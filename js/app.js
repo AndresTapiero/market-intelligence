@@ -241,7 +241,7 @@ class InvestmentApp {
         const cost = h.qty * h.costAvg;
         const pnlPct = ((a.price - h.costAvg) / h.costAvg * 100);
         const entry = { ticker: a.ticker, label: a.label || a.ticker, val, cost, pnlPct, change: a.change || '—' };
-        if (a.type === 'stock') { totalStocks += val; costStocks += cost; stockResults.push(entry); }
+        if (a.type === 'stock' || a.type === 'etf') { totalStocks += val; costStocks += cost; stockResults.push(entry); }
         else                    { totalCrypto += val; costCrypto += cost; cryptoResults.push(entry); }
       });
 

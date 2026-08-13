@@ -125,7 +125,7 @@ function onAssetSelectChange() {
   } else if (val) {
     var asset = window.EXISTING_ASSETS[val];
     if (asset) {
-      typeSelect.value = asset.type === 'stock' ? 'stock' : 'crypto';
+      typeSelect.value = (asset.type === 'stock' || asset.type === 'etf') ? (asset.type === 'etf' ? 'etf' : 'stock') : 'crypto';
       typeSelect.disabled = true;
       typeSelect.style.opacity = '.7';
     }
