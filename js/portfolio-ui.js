@@ -49,12 +49,17 @@ function renderPnl() {
     clone.querySelector('.pnl-name').textContent = asset.ticker;
     clone.querySelector('.pnl-qty').textContent = formatQty(qty);
 
-    const investedEl = clone.querySelector('.pnl-invested');
+    // Columna Invertido (total costo base + precio unitario de compra)
+    const investedEl  = clone.querySelector('.pnl-invested');
+    const costUnitEl  = clone.querySelector('.pnl-cost-unit');
     if (investedEl) investedEl.textContent = '$' + invested.toFixed(0);
+    if (costUnitEl)  costUnitEl.textContent = '@ ' + fmtPrice(costAvg);
 
-    const trios = clone.querySelectorAll('.pnl-trio');
-    trios[1].querySelector('.mono').textContent = fmtPrice(costAvg);
-    trios[2].querySelector('.mono').textContent = fmtPrice(currentPrice);
+    // Columna Valor hoy (total a precios actuales + precio unitario de mercado)
+    const actualEl      = clone.querySelector('.pnl-actual');
+    const marketUnitEl  = clone.querySelector('.pnl-market-unit');
+    if (actualEl)     actualEl.textContent    = '$' + actual.toFixed(0);
+    if (marketUnitEl) marketUnitEl.textContent = '@ ' + fmtPrice(currentPrice);
 
     const dollarEl = clone.querySelector('.pnl-dollar');
     const pctEl   = clone.querySelector('.pnl-pct');

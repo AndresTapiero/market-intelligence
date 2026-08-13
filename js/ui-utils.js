@@ -276,7 +276,7 @@ async function loadPortfolioComposition() {
     var total = snapshot.total || 0;
     var totalCrypto = snapshot.totalCrypto || 0;
     var totalStocks = snapshot.totalStocks || 0;
-    var cash = snapshot.cash || 0;
+    var cash = window.CURRENT_CASH || snapshot.cash || 0; // preferir cash real vs snapshot del reporte
 
     // Build DOM
     container.textContent = '';
