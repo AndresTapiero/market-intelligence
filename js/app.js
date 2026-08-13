@@ -177,11 +177,15 @@ class InvestmentApp {
       if (!reports?.length) return;
       const report = reports[0];
 
-      // Cargar cash desde el snapshot (fuente de verdad)
-      if (report.portfolio_snapshot?.cash !== undefined) {
+      // Cargar cash desde user_metadata (siempre actualizado, sincronizado entre dispositivos)
+      const { data: { user: authUser } } = await this.supabase.auth.getUser();
+      if (authUser?.user_metadata?.cash_amount !== undefined) {
+        window.CURRENT_CASH = authUser.user_metadata.cash_amount;
+      } else if (report.portfolio_snapshot?.cash !== undefined) {
+        // Fallback: snapshot del último reporte (migración desde esquema anterior)
         window.CURRENT_CASH = report.portfolio_snapshot.cash;
-        if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
       }
+      if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
 
       // Obtener activos del último reporte
       const { data: assets } = await this.supabase
@@ -482,30 +486,15 @@ class InvestmentApp {
     window.CURRENT_CASH = Math.max(0, newAmount);
 
     try {
-      const user = this.authService.getCurrentUser();
-      if (!user) return;
-
-      const { data: latest } = await this.supabase
-        .from('portfolio_history')
-        .select('id, portfolio_snapshot')
-        .eq('user_id', user.id)
-        .order('report_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (latest) {
-        const updatedSnapshot = { ...(latest.portfolio_snapshot || {}), cash: window.CURRENT_CASH };
-        const { error } = await this.supabase
-          .from('portfolio_history')
-          .update({ portfolio_snapshot: updatedSnapshot })
-          .eq('id', latest.id);
-        if (error) throw error;
-        console.log('✅ Cash guardado en Supabase:', window.CURRENT_CASH);
-      } else {
-        console.warn('⚠️ No hay reporte histórico para actualizar el cash');
-      }
+      // Guardar en user_metadata de Supabase Auth
+      // No requiere tablas ni políticas extra — el usuario puede actualizar sus propios metadatos
+      const { error } = await this.supabase.auth.updateUser({
+        data: { cash_amount: window.CURRENT_CASH }
+      });
+      if (error) throw error;
+      console.log('✅ Cash guardado en user metadata:', window.CURRENT_CASH);
     } catch (err) {
-      console.warn('⚠️ Error guardando cash en Supabase:', err.message);
+      console.warn('⚠️ Error guardando cash:', err.message);
     }
   }
 
