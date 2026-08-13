@@ -473,6 +473,38 @@ class InvestmentApp {
     await this._syncPortfolioFromSupabase();
   }
 
+  async updateCash(newAmount) {
+    window.CURRENT_CASH = Math.max(0, newAmount);
+    localStorage.setItem('hapi_cash', window.CURRENT_CASH.toFixed(2));
+
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) return;
+
+      const { data: latest } = await this.supabase
+        .from('portfolio_history')
+        .select('id, portfolio_snapshot')
+        .eq('user_id', user.id)
+        .order('report_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latest) {
+        const updatedSnapshot = { ...(latest.portfolio_snapshot || {}), cash: window.CURRENT_CASH };
+        const { error } = await this.supabase
+          .from('portfolio_history')
+          .update({ portfolio_snapshot: updatedSnapshot })
+          .eq('id', latest.id);
+        if (error) throw error;
+        console.log('✅ Cash guardado en Supabase:', window.CURRENT_CASH);
+      } else {
+        console.warn('⚠️ No hay reporte histórico — cash guardado solo en localStorage');
+      }
+    } catch (err) {
+      console.warn('⚠️ Error guardando cash en Supabase (queda en localStorage):', err.message);
+    }
+  }
+
   async _loadSellHistoryFromSupabase() {
     try {
       const user = this.authService.getCurrentUser();
@@ -799,3 +831,4 @@ window.submitSale = () => app.submitSale();
 window.refreshPortfolio = () => app.refreshPortfolio();
 window.deleteTransaction = (id) => app.deleteTransaction(id);
 window.updateResumenCards = () => app._updateResumenCards();
+window.saveCashToSupabase = (amount) => app.updateCash(amount);

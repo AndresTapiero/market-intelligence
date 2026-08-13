@@ -65,11 +65,19 @@ function _syncCashToResumen() {
 function saveCash() {
   const real = parseFloat(document.getElementById('cashReal').value);
   if (isNaN(real) || real < 0) return;
+
+  // Actualizar UI inmediatamente
   window.CURRENT_CASH = real;
-  localStorage.setItem('hapi_cash', real.toFixed(2));
   updateCashDisplay();
   _syncCashToResumen();
   closeCashModal();
+
+  // Persistir en Supabase (y localStorage como fallback)
+  if (window.saveCashToSupabase) {
+    window.saveCashToSupabase(real);
+  } else {
+    localStorage.setItem('hapi_cash', real.toFixed(2));
+  }
 }
 window.saveCash = saveCash;
 
