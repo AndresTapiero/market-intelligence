@@ -44,6 +44,7 @@ export class UIManager {
     document.getElementById('buyAssetSelect').value = '';
     document.getElementById('buyQty').value = '';
     document.getElementById('buyPrice').value = '';
+    document.getElementById('buyCommission').value = '';
     document.getElementById('buyFundamento').value = '';
     document.getElementById('buyTargetPrice').value = '';
     document.getElementById('buyPreview').style.display = 'none';
@@ -104,24 +105,36 @@ export class UIManager {
   updateBuyPreview() {
     const qty = parseFloat(document.getElementById('buyQty')?.value) || 0;
     const price = parseFloat(document.getElementById('buyPrice')?.value) || 0;
+    const fee = parseFloat(document.getElementById('buyCommission')?.value) || 0;
     const previewEl = document.getElementById('buyPreview');
 
     if (qty > 0 && price > 0) {
-      const total = qty * price;
+      const subtotal = qty * price;
+      const totalWithFee = subtotal + fee;
       const assetKey = window.getSelectedAssetKey?.();
       const existing = window.EXISTING_ASSETS?.[assetKey];
 
-      document.getElementById('previewTotal').textContent =
-        '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-      const newQty = existing ? existing.qty + qty : qty;
-      const newCostAvg = existing
-        ? (existing.qty * existing.costAvg + qty * price) / newQty
-        : price;
-
+      const fmt = v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const fmtP = v => v >= 1000
         ? '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
         : '$' + v.toFixed(v >= 1 ? 2 : v >= 0.01 ? 4 : 6);
+
+      document.getElementById('previewTotal').textContent = fmt(subtotal);
+
+      const feeRow = document.getElementById('previewFeeRow');
+      if (fee > 0) {
+        document.getElementById('previewFee').textContent = '+' + fmt(fee);
+        if (feeRow) feeRow.style.display = 'flex';
+      } else {
+        if (feeRow) feeRow.style.display = 'none';
+      }
+
+      document.getElementById('previewTotalWithFee').textContent = fmt(totalWithFee);
+
+      const newQty = existing ? existing.qty + qty : qty;
+      const newCostAvg = existing
+        ? (existing.qty * existing.costAvg + totalWithFee) / newQty
+        : totalWithFee / qty;
 
       document.getElementById('previewNewQty').textContent =
         newQty.toLocaleString('en-US', { maximumFractionDigits: 8 });

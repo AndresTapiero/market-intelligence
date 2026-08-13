@@ -17,20 +17,23 @@ export class TransactionService {
   /**
    * Registra una compra
    */
-  async recordBuy(ticker, quantity, price, fundamento = null, date = null, targetPrice = null, assetType = 'crypto') {
+  async recordBuy(ticker, quantity, price, fundamento = null, date = null, targetPrice = null, assetType = 'crypto', commission = 0) {
     const user = this.authService.getCurrentUser();
     if (!user) throw new Error('No autenticado');
 
     const categoria = safeCategoria(assetType === 'stock' || assetType === 'etf' ? 'core' : 'satelite');
+    const totalCost = quantity * price + commission;
+    const effectivePrice = totalCost / quantity;
 
     const entry = {
       user_id: user.id,
       fecha: date || new Date().toISOString().split('T')[0],
       ticker: ticker.toUpperCase(),
       categoria,
-      inversion_monto: quantity * price,
+      inversion_monto: totalCost,
       numero_acciones: quantity,
-      precio_entrada: price,
+      precio_entrada: effectivePrice,
+      comision: commission > 0 ? commission : null,
       tesis_inversion: fundamento || null,
       precio_objetivo: targetPrice || null
     };

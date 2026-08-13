@@ -899,6 +899,7 @@ class InvestmentApp {
       const key = window.getSelectedAssetKey?.();
       const qty = parseFloat(document.getElementById('buyQty')?.value) || 0;
       const price = parseFloat(document.getElementById('buyPrice')?.value) || 0;
+      const commission = parseFloat(document.getElementById('buyCommission')?.value) || 0;
       const date = document.getElementById('buyDate')?.value || new Date().toISOString().split('T')[0];
       const fundamento = document.getElementById('buyFundamento')?.value.trim() || null;
       const targetPrice = parseFloat(document.getElementById('buyTargetPrice')?.value) || null;
@@ -912,13 +913,13 @@ class InvestmentApp {
 
       this.uiManager.setButtonLoading('#buyModalOverlay .modal-submit', true);
 
-      const result = await this.transactionService.recordBuy(key, qty, price, fundamento, date, targetPrice, newType);
+      const result = await this.transactionService.recordBuy(key, qty, price, fundamento, date, targetPrice, newType, commission);
 
       if (result.success) {
         this.uiManager.setButtonSuccess('#buyModalOverlay .modal-submit');
         setTimeout(() => {
           this.closeBuyModal();
-          this._refreshBalanceAfterBuy(key, qty, price, isNew, newType);
+          this._refreshBalanceAfterBuy(key, qty, price, isNew, newType, commission);
         }, 1000);
       } else {
         this.uiManager.showError(result.error);
@@ -979,20 +980,22 @@ class InvestmentApp {
     }
   }
 
-  _refreshBalanceAfterBuy(key, qty, price, isNew = false, rawType = 'crypto') {
-    window.updateCashAfterTrade?.(-(qty * price));  // compra resta cash
+  _refreshBalanceAfterBuy(key, qty, price, isNew = false, rawType = 'crypto', commission = 0) {
+    const totalCost = qty * price + commission;
+    window.updateCashAfterTrade?.(-totalCost);  // compra resta cash incluyendo fee
     const assets = window.EXISTING_ASSETS;
     const type = rawType === 'etf' ? 'stock' : rawType;
+    const effectiveAvgPrice = totalCost / qty;
 
     if (assets?.[key]) {
       const prev = assets[key];
       const newQty = prev.qty + qty;
-      assets[key].costAvg = (prev.qty * prev.costAvg + qty * price) / newQty;
+      assets[key].costAvg = (prev.qty * prev.costAvg + totalCost) / newQty;
       assets[key].qty = newQty;
     } else {
       // Activo nuevo: agregar a EXISTING_ASSETS
       const label = key.toUpperCase();
-      assets[key] = { qty, costAvg: price, type, label };
+      assets[key] = { qty, costAvg: effectiveAvgPrice, type, label };
 
       // Agregar a ASSET_DATA para que aparezca en PnL y Composición
       window.ASSET_DATA?.push({
@@ -1003,9 +1006,9 @@ class InvestmentApp {
         signal: 'hold',
         price,
         change: '0%',
-        costAvg: price,
+        costAvg: effectiveAvgPrice,
         current: price,
-        invested: qty * price,
+        invested: totalCost,
         actual: qty * price,
         delta: '0',
         context: '',
