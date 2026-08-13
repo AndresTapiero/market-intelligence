@@ -332,7 +332,6 @@ class InvestmentApp {
         costBase += holding.qty * holding.costAvg;
       });
 
-      // Cash desde localStorage (fuente de verdad: Hapi)
       const cashAmount = window.CURRENT_CASH || 0;
       total += cashAmount;
 
@@ -475,7 +474,6 @@ class InvestmentApp {
 
   async updateCash(newAmount) {
     window.CURRENT_CASH = Math.max(0, newAmount);
-    localStorage.setItem('hapi_cash', window.CURRENT_CASH.toFixed(2));
 
     try {
       const user = this.authService.getCurrentUser();
@@ -498,10 +496,10 @@ class InvestmentApp {
         if (error) throw error;
         console.log('✅ Cash guardado en Supabase:', window.CURRENT_CASH);
       } else {
-        console.warn('⚠️ No hay reporte histórico — cash guardado solo en localStorage');
+        console.warn('⚠️ No hay reporte histórico para actualizar el cash');
       }
     } catch (err) {
-      console.warn('⚠️ Error guardando cash en Supabase (queda en localStorage):', err.message);
+      console.warn('⚠️ Error guardando cash en Supabase:', err.message);
     }
   }
 

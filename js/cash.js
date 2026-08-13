@@ -1,7 +1,8 @@
-// cash.js — Cash persistence and modal management
-// Classic script (not a module) — loaded with <script src defer>
+// cash.js — Cash management
+// Fuente de verdad: Supabase (portfolio_history.portfolio_snapshot.cash)
+// Sin localStorage — funciona igual en móvil y desktop
 
-window.CURRENT_CASH = parseFloat(localStorage.getItem('hapi_cash') ?? '200') || 200;
+window.CURRENT_CASH = 200; // valor temporal hasta que Supabase cargue en afterLogin()
 
 function updateCashDisplay(delta) {
   const amountEl = document.getElementById('cashDisplayAmount');
@@ -20,18 +21,28 @@ function updateCashDisplay(delta) {
 
 function updateCashAfterTrade(delta) {
   window.CURRENT_CASH = Math.max(0, window.CURRENT_CASH + delta);
-  localStorage.setItem('hapi_cash', window.CURRENT_CASH.toFixed(2));
   updateCashDisplay(delta);
   _syncCashToResumen();
+  // Persistir en Supabase vía app.js
+  if (window.saveCashToSupabase) window.saveCashToSupabase(window.CURRENT_CASH);
 }
 window.updateCashAfterTrade = updateCashAfterTrade;
 
+function _syncCashToResumen() {
+  const fmtD = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 });
+  const rc = document.getElementById('resumeCash');
+  if (rc) rc.textContent = fmtD(window.CURRENT_CASH);
+  if (window.app && typeof window.app._updateResumenCards === 'function') {
+    window.app._updateResumenCards();
+  }
+}
+
 function openCashModal() {
   const registered = document.getElementById('cashRegistered');
-  const real = document.getElementById('cashReal');
-  const preview = document.getElementById('cashPreview');
+  const real       = document.getElementById('cashReal');
+  const preview    = document.getElementById('cashPreview');
   if (registered) registered.value = '$' + window.CURRENT_CASH.toFixed(2);
-  if (real) real.value = '';
+  if (real)    real.value = '';
   if (preview) preview.style.display = 'none';
   document.getElementById('cashModalOverlay').classList.add('show');
 }
@@ -43,50 +54,33 @@ function closeCashModal() {
 window.closeCashModal = closeCashModal;
 
 function updateCashPreview() {
-  const real = parseFloat(document.getElementById('cashReal').value) || 0;
-  const diff = real - window.CURRENT_CASH;
+  const real    = parseFloat(document.getElementById('cashReal').value) || 0;
+  const diff    = real - window.CURRENT_CASH;
   const diffEl  = document.getElementById('cashDiff');
   const preview = document.getElementById('cashPreview');
-  if (diffEl) { diffEl.textContent = (diff >= 0 ? '+' : '') + '$' + diff.toFixed(2); diffEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)'; }
+  if (diffEl) {
+    diffEl.textContent = (diff >= 0 ? '+' : '') + '$' + diff.toFixed(2);
+    diffEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+  }
   if (preview) preview.style.display = 'flex';
 }
 window.updateCashPreview = updateCashPreview;
-
-function _syncCashToResumen() {
-  const fmtD = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 });
-  const rc = document.getElementById('resumeCash');
-  if (rc) rc.textContent = fmtD(window.CURRENT_CASH);
-  // Recalcular total del resumen si está disponible
-  if (window.app && typeof window.app._updateResumenCards === 'function') {
-    window.app._updateResumenCards();
-  }
-}
 
 function saveCash() {
   const real = parseFloat(document.getElementById('cashReal').value);
   if (isNaN(real) || real < 0) return;
 
-  // Actualizar UI inmediatamente
   window.CURRENT_CASH = real;
   updateCashDisplay();
   _syncCashToResumen();
   closeCashModal();
 
-  // Persistir en Supabase (y localStorage como fallback)
-  if (window.saveCashToSupabase) {
-    window.saveCashToSupabase(real);
-  } else {
-    localStorage.setItem('hapi_cash', real.toFixed(2));
-  }
+  // Guardar en Supabase (única fuente de verdad)
+  if (window.saveCashToSupabase) window.saveCashToSupabase(real);
 }
 window.saveCash = saveCash;
 
-function updateCashDisplayPublic() {
-  updateCashDisplay();
-}
+function updateCashDisplayPublic() { updateCashDisplay(); }
 window.updateCashDisplayPublic = updateCashDisplayPublic;
 
-// Initialize display when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-  updateCashDisplay();
-});
+document.addEventListener('DOMContentLoaded', function() { updateCashDisplay(); });

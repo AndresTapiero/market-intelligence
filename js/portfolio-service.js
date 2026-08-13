@@ -33,7 +33,6 @@ export class PortfolioService {
 
       this.transactions = data || [];
       console.log(`✅ ${this.transactions.length} transacciones cargadas`);
-      sessionStorage.setItem('supabase_journal', JSON.stringify(this.transactions));
 
       return this.transactions;
     } catch (err) {

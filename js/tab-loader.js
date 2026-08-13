@@ -1,38 +1,24 @@
-// tab-loader.js — Lazy tab loading via fetch + sessionStorage cache
+// tab-loader.js — Lazy tab loading via fetch (sin caché — siempre fresco)
 // Classic script (not a module) — loaded with <script src defer>
 
 (function() {
-  // Bump this version whenever tab HTML files change to invalidate sessionStorage cache
-  var CACHE_VERSION    = 'v4';
-  var SESSION_KEY_PREFIX = 'tab_html_v' + CACHE_VERSION + '_';
 
   /**
-   * Load a tab's HTML content into its container.
-   * Returns a Promise that resolves when the content is injected.
-   * Fires a custom 'tabloaded' event on the container once done.
+   * Load a tab's HTML content into its container via fetch.
+   * Fires a custom 'tabloaded' event once injected.
    */
   function loadTab(name) {
     var container = document.getElementById('tab-' + name);
     if (!container) return Promise.resolve();
 
-    // Already loaded (has real content, not empty)
+    // Ya cargado en esta sesión de página
     if (container.dataset.loaded === '1') return Promise.resolve();
-
-    // Try sessionStorage first
-    var cached = null;
-    try { cached = sessionStorage.getItem(SESSION_KEY_PREFIX + name); } catch(e) {}
 
     function inject(html) {
       container.innerHTML = html;
       container.dataset.loaded = '1';
-      // Notify listeners that this tab's DOM is ready
       var evt = new CustomEvent('tabloaded', { bubbles: true, detail: { tab: name } });
       container.dispatchEvent(evt);
-    }
-
-    if (cached) {
-      inject(cached);
-      return Promise.resolve();
     }
 
     return fetch('tabs/' + name + '.html')
@@ -40,10 +26,7 @@
         if (!res.ok) throw new Error('HTTP ' + res.status + ' loading tab ' + name);
         return res.text();
       })
-      .then(function(html) {
-        try { sessionStorage.setItem(SESSION_KEY_PREFIX + name, html); } catch(e) {}
-        inject(html);
-      })
+      .then(function(html) { inject(html); })
       .catch(function(err) {
         console.error('tab-loader: failed to load', name, err);
         container.innerHTML = '<div style="padding:20px;color:var(--red)">Error cargando esta sección. ' + err.message + '</div>';
