@@ -13,7 +13,9 @@ var TOOLTIPS = {
   annualized_return: "Retorno anualizado: proyecta el rendimiento actual como si se mantuviera durante un año completo.",
   dca: "DCA (Dollar Cost Average): estrategia de invertir un monto fijo periodicamente, sin importar el precio del momento.",
   precio_objetivo: "El precio al que llegarias promediando tus 3 fuentes de valoracion (formula tipo Peter Lynch, consenso de analistas/DCF, y tu propio calculo). Sirve de ancla contra el panico cuando el mercado corrige.",
-  margen_seguridad: "Margen de seguridad: diferencia entre el precio objetivo (promedio de tus 3 valoraciones) y el precio actual. Si el precio esta 20% o mas por debajo del objetivo, hay margen real de compra. Solo aplica a acciones con flujo de caja, no a cripto."
+  margen_seguridad: "Margen de seguridad: diferencia entre el precio objetivo (promedio de tus 3 valoraciones) y el precio actual. Si el precio esta 20% o mas por debajo del objetivo, hay margen real de compra. Solo aplica a acciones con flujo de caja, no a cripto.",
+  distribucion_portafolio: "Como se reparte tu portafolio completo entre crypto, acciones y cash — el panorama general.",
+  composicion_por_activo: "Dentro de cada bloque (acciones o crypto), que porcentaje representa cada ticker individual."
 };
 
 document.addEventListener('click', function(e) {
