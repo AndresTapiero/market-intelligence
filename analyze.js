@@ -487,7 +487,7 @@ function generateResumenHTML(snapshot, analysisData) {
   <div class="macro-item"><div class="macro-label">TRM hoy</div><div class="macro-value">${fmtTRM(macro.usdcop)}</div></div>
   <div class="macro-item"><div class="macro-label">Tasa FED</div><div class="macro-value">${macro.fedrate || '—'}</div></div>
   <div class="macro-item"><div class="macro-label">Dominancia BTC<span class="info-icon" data-tooltip-key="btc_dominance">ⓘ</span></div><div class="macro-value">${macro.btcDominance || '—'}</div></div>
-  <div class="macro-item"><div class="macro-label">Fear &amp; Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-value">${macro.fearGreed || '—'} <span style="font-size:11px;color:var(--text-muted)">${macro.fearGreedLabel || ''}</span></div></div>
+  <div class="macro-item"><div class="macro-label">Fear &amp; Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-value">${macro.fearGreed ?? '—'} <span style="font-size:11px;color:var(--text-muted)">${macro.fearGreedLabel || ''}</span></div></div>
 </div>
 ${macro.narrative ? `<div class="macro-narrative card mb" style="font-size:13px;line-height:1.6;padding:16px 20px;color:var(--text-dim)">${macro.narrative}</div>` : ''}
 
@@ -555,7 +555,10 @@ async function main() {
   console.log('🌐 Consultando mercado en tiempo real...');
   const response = await runAnalysis(anthropic, {
     model:      MODEL,
-    max_tokens: 16000,
+    // La primera corrida real gastó 15.413 tokens de salida con 18 activos:
+    // un 96% de los 16.000 que había antes. Al siguiente activo habría
+    // truncado. El margen no cuesta nada — sólo se paga lo que se genera.
+    max_tokens: 32000,
     thinking:   { type: 'adaptive' },
     output_config: {
       effort: 'high',
@@ -641,7 +644,12 @@ async function main() {
     const d = assets[key];
     if (d) {
       const e = emoji[d.signal] || '⚪';
-      console.log(`  ${e} ${key.toUpperCase().padEnd(9)} ${(d.price||'—').padEnd(14)} ${(d.change7d||'—').padEnd(9)} ${d.signal||'HOLD'}`);
+      // `price` es number desde que lo impone el schema: hay que formatearlo
+      // antes de alinear. Antes era string y se hacia padEnd directamente.
+      const precio = typeof d.price === 'number'
+        ? '$' + d.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: d.price < 1 ? 6 : 2 })
+        : String(d.price ?? '—');
+      console.log(`  ${e} ${key.toUpperCase().padEnd(9)} ${precio.padEnd(14)} ${String(d.change7d ?? '—').padEnd(9)} ${d.signal || 'HOLD'}`);
     }
   });
   if (analysisData.macro) {
