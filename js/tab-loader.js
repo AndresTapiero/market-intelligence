@@ -76,6 +76,7 @@
     if (activosEl && activosEl.dataset.loaded === '1') {
       ['stocksPnlContainer','cryptoPnlContainer','stocksCompContainer','cryptoCompContainer']
         .forEach(function(id) { var el = document.getElementById(id); if (el) el.innerHTML = ''; });
+      if (typeof window.renderSignals === 'function') window.renderSignals();
       if (typeof window.renderPnl  === 'function') window.renderPnl();
       if (typeof window.renderComp === 'function') window.renderComp();
     }
@@ -91,6 +92,7 @@
       if (window.app && typeof window.app._renderPortfolioChart  === 'function') window.app._renderPortfolioChart();
     }
     if (e.detail && e.detail.tab === 'activos') {
+      if (typeof window.renderSignals === 'function') window.renderSignals();
       if (typeof window.renderPnl === 'function') window.renderPnl();
       if (typeof window.renderComp === 'function') window.renderComp();
       if (typeof window.loadPortfolioComposition === 'function') window.loadPortfolioComposition();

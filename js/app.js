@@ -552,8 +552,18 @@ class InvestmentApp {
    * archivo, aunque analyze.js los trae frescos a Supabase cada mes.
    */
   _renderMacro() {
-    const macro = this._historicalReports?.[0]?.portfolio_snapshot?.macro;
-    if (!macro) return;
+    // El macro puede venir en portfolio_snapshot.macro (lo que escribe
+    // analyze.js hoy) o en la columna macro_data de reportes antiguos. Y si el
+    // último reporte no lo trae, se busca en los anteriores antes de rendirse.
+    const macro = (this._historicalReports || [])
+      .map(r => r?.portfolio_snapshot?.macro || r?.macro_data)
+      .find(m => m && Object.keys(m).length);
+
+    if (!macro) {
+      const nEl = document.getElementById('macroNarrative');
+      if (nEl) nEl.textContent = 'Sin contexto macro todavía. Se llena con el análisis mensual.';
+      return;
+    }
 
     const set = (id, text) => { const el = document.getElementById(id); if (el && text) el.textContent = text; };
 
@@ -1149,6 +1159,99 @@ class InvestmentApp {
     }
   }
 
+  /**
+   * Señales del mercado, una tarjeta por activo.
+   *
+   * El HTML de la pestaña Activos tenía #stocksContainer, #cryptoContainer y
+   * una plantilla desde siempre, pero ningún código los llenaba: la sección
+   * salía vacía. Ahora se pinta desde el modelo más la señal del reporte.
+   */
+  _renderSignals() {
+    const stocksEl = document.getElementById('stocksContainer');
+    const cryptoEl = document.getElementById('cryptoContainer');
+    const tmpl     = document.getElementById('assetCardTemplate');
+    if (!stocksEl || !cryptoEl || !tmpl) return;
+
+    const p = window.PORTFOLIO || this._recomputeModel();
+    stocksEl.innerHTML = '';
+    cryptoEl.innerHTML = '';
+
+    const meta = {};
+    (window.ASSET_DATA || []).forEach(a => { meta[a.ticker.toLowerCase()] = a; });
+
+    const etiqueta = { buy: 'COMPRAR', hold: 'MANTENER', wait: 'ESPERAR' };
+
+    for (const a of p.byAsset) {
+      const m      = meta[a.key] || {};
+      const color  = (window.ASSET_COLORS || {})[a.key] || 'var(--accent)';
+      const senal  = String(m.signal || 'hold').toLowerCase();
+      const nodo   = tmpl.content.cloneNode(true);
+      const q      = sel => nodo.querySelector(sel);
+
+      const icono = q('.asset-icon');
+      icono.textContent     = m.icon || a.ticker[0];
+      icono.style.background = color + '22';
+      icono.style.color      = color;
+
+      q('.asset-ticker').textContent = a.ticker;
+      q('.asset-label').textContent  = a.label;
+
+      const badge = q('.signal-badge');
+      badge.textContent = etiqueta[senal] || 'MANTENER';
+      badge.className   = 'signal-badge signal-' + senal;
+
+      q('.asset-price').textContent = fmtPrice(a.price);
+
+      const change = q('.asset-change');
+      change.textContent = m.change || '—';
+      change.className   = 'asset-change num ' + (String(m.change || '').startsWith('-') ? 'neg' : 'pos');
+
+      q('.asset-holdings-qty').textContent = window.formatQty(a.qty);
+
+      const comparar = nodo.querySelectorAll('.pc-item .mono');
+      if (comparar[0]) comparar[0].textContent = fmtPrice(a.costAvg);
+      if (comparar[1]) comparar[1].textContent = fmtPrice(a.price);
+
+      const ganancia = q('.pc-gain');
+      ganancia.textContent = fmtPct(a.pnlPct);
+      ganancia.className   = 'pc-gain ' + signClass(a.pnlPct);
+
+      const mini = nodo.querySelectorAll('.port-mini .num');
+      if (mini[0]) mini[0].textContent = fmtUSD(a.cost);
+      if (mini[1]) mini[1].textContent = fmtUSD(a.market);
+      if (mini[2]) {
+        mini[2].textContent = fmtSigned(a.pnl);
+        mini[2].className   = 'num ' + signClass(a.pnl);
+      }
+
+      // Sin dato mes-a-mes por activo todavía: se oculta en vez de mentir.
+      const delta = q('.asset-delta');
+      if (delta) delta.style.display = 'none';
+
+      // El margen de seguridad sólo aplica a activos con flujo de caja.
+      const margen = q('.margin-safety');
+      const val    = (window.VALUATIONS || {})[a.key];
+      if (margen) {
+        if (val && a.price > 0) {
+          const objetivo = (val.lynch + val.consenso + val.propio) / 3;
+          const pct = ((objetivo - a.price) / a.price) * 100;
+          q('.margin-safety-value').textContent = `${fmtPrice(objetivo)} · ${fmtPct(pct)}`;
+        } else {
+          margen.style.display = 'none';
+        }
+      }
+
+      const contexto = q('.asset-context');
+      if (contexto) {
+        // Texto del modelo: siempre como texto, nunca como HTML.
+        if (m.context && m.context !== '—') contexto.textContent = m.context;
+        else contexto.style.display = 'none';
+      }
+
+      (a.type === 'crypto' ? cryptoEl : stocksEl).appendChild(nodo);
+    }
+  }
+
   /** Opciones del filtro de meses, derivadas de la bitácora real. */
   _renderMonthFilter() {
     const sel = document.getElementById('logMonthFilter');
@@ -1204,6 +1307,7 @@ window.updateResumenCards = () => app._updateResumenCards();
 window.updateAnalisisTab       = () => app._updateAnalisisTab();
 window.renderPortfolioChart    = () => app._renderPortfolioChart();
 window.renderDca               = () => app._renderDca();
+window.renderSignals           = () => app._renderSignals();
 window.renderEvents            = () => app._renderEvents();
 window.renderMonthFilter       = () => app._renderMonthFilter();
 window.saveCashToSupabase = (amount) => app.updateCash(amount);
