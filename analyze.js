@@ -17,7 +17,7 @@
 
 import Anthropic            from '@anthropic-ai/sdk';
 import { createClient }     from '@supabase/supabase-js';
-import { buildHoldings }    from './js/baseline.js';
+import { buildHoldings, BASELINE } from './js/baseline.js';
 import { writeFileSync }    from 'fs';
 import { pathToFileURL }    from 'url';
 import { exec as execCb }   from 'child_process';
@@ -52,6 +52,41 @@ function deriveKeys(positions) {
     .filter(([, a]) => a.qty > 0)
     .map(([k]) => k)
     .sort();
+}
+
+// Cuántas cripto reciben precio fresco cada mes, por peso en el portafolio.
+const CRYPTO_A_CONSULTAR = 4;
+
+/**
+ * Subconjunto de activos cuyo precio se busca en la web.
+ *
+ * Buscar los 18 costaba ~$1 por corrida (145k tokens de entrada) y, peor,
+ * obligaba al modelo a inventar los precios de las memecoins que no podía
+ * verificar. Se consultan:
+ *
+ *   - todas las acciones y ETFs: son el núcleo de la estrategia y tienen
+ *     precio público y fiable;
+ *   - las ${CRYPTO_A_CONSULTAR} cripto de mayor valor, que concentran casi
+ *     todo el peso del bloque.
+ *
+ * El resto conserva el precio del reporte anterior. Un precio de hace un mes
+ * en un activo que vale $2 es mejor que uno inventado en cualquiera.
+ */
+function derivePriceKeys(positions, previousPrices) {
+  const activos = Object.entries(positions).filter(([, a]) => a.qty > 0);
+
+  const equities = activos
+    .filter(([, a]) => a.type === 'stock' || a.type === 'etf')
+    .map(([k]) => k);
+
+  const valorDe = ([k, a]) => a.qty * (previousPrices[k] ?? BASELINE[k]?.seedPrice ?? 0);
+  const cripto = activos
+    .filter(([, a]) => a.type === 'crypto')
+    .sort((x, y) => valorDe(y) - valorDe(x))
+    .slice(0, CRYPTO_A_CONSULTAR)
+    .map(([k]) => k);
+
+  return [...equities, ...cripto].sort();
 }
 
 // ─── SCHEMA DE SALIDA ─────────────────────────────────────────────────────────
@@ -247,8 +282,12 @@ function sanityCheckPrices(assets, previos, positions) {
   return rechazados;
 }
 
-/** Precios del reporte anterior, para comparar. Vacío si no hay histórico. */
-async function fetchPreviousPrices(supabase) {
+/**
+ * Datos del reporte anterior por activo. Sirven para dos cosas: contrastar los
+ * precios nuevos (sanityCheckPrices) y arrastrar los de los activos que este
+ * mes no se consultan (ver derivePriceKeys).
+ */
+async function fetchPreviousAssets(supabase) {
   const { data: prev } = await supabase
     .from('portfolio_history')
     .select('id')
@@ -260,15 +299,23 @@ async function fetchPreviousPrices(supabase) {
 
   const { data: rows } = await supabase
     .from('portfolio_assets')
-    .select('asset_key, price_num')
+    .select('asset_key, price_num, change_7d, signal, context')
     .eq('report_id', prev.id);
 
   const out = {};
   for (const r of rows ?? []) {
     const p = Number(r.price_num);
-    if (Number.isFinite(p) && p > 0) out[r.asset_key.toLowerCase()] = p;
+    if (!Number.isFinite(p) || p <= 0) continue;
+    out[r.asset_key.toLowerCase()] = {
+      price: p, change_7d: r.change_7d, signal: r.signal, context: r.context,
+    };
   }
   return out;
+}
+
+/** Solo los precios, que es lo que compara sanityCheckPrices. */
+function pricesOf(previousAssets) {
+  return Object.fromEntries(Object.entries(previousAssets).map(([k, v]) => [k, v.price]));
 }
 
 /**
@@ -644,9 +691,20 @@ async function main() {
   if (!activeKeys.length) throw new Error('No hay posiciones abiertas que analizar');
   console.log(`   ${activeKeys.length} activos con posición abierta: ${activeKeys.join(', ').toUpperCase()}`);
 
-  // Precios del mes pasado, para contrastar los que devuelva el modelo.
-  const previousPrices = await fetchPreviousPrices(supabase);
-  console.log(`   ${Object.keys(previousPrices).length} precios del reporte anterior para comparar`);
+  // Datos del mes pasado: sirven para contrastar los precios nuevos y para
+  // arrastrar los de los activos que este mes no se consultan.
+  const previousAssets = await fetchPreviousAssets(supabase);
+  const previousPrices = pricesOf(previousAssets);
+
+  // Solo se busca el precio de un subconjunto: acciones/ETFs y las cripto de
+  // mayor peso. Buscarlos todos costaba ~$1 por corrida y empujaba al modelo a
+  // inventar los que no podia verificar.
+  const priceKeys = derivePriceKeys(positions, previousPrices);
+  const arrastrados = activeKeys.filter(k => !priceKeys.includes(k));
+  console.log(`   se consultan ${priceKeys.length}: ${priceKeys.join(', ').toUpperCase()}`);
+  if (arrastrados.length) {
+    console.log(`   conservan el precio anterior ${arrastrados.length}: ${arrastrados.join(', ').toUpperCase()}`);
+  }
 
   // 3. Llamar Anthropic API con web_search
   console.log('🌐 Consultando mercado en tiempo real...');
@@ -662,7 +720,7 @@ async function main() {
       format: { type: 'json_schema', schema: ANALYSIS_SCHEMA },
     },
     tools:    [{ type: 'web_search_20260209', name: 'web_search', max_uses: 7 }],
-    messages: [{ role: 'user', content: buildPrompt(positions, cash, activeKeys) }],
+    messages: [{ role: 'user', content: buildPrompt(positions, cash, priceKeys) }],
   });
 
   const u = response.usage;
@@ -676,11 +734,33 @@ async function main() {
 
   console.log('🧠 Procesando análisis...');
   const analysisData = JSON.parse(textBlock.text);
-  const assets       = assetsFromList(analysisData.assets);
-  validateAssets(assets, activeKeys);
+  const consultados  = assetsFromList(analysisData.assets);
+  validateAssets(consultados, priceKeys);
 
   // Descartar precios imposibles ANTES de calcular nada ni escribir en Supabase.
-  sanityCheckPrices(assets, previousPrices, positions);
+  sanityCheckPrices(consultados, previousPrices, positions);
+
+  // Fusion: se parte de lo del mes pasado y se pisa con lo consultado hoy, de
+  // modo que TODOS los activos tengan precio y el snapshot valore el
+  // portafolio completo, no solo el subconjunto consultado.
+  const assets = {};
+  for (const key of activeKeys) {
+    const nuevo  = consultados[key];
+    const previo = previousAssets[key];
+    const precio = toNumber(nuevo?.price);
+
+    if (precio !== null && precio > 0) {
+      assets[key] = { ...nuevo, price: precio, refreshed: true };
+    } else if (previo) {
+      assets[key] = {
+        price: previo.price, change7d: previo.change_7d,
+        signal: previo.signal, context: previo.context, refreshed: false,
+      };
+    }
+  }
+
+  const frescos = Object.values(assets).filter(a => a.refreshed).length;
+  console.log(`   ${frescos} precios frescos, ${Object.keys(assets).length - frescos} arrastrados`);
 
   // El resto del script (y el snapshot que se guarda) trabaja con el mapa.
   analysisData.assets = assets;
