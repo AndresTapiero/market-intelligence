@@ -58,16 +58,22 @@ function deriveKeys(positions) {
 /**
  * JSON Schema del análisis.
  *
- * Los activos se describen con UN sub-schema compartido vía additionalProperties,
- * no enumerando ticker por ticker. Enumerarlos parecía mejor —garantizaba que el
- * modelo devolviera exactamente los activos pedidos— pero replica el mismo objeto
- * una vez por ticker y la API rechaza la petición:
+ * Los activos van como LISTA con el ticker dentro de cada elemento, no como un
+ * objeto indexado por ticker. Es la única forma que satisface las dos
+ * restricciones de la API, que se descubrieron una tras otra:
  *
- *   400 The compiled grammar is too large [...] Simplify your tool schemas
+ *   1. Enumerar un sub-schema por ticker →
+ *        400 The compiled grammar is too large [...] Simplify your tool schemas
+ *      Con 16 activos son 16 copias del mismo objeto.
  *
- * Con 18 activos era inviable. La garantía que se pierde se recupera validando
- * en código tras el parseo (ver validateAssets), que además da un mensaje mucho
- * más claro que un fallo de schema.
+ *   2. Un mapa dinámico con additionalProperties: <sub-schema> →
+ *        400 For 'object' type, 'additionalProperties: object' is not supported.
+ *            Please set 'additionalProperties' to false
+ *      Structured outputs exige objetos cerrados.
+ *
+ * Una lista resuelve ambas: un solo `items` (gramática pequeña, y que no crece
+ * al comprar activos nuevos) y todos los objetos cerrados. Se convierte a mapa
+ * en código con assetsFromList().
  *
  * `price` sigue siendo number, que es lo que impedía que los precios llegaran al
  * dashboard (ver toNumber y la fase 1).
@@ -79,36 +85,41 @@ const ANALYSIS_SCHEMA = (() => {
   const assetSchema = {
     type: 'object', additionalProperties: false,
     properties: {
+      ticker:   { type: 'string', description: 'Ticker en minusculas, tal como se pidio.' },
       price:    { type: 'number', description: 'Precio actual en USD. Solo el numero, sin simbolo de moneda ni separadores de miles.' },
       change7d: { type: 'string', description: 'Variacion a 7 dias, por ejemplo "+1.4%" o "-3.2%".' },
       signal:   { type: 'string', enum: ['BUY', 'HOLD', 'WAIT'] },
-      context:  { type: 'string', description: 'Solo para los activos accionables: 2 oraciones de analisis en ASCII.' },
+      context:  { type: 'string', description: 'Solo para los activos accionables: 2 oraciones de analisis en ASCII. En el resto, cadena vacia.' },
     },
-    required: ['price', 'change7d', 'signal'],
+    required: ['ticker', 'price', 'change7d', 'signal', 'context'],
   };
 
   const watchSchema = {
     type: 'object', additionalProperties: false,
     properties: {
+      ticker:   { type: 'string', description: 'Ticker en minusculas.' },
       price:    { type: 'number' },
       change7d: { type: 'string' },
       signal:   { type: 'string', enum: ['BUY', 'WAIT'] },
       note:     { type: 'string', description: '1 oracion evaluando la entrada, en ASCII.' },
     },
-    required: ['price', 'change7d', 'signal', 'note'],
+    required: ['ticker', 'price', 'change7d', 'signal', 'note'],
   };
 
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['analystOpinion', 'riskProfile', 'assets', 'macro', 'actions'],
+    // Structured outputs exige que `required` cubra TODAS las properties
+    // declaradas. newOpportunities y watchlist pueden venir como lista vacía,
+    // pero tienen que venir.
+    required: ['analystOpinion', 'riskProfile', 'assets', 'macro', 'newOpportunities', 'watchlist', 'actions'],
     properties: {
       analystOpinion: { type: 'string', description: '3-4 oraciones ASCII: que funciona, que arrastra, recomendacion del mes.' },
       riskProfile:    { type: 'string' },
       assets: {
-        type: 'object',
-        description: 'Un campo por ticker, en minusculas, con el ticker como clave.',
-        additionalProperties: assetSchema,
+        type: 'array',
+        description: 'Un elemento por cada ticker solicitado.',
+        items: assetSchema,
       },
       macro: {
         type: 'object', additionalProperties: false,
@@ -135,9 +146,9 @@ const ANALYSIS_SCHEMA = (() => {
         },
       },
       watchlist: {
-        type: 'object',
-        description: 'Un campo por ticker de la watchlist, en minusculas.',
-        additionalProperties: watchSchema,
+        type: 'array',
+        description: 'Un elemento por cada ticker de la watchlist.',
+        items: watchSchema,
       },
       actions: {
         type: 'array',
@@ -153,6 +164,28 @@ const ANALYSIS_SCHEMA = (() => {
     },
   };
 })();
+
+/**
+ * Convierte la lista de activos del modelo en el mapa {ticker: datos} que
+ * consume el resto del script. El schema obliga a lista (ver ANALYSIS_SCHEMA);
+ * el mapa es más cómodo para cruzar contra las posiciones.
+ *
+ * Normaliza el ticker a minúsculas y descarta duplicados quedándose con el
+ * primero, para que un modelo que repita una entrada no pise datos buenos.
+ */
+function assetsFromList(list) {
+  const out = {};
+  for (const item of Array.isArray(list) ? list : []) {
+    const key = String(item?.ticker ?? '').trim().toLowerCase();
+    if (!key) continue;
+    if (out[key]) {
+      console.warn(`⚠️ ${key.toUpperCase()} repetido en la respuesta — se ignora la copia`);
+      continue;
+    }
+    out[key] = item;
+  }
+  return out;
+}
 
 /**
  * Comprueba que el modelo devolvió los activos pedidos.
@@ -332,11 +365,11 @@ REGLAS DEL INVERSIONISTA:
 - Analisis narrativo SOLO para los activos accionables: ${accionablesActivos}
 - Perfil: moderado-agresivo (volatilidad crypto aceptada, disciplina DCA)
 
-En "assets" incluye EXACTAMENTE estos ${keys.length} tickers como claves en minusculas,
-uno por cada uno, sin anadir ni omitir ninguno:
+"assets" es una lista con EXACTAMENTE ${keys.length} elementos, uno por cada uno de estos
+tickers, sin anadir ni omitir ninguno. Pon el ticker en minusculas en el campo "ticker":
 ${keys.join(', ')}
 
-El campo "context" solo para los accionables (${accionablesActivos.toLowerCase() || 'ninguno'}); en el resto omitelo.
+El campo "context" llevalo solo en los accionables (${accionablesActivos.toLowerCase() || 'ninguno'}); en el resto dejalo como cadena vacia.
 Los precios van como numero puro, sin simbolo de moneda ni separadores de miles.
 Usa solo ASCII en todos los textos.`;
 }
@@ -543,8 +576,11 @@ async function main() {
 
   console.log('🧠 Procesando análisis...');
   const analysisData = JSON.parse(textBlock.text);
-  const assets       = analysisData.assets ?? {};
+  const assets       = assetsFromList(analysisData.assets);
   validateAssets(assets, activeKeys);
+
+  // El resto del script (y el snapshot que se guarda) trabaja con el mapa.
+  analysisData.assets = assets;
 
   // 4. Calcular snapshot del portafolio con los precios frescos
   const snapshot = computeSnapshot(positions, analysisData, cash);
