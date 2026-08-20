@@ -11,5 +11,6 @@ export const SUPABASE_CONFIG = {
 export const TABLES = {
   JOURNAL: 'inv_journal',
   PORTFOLIO_HISTORY: 'portfolio_history',
-  PORTFOLIO_ASSETS: 'portfolio_assets'
+  PORTFOLIO_ASSETS: 'portfolio_assets',
+  CASH: 'portfolio_cash'
 };

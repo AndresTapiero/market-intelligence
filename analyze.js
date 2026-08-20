@@ -17,6 +17,7 @@
 
 import Anthropic            from '@anthropic-ai/sdk';
 import { createClient }     from '@supabase/supabase-js';
+import { buildHoldings }    from './js/baseline.js';
 import { writeFileSync }    from 'fs';
 import { exec as execCb }   from 'child_process';
 import { promisify }        from 'util';
@@ -28,33 +29,25 @@ const SUPABASE_URL        = 'https://mfixkkqtjyjcigeqhlvz.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const USER_ID             = process.env.PORTFOLIO_USER_ID;
 
-// Activos que reciben análisis narrativo completo (accionables)
-const ACCIONABLES  = ['btc', 'voo', 'qqq', 'nvda'];
-const CRYPTO_KEYS  = ['btc','eth','sol','tao','uni','bnb','sui','sei','ena','avax','giga','trump','spx6900'];
-const STOCK_KEYS   = ['voo','qqq','nvda'];
-const WATCHLIST    = ['schd','vti'];
-const ALL_KEYS     = [...CRYPTO_KEYS, ...STOCK_KEYS];
+// Activos que reciben análisis narrativo completo (accionables).
+// Esto sí es una decisión de estrategia, no un dato — se queda como constante.
+const ACCIONABLES = ['btc', 'voo', 'qqq', 'nvda'];
+const WATCHLIST   = ['schd', 'vti'];
 
-// Baseline de posiciones históricas (pre-app).
-// El sync aplica las transacciones de inv_journal encima.
-const BASELINE = {
-  btc:     { qty:0.016271, costAvg:76370.002869, type:'crypto', label:'Bitcoin'   },
-  eth:     { qty:0.1736,   costAvg:2532.66,      type:'crypto', label:'Ethereum'  },
-  sol:     { qty:4.179,    costAvg:173.74,        type:'crypto', label:'Solana'    },
-  tao:     { qty:0.7369,   costAvg:350.93,        type:'crypto', label:'Bittensor' },
-  uni:     { qty:30.68,    costAvg:9.191,         type:'crypto', label:'Uniswap'   },
-  bnb:     { qty:0.1075,   costAvg:673,           type:'crypto', label:'BNB'       },
-  sui:     { qty:60.86,    costAvg:3.688,         type:'crypto', label:'SUI'       },
-  sei:     { qty:466.62,   costAvg:0.2916,        type:'crypto', label:'SEI'       },
-  ena:     { qty:249.59,   costAvg:0.2802,        type:'crypto', label:'Ethena'    },
-  avax:    { qty:2.428,    costAvg:18.93,         type:'crypto', label:'Avalanche' },
-  giga:    { qty:873.2,    costAvg:0.06385,       type:'crypto', label:'GIGA'      },
-  trump:   { qty:1.151,    costAvg:36.07,         type:'crypto', label:'TRUMP'     },
-  spx6900: { qty:37.87,    costAvg:1.149,         type:'crypto', label:'SPX6900'   },
-  voo:     { qty:0.36947,  costAvg:508.99,        type:'stock',  label:'VOO'       },
-  qqq:     { qty:0.15618,  costAvg:533.7,         type:'stock',  label:'QQQ'       },
-  nvda:    { qty:1.10855,  costAvg:119.11,        type:'stock',  label:'NVIDIA'    },
-};
+// La lista de tickers a analizar YA NO es una constante: se deriva de las
+// posiciones reales en Supabase (ver deriveKeys). Antes era fija y por eso
+// cualquier activo comprado desde la app —META, IREN— nunca recibía precio
+// del análisis mensual y se quedaba congelado en su costAvg para siempre.
+//
+// El baseline de posiciones vive en js/baseline.js, compartido con la app.
+
+/** Tickers con posición abierta, en orden estable (prompt cacheable). */
+function deriveKeys(positions) {
+  return Object.entries(positions)
+    .filter(([, a]) => a.qty > 0)
+    .map(([k]) => k)
+    .sort();
+}
 
 // ─── PARSEO DE PRECIOS ────────────────────────────────────────────────────────
 /**
@@ -81,13 +74,13 @@ function toNumber(v) {
 async function getPositions(supabase) {
   const { data, error } = await supabase
     .from('inv_journal')
-    .select('ticker, numero_acciones, precio_entrada, fecha_venta, fecha')
+    .select('ticker, tipo, numero_acciones, precio_entrada, fecha_venta, fecha')
     .eq('user_id', USER_ID)
     .order('fecha', { ascending: true });
 
   if (error) throw new Error(`Error leyendo inv_journal: ${error.message}`);
 
-  const computed = JSON.parse(JSON.stringify(BASELINE));
+  const computed = buildHoldings();   // baseline compartido con la app
 
   (data || []).forEach(row => {
     const ticker = row.ticker.toLowerCase();
@@ -105,7 +98,13 @@ async function getPositions(supabase) {
           : price;
         computed[ticker].qty = nq;
       } else {
-        computed[ticker] = { qty, costAvg: price, type: 'crypto', label: ticker.toUpperCase() };
+        // Ticker fuera del baseline: el tipo sale de la columna `tipo`
+        // (fase 0), no de un fallback a 'crypto' que clasificaba mal.
+        computed[ticker] = {
+          qty, costAvg: price,
+          type:  row.tipo || 'crypto',
+          label: ticker.toUpperCase(),
+        };
       }
     }
   });
@@ -114,19 +113,18 @@ async function getPositions(supabase) {
 }
 
 // ─── PROMPT PARA ANTHROPIC ───────────────────────────────────────────────────
-function buildPrompt(positions, cash) {
+function buildPrompt(positions, cash, keys) {
   const today = new Date().toLocaleDateString('es-CO', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
-  const tickersList = [...ALL_KEYS, ...WATCHLIST].join(', ').toUpperCase();
+  const tickersList = [...keys, ...WATCHLIST].join(', ').toUpperCase();
 
-  const activeAssets = Object.entries(positions)
-    .filter(([, a]) => a.qty > 0)
-    .map(([k, a]) => `${k.toUpperCase()} (qty: ${a.qty.toFixed(6)}, costAvg: $${a.costAvg.toFixed(4)})`)
+  const activeAssets = keys
+    .map(k => `${k.toUpperCase()} (qty: ${positions[k].qty.toFixed(6)}, costAvg: $${positions[k].costAvg.toFixed(4)})`)
     .join(', ');
 
-  const assetsTemplate = ALL_KEYS.map(key => {
+  const assetsTemplate = keys.map(key => {
     if (ACCIONABLES.includes(key)) {
       return `"${key}":{"price":"$X","change7d":"+X.X%","signal":"BUY","context":"2 oraciones de analisis ASCII"}`;
     }
@@ -340,21 +338,39 @@ async function main() {
   });
   const anthropic = new Anthropic();
 
-  // 1. Cash del último reporte (fuente: portfolio_history.portfolio_snapshot.cash)
-  const { data: lastReport } = await supabase
-    .from('portfolio_history')
-    .select('portfolio_snapshot')
+  // 1. Cash actual desde portfolio_cash — el único almacén.
+  // Antes se leía de portfolio_history.portfolio_snapshot.cash, que sólo
+  // escribe este mismo script: cada reporte arrastraba el cash del anterior
+  // y nunca reflejaba los ajustes hechos desde la app.
+  const { data: cashRow, error: cashErr } = await supabase
+    .from('portfolio_cash')
+    .select('amount')
     .eq('user_id', USER_ID)
-    .order('report_date', { ascending: false })
-    .limit(1)
     .maybeSingle();
-  const cash = lastReport?.portfolio_snapshot?.cash ?? 200;
+
+  if (cashErr) {
+    throw new Error(
+      `No se pudo leer portfolio_cash: ${cashErr.message}. ` +
+      `¿Corriste scripts/migration-cash-table.sql?`
+    );
+  }
+  if (!cashRow) {
+    throw new Error(
+      'portfolio_cash no tiene fila para este usuario. ' +
+      'Siembra el cash real antes de correr el análisis (ver la migración).'
+    );
+  }
+
+  const cash = Number(cashRow.amount);
+  if (!Number.isFinite(cash)) throw new Error(`Cash inválido en portfolio_cash: ${cashRow.amount}`);
+  console.log(`💵 Cash disponible: $${cash}`);
 
   // 2. Posiciones actuales desde inv_journal
   console.log('📂 Leyendo posiciones desde Supabase...');
-  const positions       = await getPositions(supabase);
-  const activePositions = Object.entries(positions).filter(([, a]) => a.qty > 0);
-  console.log(`   ${activePositions.length} activos con posición abierta`);
+  const positions  = await getPositions(supabase);
+  const activeKeys = deriveKeys(positions);
+  if (!activeKeys.length) throw new Error('No hay posiciones abiertas que analizar');
+  console.log(`   ${activeKeys.length} activos con posición abierta: ${activeKeys.join(', ').toUpperCase()}`);
 
   // 3. Llamar Anthropic API con web_search
   console.log('🌐 Consultando mercado en tiempo real...');
@@ -362,7 +378,7 @@ async function main() {
     model:      'claude-opus-4-8',
     max_tokens: 6000,
     tools:      [{ type: 'web_search_20250305', name: 'web_search' }],
-    messages:   [{ role: 'user', content: buildPrompt(positions, cash) }],
+    messages:   [{ role: 'user', content: buildPrompt(positions, cash, activeKeys) }],
   });
 
   const rawText = response.content.filter(b => b.type === 'text').map(b => b.text).join('');
@@ -391,7 +407,7 @@ async function main() {
   // El precio se guarda como número en price_num — es lo que lee la app.
   // Un activo cuyo precio no sea parseable se DESCARTA: mejor quedarse sin
   // precio ese mes que escribir uno corrupto en la fuente de verdad.
-  const parsedAssets = ALL_KEYS
+  const parsedAssets = activeKeys
     .map(key => ({ key, priceNum: toNumber(analysisData[key]?.price) }))
     .filter(({ key, priceNum }) => {
       if (!analysisData[key]?.price) return false;
@@ -426,7 +442,7 @@ async function main() {
   console.log('  SEÑALES DEL MERCADO');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   const emoji = { BUY:'🟢', HOLD:'🟡', WAIT:'🔴' };
-  ALL_KEYS.forEach(key => {
+  activeKeys.forEach(key => {
     const d = analysisData[key];
     if (d) {
       const e = emoji[d.signal] || '⚪';

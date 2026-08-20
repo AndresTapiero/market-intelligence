@@ -5,11 +5,22 @@
  */
 
 import { SUPABASE_CONFIG } from './config.js';
+import { buildHoldings, buildAssetData, buildColors } from './baseline.js';
 import { AuthService } from './auth-service.js';
 import { PortfolioService } from './portfolio-service.js';
 import { PortfolioHistoryService } from './portfolio-history-service.js';
 import { TransactionService } from './transaction-service.js';
+import { CashService } from './cash-service.js';
 import { UIManager } from './ui-manager.js';
+
+// Poblar los globals desde el baseline único, en la evaluación del módulo.
+// Los módulos ES se ejecutan ANTES de DOMContentLoaded, así que esto ocurre
+// a tiempo para el primer render (tab-loader.js pinta el Resumen en ese
+// evento). Los scripts clásicos leen estos globals en tiempo de llamada,
+// nunca en tiempo de carga, así que no importa que se pueblen aquí.
+window.EXISTING_ASSETS = buildHoldings();
+window.ASSET_DATA      = buildAssetData();
+window.ASSET_COLORS    = buildColors();
 
 class InvestmentApp {
   constructor() {
@@ -18,6 +29,7 @@ class InvestmentApp {
     this.portfolioService = null;
     this.portfolioHistoryService = null;
     this.transactionService = null;
+    this.cashService = null;
     this.uiManager = null;
   }
 
@@ -35,6 +47,7 @@ class InvestmentApp {
       this.portfolioService = new PortfolioService(this.supabase, this.authService);
       this.portfolioHistoryService = new PortfolioHistoryService(this.supabase, this.authService);
       this.transactionService = new TransactionService(this.supabase, this.authService);
+      this.cashService = new CashService(this.supabase, this.authService);
       this.uiManager = new UIManager(this.authService);
 
       console.log('✅ Supabase inicializado');
@@ -57,7 +70,32 @@ class InvestmentApp {
     await this.portfolioService.loadTransactions();
     this._historicalReports = await this.portfolioHistoryService.loadHistoricalReports();
     this.uiManager.updateAuthStatus();
+
+    // El cash se carga ANTES del primer render: los totales lo incluyen.
+    await this._loadCash();
+
     await this._syncPortfolioFromSupabase();
+  }
+
+  /**
+   * Carga el cash desde portfolio_cash. Si la tabla aún no existe o no hay
+   * fila, cae al snapshot del último reporte para no arrancar en cero
+   * (compatibilidad mientras se corre la migración).
+   */
+  async _loadCash() {
+    const stored = await this.cashService.get();
+
+    if (stored !== null) {
+      window.CURRENT_CASH = stored;
+    } else {
+      const last = this._historicalReports?.[0]?.portfolio_snapshot?.cash;
+      if (typeof last === 'number') {
+        window.CURRENT_CASH = last;
+        console.warn(`⚠️ Sin fila en portfolio_cash — usando el cash del último reporte ($${last}). Corre scripts/migration-cash-table.sql y guarda el cash real desde la app.`);
+      }
+    }
+
+    if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
   }
 
   async _syncPortfolioFromSupabase() {
@@ -199,15 +237,8 @@ class InvestmentApp {
       if (!reports?.length) return;
       const report = reports[0];
 
-      // Cargar cash desde user_metadata (siempre actualizado, sincronizado entre dispositivos)
-      const { data: { user: authUser } } = await this.supabase.auth.getUser();
-      if (authUser?.user_metadata?.cash_amount !== undefined) {
-        window.CURRENT_CASH = authUser.user_metadata.cash_amount;
-      } else if (report.portfolio_snapshot?.cash !== undefined) {
-        // Fallback: snapshot del último reporte (migración desde esquema anterior)
-        window.CURRENT_CASH = report.portfolio_snapshot.cash;
-      }
-      if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
+      // El cash ya NO se lee aquí — lo carga afterLogin() desde portfolio_cash,
+      // antes del primer render. Esta función sólo trae datos de mercado.
 
       // Obtener activos del último reporte.
       // price_num sólo existe tras correr scripts/migration-price-numeric.sql.
@@ -787,20 +818,14 @@ class InvestmentApp {
     await this._syncPortfolioFromSupabase();
   }
 
+  /**
+   * Guarda el cash en portfolio_cash — el único almacén.
+   * Antes escribía en auth.user_metadata, que analyze.js nunca leía.
+   */
   async updateCash(newAmount) {
-    window.CURRENT_CASH = Math.max(0, newAmount);
-
-    try {
-      // Guardar en user_metadata de Supabase Auth
-      // No requiere tablas ni políticas extra — el usuario puede actualizar sus propios metadatos
-      const { error } = await this.supabase.auth.updateUser({
-        data: { cash_amount: window.CURRENT_CASH }
-      });
-      if (error) throw error;
-      console.log('✅ Cash guardado en user metadata:', window.CURRENT_CASH);
-    } catch (err) {
-      console.warn('⚠️ Error guardando cash:', err.message);
-    }
+    window.CURRENT_CASH = Math.max(0, Number(newAmount) || 0);
+    await this.cashService.set(window.CURRENT_CASH);
+    if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
   }
 
   async _loadSellHistoryFromSupabase() {
