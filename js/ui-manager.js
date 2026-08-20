@@ -9,8 +9,142 @@ export class UIManager {
     this.sellQuantityType = 'partial';
   }
 
+  /**
+   * Actualiza el estado de autenticación en la UI
+   */
+  updateAuthStatus() {
+    const statusEl = document.getElementById('authStatus');
+    if (!statusEl) return;
 
+    if (this.authService.isAuthenticated()) {
+      const user = this.authService.getCurrentUser();
+      statusEl.textContent = `👤 ${user.email}`;
+      statusEl.style.cursor = 'pointer';
+      statusEl.onclick = () => this.logout();
+    } else {
+      statusEl.textContent = '⚠️ No autenticado';
+    }
+  }
 
+  /**
+   * Logout desde UI
+   */
+  async logout() {
+    await this.authService.logout();
+    location.reload();
+  }
+
+  /**
+   * Abre modal de compra
+   */
+  openBuyModal() {
+    const modal = document.getElementById('buyModalOverlay');
+    if (!modal) return;
+
+    document.getElementById('buyAssetSelect').value = '';
+    document.getElementById('buyQty').value = '';
+    document.getElementById('buyPrice').value = '';
+    document.getElementById('buyCommission').value = '';
+    document.getElementById('buyFundamento').value = '';
+    document.getElementById('buyTargetPrice').value = '';
+    document.getElementById('buyPreview').style.display = 'none';
+    // Reset type selector
+    const typeSelect = document.getElementById('buyNewType');
+    if (typeSelect) { typeSelect.value = 'crypto'; typeSelect.disabled = true; typeSelect.style.opacity = '.7'; }
+    const newTickerField = document.getElementById('newTickerField');
+    if (newTickerField) newTickerField.style.display = 'none';
+    const newTicker = document.getElementById('buyNewTicker');
+    if (newTicker) newTicker.value = '';
+    const today = new Date().toISOString().split('T')[0];
+    const buyDateEl = document.getElementById('buyDate');
+    if (buyDateEl && !buyDateEl.value) buyDateEl.value = today;
+    modal.classList.add('show');
+  }
+
+  /**
+   * Cierra modal de compra
+   */
+  closeBuyModal() {
+    const modal = document.getElementById('buyModalOverlay');
+    if (modal) modal.classList.remove('show');
+  }
+
+  /**
+   * Abre modal de venta
+   */
+  openSellModal() {
+    const modal = document.getElementById('sellModalOverlay');
+    if (!modal) return;
+
+    document.getElementById('sellAssetSelect').value = '';
+    document.getElementById('sellQty').value = '';
+    document.getElementById('sellPrice').value = '';
+    document.getElementById('sellCostAvg').value = '';
+    document.getElementById('sellCommission').value = '';
+    document.getElementById('sellReason').value = 'Toma de ganancias';
+    document.getElementById('sellObservations').value = '';
+    document.getElementById('sellPreview').style.display = 'none';
+    document.getElementById('sellQtyHint').textContent = '';
+    const today = new Date().toISOString().split('T')[0];
+    const sellDateEl = document.getElementById('sellDate');
+    if (sellDateEl) sellDateEl.value = today;
+    modal.classList.add('show');
+  }
+
+  /**
+   * Cierra modal de venta
+   */
+  closeSellModal() {
+    const modal = document.getElementById('sellModalOverlay');
+    if (modal) modal.classList.remove('show');
+  }
+
+  /**
+   * Actualiza preview de compra
+   */
+  updateBuyPreview() {
+    const qty = parseFloat(document.getElementById('buyQty')?.value) || 0;
+    const price = parseFloat(document.getElementById('buyPrice')?.value) || 0;
+    const fee = parseFloat(document.getElementById('buyCommission')?.value) || 0;
+    const previewEl = document.getElementById('buyPreview');
+
+    if (qty > 0 && price > 0) {
+      const subtotal = qty * price;
+      const totalWithFee = subtotal + fee;
+      const assetKey = window.getSelectedAssetKey?.();
+      const existing = window.EXISTING_ASSETS?.[assetKey];
+
+      const fmt = v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fmtP = v => v >= 1000
+        ? '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : '$' + v.toFixed(v >= 1 ? 2 : v >= 0.01 ? 4 : 6);
+
+      document.getElementById('previewTotal').textContent = fmt(subtotal);
+
+      const feeRow = document.getElementById('previewFeeRow');
+      if (fee > 0) {
+        document.getElementById('previewFee').textContent = '+' + fmt(fee);
+        if (feeRow) feeRow.style.display = 'flex';
+      } else {
+        if (feeRow) feeRow.style.display = 'none';
+      }
+
+      document.getElementById('previewTotalWithFee').textContent = fmt(totalWithFee);
+
+      const newQty = existing ? existing.qty + qty : qty;
+      const newCostAvg = existing
+        ? (existing.qty * existing.costAvg + totalWithFee) / newQty
+        : totalWithFee / qty;
+
+      document.getElementById('previewNewQty').textContent =
+        newQty.toLocaleString('en-US', { maximumFractionDigits: 8 });
+      document.getElementById('previewNewCostAvg').textContent = fmtP(newCostAvg);
+
+      if (previewEl) previewEl.style.display = 'flex';
+    } else if (previewEl) {
+      previewEl.style.display = 'none';
+    }
+  }
 
   /**
    * Muestra indicador de carga en botón

@@ -637,15 +637,17 @@ class InvestmentApp {
         `<div class="score-item ${cls(stocksPnlPct)}">📈 Acciones P&L ${fmtPct(stocksPnlPct)}</div>` +
         `<div class="score-item pos">✓ DCA activo</div>`;
 
-      // BTC break-even
-      const btcA = assetData.find(a => a.ticker === 'BTC');
-      const btcH = assets['btc'];
-      if (btcA && btcH && btcH.qty > 0) {
-        const bePct  = ((btcH.costAvg - btcA.price) / btcA.price * 100);
-        const beEl   = document.getElementById('btcBreakevenPct');
-        if (beEl) { beEl.textContent = (bePct > 0 ? '+' : '') + bePct.toFixed(1) + '%'; beEl.style.color = bePct > 0 ? 'var(--orange)' : 'var(--green)'; }
-        set('btcBreakevenCost',  '$' + btcH.costAvg.toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 }));
-        set('btcBreakevenPrice', '$' + btcA.price.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }));
+      // BTC break-even: cuánto le falta al precio para alcanzar el costo medio.
+      const btc = byAsset.find(a => a.key === 'btc');
+      if (btc && btc.price > 0) {
+        const bePct = ((btc.costAvg - btc.price) / btc.price) * 100;
+        const beEl  = document.getElementById('btcBreakevenPct');
+        if (beEl) {
+          beEl.textContent = (bePct > 0 ? '+' : '') + bePct.toFixed(1) + '%';
+          beEl.style.color = bePct > 0 ? 'var(--orange)' : 'var(--green)';
+        }
+        set('btcBreakevenCost',  fmtUSD(btc.costAvg));
+        set('btcBreakevenPrice', fmtPrice(btc.price));
         set('btcBreakevenSub',   (bePct > 0 ? 'Falta ' : 'Superado por ') + Math.abs(bePct).toFixed(1) + '% para break-even');
       }
 
