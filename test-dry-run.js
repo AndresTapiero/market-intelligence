@@ -17,6 +17,24 @@ if (missing.length) {
 
 console.log('✓ Variables de entorno presentes');
 
+// El analizador corre sin sesión de usuario, así que necesita una clave que
+// pase por encima de RLS. Con una clave publicable el rol es `anon`, que no
+// tiene GRANT sobre las tablas del portafolio, y Postgres responde
+// "permission denied for table" — un error confuso si no se sabe de dónde sale.
+const serviceKey = process.env.SUPABASE_SERVICE_KEY;
+if (serviceKey.startsWith('sb_publishable_') || serviceKey.startsWith('eyJ')) {
+  const tipo = serviceKey.startsWith('sb_publishable_')
+    ? 'una clave publicable (sb_publishable_…)'
+    : 'un JWT anon';
+  console.error(
+    `❌ SUPABASE_SERVICE_KEY contiene ${tipo}, no una clave secreta.\n` +
+    '   El análisis corre sin sesión y necesita saltarse RLS.\n' +
+    '   Supabase → Settings → API Keys → Secret keys, y usa la que empieza por sb_secret_'
+  );
+  process.exit(1);
+}
+console.log('✓ SUPABASE_SERVICE_KEY tiene formato de clave secreta');
+
 // Validar la key de verdad. `new Anthropic()` sólo construye un objeto en
 // memoria: no toca la red, así que una key caducada pasaba el dry-run y
 // reventaba un minuto después con el análisis ya arrancado.
@@ -44,6 +62,13 @@ const { error } = await supabase
 
 if (error) {
   console.error('❌ Conexión a Supabase falló:', error.message);
+  if (/permission denied/i.test(error.message)) {
+    console.error(
+      '   Eso es un error de GRANT, no de RLS: la clave se está resolviendo\n' +
+      '   como rol `anon`. Verifica que SUPABASE_SERVICE_KEY sea la clave\n' +
+      '   secreta (sb_secret_…), no la publicable.'
+    );
+  }
   process.exit(1);
 }
 
