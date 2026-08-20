@@ -209,11 +209,29 @@ class InvestmentApp {
       }
       if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
 
-      // Obtener activos del último reporte
-      const { data: assets } = await this.supabase
-        .from('portfolio_assets')
-        .select('asset_key, price, price_num, change_7d, signal, context')
-        .eq('report_id', report.id);
+      // Obtener activos del último reporte.
+      // price_num sólo existe tras correr scripts/migration-price-numeric.sql.
+      // Si aún no está, Supabase rechaza la consulta entera — así que se
+      // reintenta sin esa columna para no perder también señales y contexto.
+      let assets = null;
+      {
+        const full = await this.supabase
+          .from('portfolio_assets')
+          .select('asset_key, price, price_num, change_7d, signal, context')
+          .eq('report_id', report.id);
+
+        if (full.error) {
+          console.warn('⚠️ Falta la columna price_num — corre scripts/migration-price-numeric.sql. Los precios seguirán saliendo de data.js.');
+          const legacy = await this.supabase
+            .from('portfolio_assets')
+            .select('asset_key, price, change_7d, signal, context')
+            .eq('report_id', report.id);
+          if (legacy.error) throw legacy.error;
+          assets = legacy.data;
+        } else {
+          assets = full.data;
+        }
+      }
 
       if (!assets?.length) return;
 
