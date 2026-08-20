@@ -212,7 +212,7 @@ class InvestmentApp {
       // Obtener activos del último reporte
       const { data: assets } = await this.supabase
         .from('portfolio_assets')
-        .select('asset_key, price, change_7d, signal, context')
+        .select('asset_key, price, price_num, change_7d, signal, context')
         .eq('report_id', report.id);
 
       if (!assets?.length) return;
@@ -221,18 +221,33 @@ class InvestmentApp {
       const metaMap = {};
       (window.ASSET_DATA || []).forEach(a => { metaMap[a.ticker.toLowerCase()] = a; });
 
+      // El precio viene de price_num (numérico). NO usar parseFloat sobre la
+      // columna `price`: es texto tipo "$63,736.05" y parseFloat devuelve NaN
+      // (o peor, 63 si falta el $), lo que hacía que se descartara el precio
+      // del reporte en silencio y se mostrara el hardcodeado de data.js.
+      let applied = 0;
       assets.forEach(row => {
         const key  = row.asset_key.toLowerCase();
         const meta = metaMap[key];
         if (!meta) return;
-        // Actualizar precio y señal desde Supabase (fuente de verdad del reporte)
-        if (row.price)     meta.price   = parseFloat(row.price)   || meta.price;
+
+        const price = row.price_num === null || row.price_num === undefined
+          ? null
+          : Number(row.price_num);
+
+        if (price !== null && Number.isFinite(price) && price > 0) {
+          meta.price = price;
+          applied++;
+        } else if (row.price) {
+          console.warn(`⚠️ ${key.toUpperCase()}: precio no numérico en Supabase (${JSON.stringify(row.price)}) — se mantiene el de data.js. Corre scripts/migration-price-numeric.sql.`);
+        }
+
         if (row.change_7d) meta.change  = row.change_7d;
         if (row.signal)    meta.signal  = row.signal;
         if (row.context)   meta.context = row.context;
       });
 
-      console.log(`✅ Precios y señales actualizados desde reporte ${report.report_date}`);
+      console.log(`✅ Reporte ${report.report_date}: ${applied}/${assets.length} precios aplicados`);
 
       // Update report date line in resumen tab
       const el = document.getElementById('reportDateLine');

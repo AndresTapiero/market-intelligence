@@ -56,6 +56,27 @@ const BASELINE = {
   nvda:    { qty:1.10855,  costAvg:119.11,        type:'stock',  label:'NVIDIA'    },
 };
 
+// ─── PARSEO DE PRECIOS ────────────────────────────────────────────────────────
+/**
+ * Convierte a número lo que devuelva el modelo para un precio.
+ *   "$63,736.05" → 63736.05    "63,736.05" → 63736.05
+ *   206.83       → 206.83      "N/A" | "" | null → null
+ *
+ * Existe porque `parseFloat` es una trampa aquí: sobre "$63,736.05" da NaN,
+ * y sobre "63,736.05" da 63 — se detiene en la coma. Guardar ese 63 como
+ * precio de BTC arrasaría la valoración del portafolio sin lanzar un error.
+ * Por eso se limpian los separadores ANTES de parsear, y se devuelve null
+ * en vez de un número dudoso.
+ */
+function toNumber(v) {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (typeof v !== 'string')  return null;
+  const cleaned = v.replace(/[^0-9.\-]/g, '');
+  if (cleaned === '' || cleaned === '-' || cleaned === '.') return null;
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
 // ─── POSICIONES DESDE SUPABASE ────────────────────────────────────────────────
 async function getPositions(supabase) {
   const { data, error } = await supabase
@@ -183,9 +204,8 @@ function computeSnapshot(positions, analysisData, cash) {
 
   Object.entries(positions).forEach(([key, pos]) => {
     if (pos.qty <= 0) return;
-    const priceStr = analysisData[key]?.price || '0';
-    const price    = parseFloat(priceStr.replace(/[$,]/g, '')) || 0;
-    const val      = pos.qty * price;
+    const price = toNumber(analysisData[key]?.price) ?? 0;
+    const val   = pos.qty * price;
     const cost     = pos.qty * pos.costAvg;
     if (pos.type === 'crypto') totalCrypto += val;
     else                       totalStocks += val;
@@ -368,16 +388,29 @@ async function main() {
   console.log(`✅ portfolio_history guardado (id: ${histRow.id})`);
 
   // 5b. portfolio_assets (precio, señal, contexto por activo)
-  const assetRows = ALL_KEYS
-    .filter(key => analysisData[key]?.price)
-    .map(key => ({
-      report_id: histRow.id,
-      asset_key: key,
-      price:     analysisData[key].price,
-      change_7d: analysisData[key].change7d || null,
-      signal:    analysisData[key].signal   || 'HOLD',
-      context:   analysisData[key].context  || null,
-    }));
+  // El precio se guarda como número en price_num — es lo que lee la app.
+  // Un activo cuyo precio no sea parseable se DESCARTA: mejor quedarse sin
+  // precio ese mes que escribir uno corrupto en la fuente de verdad.
+  const parsedAssets = ALL_KEYS
+    .map(key => ({ key, priceNum: toNumber(analysisData[key]?.price) }))
+    .filter(({ key, priceNum }) => {
+      if (!analysisData[key]?.price) return false;
+      if (priceNum === null || priceNum <= 0) {
+        console.warn(`⚠️ Precio no parseable para ${key.toUpperCase()}: ${JSON.stringify(analysisData[key].price)} — se omite`);
+        return false;
+      }
+      return true;
+    });
+
+  const assetRows = parsedAssets.map(({ key, priceNum }) => ({
+    report_id: histRow.id,
+    asset_key: key,
+    price:     analysisData[key].price,   // original, para auditoría
+    price_num: priceNum,                  // el que consume la app
+    change_7d: analysisData[key].change7d || null,
+    signal:    analysisData[key].signal   || 'HOLD',
+    context:   analysisData[key].context  || null,
+  }));
 
   const { error: assetsErr } = await supabase.from('portfolio_assets').insert(assetRows);
   if (assetsErr) console.warn('⚠️ portfolio_assets:', assetsErr.message);
