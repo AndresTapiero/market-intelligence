@@ -8,6 +8,9 @@ run-weekly.sh
 # Archivos del sistema
 .DS_Store
 
+# Worktrees y estado local de agentes
+.claude/
+
 # Logs
 logs/
 .raw-response-cache.json

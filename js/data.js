@@ -18,7 +18,8 @@ window.ASSET_DATA = [
   { ticker: 'GIGA', label: 'GIGA', icon: 'G', type: 'crypto', signal: 'hold', price: 0.0023, change: '-10.0%', costAvg: 0.0639, current: 0.0023, invested: 55, actual: 2, delta: '+0.24', context: '—', class: 'asset-giga' },
   { ticker: 'TRUMP', label: 'TRUMP', icon: 'T', type: 'crypto', signal: 'hold', price: 1.48, change: '-15.0%', costAvg: 36.07, current: 1.48, invested: 41, actual: 1, delta: '-0.10', context: '—', class: 'asset-trump' },
   { ticker: 'SPX6900', label: 'SPX6900', icon: 'S', type: 'crypto', signal: 'hold', price: 0.35, change: '-6.0%', costAvg: 1.15, current: 0.3500, invested: 43, actual: 13, delta: '+0.37', context: '—', class: 'asset-spx6900' },
-  { ticker: 'META', label: 'META', icon: 'M', type: 'stock', signal: 'hold', price: 586.21, change: '0%', costAvg: 586.21, current: 586, invested: 120, actual: 120, delta: '0', context: '—', class: 'asset-meta' }
+  { ticker: 'META', label: 'META', icon: 'M', type: 'stock', signal: 'hold', price: 586.21, change: '0%', costAvg: 586.21, current: 586, invested: 120, actual: 120, delta: '0', context: '—', class: 'asset-meta' },
+  { ticker: 'IREN', label: 'IREN', icon: 'I', type: 'stock', signal: 'hold', price: 42.04, change: '0%', costAvg: 42.5, current: 42.04, invested: 50.15, actual: 49.61, delta: '0', context: '—', class: 'asset-iren' }
 ];
 
 window.EXISTING_ASSETS = {
@@ -52,6 +53,6 @@ window.VALUATIONS = VALUATIONS;
 const ASSET_COLORS = {
   btc:'#f7931a',eth:'#627eea',sol:'#9945ff',tao:'#38bdf8',uni:'#ff007a',bnb:'#f3ba2f',
   sui:'#6fbcf0',sei:'#e84142',ena:'#00d4ff',avax:'#e84142',giga:'#00d4ff',trump:'#8250ff',
-  spx6900:'#00d4a0',voo:'#00d4a0',qqq:'#4d8fff',nvda:'#76b900',meta:'#0081fb'
+  spx6900:'#00d4a0',voo:'#00d4a0',qqq:'#4d8fff',nvda:'#76b900',meta:'#0081fb',iren:'#ff6b35'
 };
 window.ASSET_COLORS = ASSET_COLORS;

@@ -22,6 +22,7 @@ export class TransactionService {
     if (!user) throw new Error('No autenticado');
 
     const categoria = safeCategoria(assetType === 'stock' || assetType === 'etf' ? 'core' : 'satelite');
+    const tipo = ['stock', 'etf', 'crypto'].includes(assetType) ? assetType : 'crypto';
     const totalCost = quantity * price + commission;
     const effectivePrice = totalCost / quantity;
 
@@ -30,6 +31,7 @@ export class TransactionService {
       fecha: date || new Date().toISOString().split('T')[0],
       ticker: ticker.toUpperCase(),
       categoria,
+      tipo,
       inversion_monto: totalCost,
       numero_acciones: quantity,
       precio_entrada: effectivePrice,

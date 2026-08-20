@@ -75,7 +75,7 @@ class InvestmentApp {
       // 2. Cargar todas las transacciones en orden cronológico
       const { data, error } = await this.supabase
         .from('inv_journal')
-        .select('ticker, numero_acciones, precio_entrada, precio_salida, inversion_monto, comision, monto_neto, ganancia_perdida_pct, fecha_venta, razon_venta, tesis_inversion, fecha')
+        .select('ticker, tipo, numero_acciones, precio_entrada, precio_salida, inversion_monto, comision, monto_neto, ganancia_perdida_pct, fecha_venta, razon_venta, tesis_inversion, fecha')
         .eq('user_id', user.id)
         .order('fecha', { ascending: true });
 
@@ -108,7 +108,7 @@ class InvestmentApp {
             const assetMeta = window.ASSET_DATA?.find(a => a.ticker === row.ticker);
             computed[ticker] = {
               qty, costAvg: price,
-              type:  assetMeta?.type  || 'crypto',
+              type:  row.tipo || assetMeta?.type || 'crypto',
               label: assetMeta?.label || row.ticker,
               fundamento: ''
             };
@@ -119,6 +119,26 @@ class InvestmentApp {
       // REEMPLAZAR (no mutar) — garantiza que cualquier lectura de window.EXISTING_ASSETS
       // obtenga el objeto actualizado incluso si hay referencias estales
       window.EXISTING_ASSETS = computed;
+
+      // Auto-registrar en ASSET_DATA cualquier ticker que exista en Supabase pero no
+      // en el arreglo estático de data.js — así un activo nuevo se renderiza en
+      // Activos/Composición sin necesidad de editar código a mano.
+      Object.entries(computed).forEach(([key, holding]) => {
+        if (holding.qty <= 0) return;
+        const tickerUp = key.toUpperCase();
+        let meta = window.ASSET_DATA?.find(a => a.ticker === tickerUp);
+        if (!meta) {
+          meta = {
+            ticker: tickerUp, label: holding.label || tickerUp, icon: (holding.label || tickerUp)[0].toUpperCase(),
+            type: holding.type, signal: 'hold', price: holding.costAvg, change: '0%',
+            costAvg: holding.costAvg, current: holding.costAvg, invested: 0, actual: 0, delta: '0',
+            context: '—', class: 'asset-' + key
+          };
+          window.ASSET_DATA?.push(meta);
+        } else {
+          meta.type = holding.type;
+        }
+      });
 
       console.log('✅ Portafolio sincronizado desde Supabase');
       window.populateAssetSelects?.();
@@ -905,7 +925,6 @@ class InvestmentApp {
       const date = document.getElementById('buyDate')?.value || new Date().toISOString().split('T')[0];
       const fundamento = document.getElementById('buyFundamento')?.value.trim() || null;
       const targetPrice = parseFloat(document.getElementById('buyTargetPrice')?.value) || null;
-      const isNew = document.getElementById('buyAssetSelect')?.value === '__new__';
       const newType = document.getElementById('buyNewType')?.value || 'crypto';
 
       if (!key || qty <= 0 || price <= 0) {
@@ -921,7 +940,7 @@ class InvestmentApp {
         this.uiManager.setButtonSuccess('#buyModalOverlay .modal-submit');
         setTimeout(() => {
           this.closeBuyModal();
-          this._refreshBalanceAfterBuy(key, qty, price, isNew, newType, commission);
+          this._refreshBalanceAfterBuy(qty, price, commission);
         }, 1000);
       } else {
         this.uiManager.showError(result.error);
@@ -967,10 +986,9 @@ class InvestmentApp {
 
       if (result.success) {
         this.uiManager.setButtonSuccess('#sellModalOverlay .modal-submit');
-        this._addToSellHistory({ key, qty, price, commission, costAvg: costAvgAtSale, pnl, pnlPct });
         setTimeout(() => {
           this.closeSellModal();
-          this._refreshBalanceAfterSell(key, qty, net);  // venta suma net al cash
+          this._refreshBalanceAfterSell(net);  // venta suma net al cash
         }, 1000);
       } else {
         this.uiManager.showError(result.error);
@@ -982,71 +1000,27 @@ class InvestmentApp {
     }
   }
 
-  _refreshBalanceAfterBuy(key, qty, price, isNew = false, rawType = 'crypto', commission = 0) {
+  /**
+   * Tras una compra confirmada en Supabase: persiste el cash y recarga TODO
+   * el portafolio desde Supabase (fuente de verdad), en vez de parchear el
+   * estado local — así el tipo de activo, la cantidad acumulada y el costAvg
+   * ponderado quedan siempre consistentes con lo guardado, sin importar si
+   * el activo ya existía o es nuevo.
+   */
+  async _refreshBalanceAfterBuy(qty, price, commission = 0) {
     const totalCost = qty * price + commission;
-    window.updateCashAfterTrade?.(-totalCost);  // compra resta cash incluyendo fee
-    const assets = window.EXISTING_ASSETS;
-    const type = rawType === 'etf' ? 'stock' : rawType;
-    const effectiveAvgPrice = totalCost / qty;
-
-    if (assets?.[key]) {
-      const prev = assets[key];
-      const newQty = prev.qty + qty;
-      assets[key].costAvg = (prev.qty * prev.costAvg + totalCost) / newQty;
-      assets[key].qty = newQty;
-    } else {
-      // Activo nuevo: agregar a EXISTING_ASSETS
-      const label = key.toUpperCase();
-      assets[key] = { qty, costAvg: effectiveAvgPrice, type, label };
-
-      // Agregar a ASSET_DATA para que aparezca en PnL y Composición
-      window.ASSET_DATA?.push({
-        ticker: label,
-        label,
-        icon: label[0],
-        type,
-        signal: 'hold',
-        price,
-        change: '0%',
-        costAvg: effectiveAvgPrice,
-        current: price,
-        invested: totalCost,
-        actual: qty * price,
-        delta: '0',
-        context: '',
-        class: 'asset-' + key
-      });
-    }
-    this._rerenderPortfolio();
+    await this.updateCash(window.CURRENT_CASH - totalCost);
+    await this._syncPortfolioFromSupabase();
   }
 
-  _addToSellHistory({ key, qty, price, commission, costAvg, pnl, pnlPct }) {
-    if (!window.SELL_HISTORY) window.SELL_HISTORY = [];
-    const gross = qty * price;
-    const net = gross - commission;
-    window.SELL_HISTORY.push({
-      key,
-      ticker: key.toUpperCase(),
-      qty,
-      price,
-      costAvg,
-      gross,
-      commission,
-      net,
-      pnl,
-      pnlPct,
-      date: new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
-    });
-    window.renderSellHistory?.();
-  }
-
-  _refreshBalanceAfterSell(key, qty, netAmount = 0) {
-    window.updateCashAfterTrade?.(netAmount);        // venta suma monto neto al cash
-    const assets = window.EXISTING_ASSETS;
-    if (assets?.[key]) {
-      assets[key].qty = Math.max(0, assets[key].qty - qty);
-    }
-    this._rerenderPortfolio();
+  /**
+   * Tras una venta confirmada en Supabase: persiste el cash y recarga TODO
+   * el portafolio desde Supabase (fuente de verdad) — misma lógica que
+   * _refreshBalanceAfterBuy, incluyendo el historial de ventas.
+   */
+  async _refreshBalanceAfterSell(netAmount = 0) {
+    await this.updateCash(window.CURRENT_CASH + netAmount);
+    await this._syncPortfolioFromSupabase();
   }
 
   _rerenderPortfolio() {
