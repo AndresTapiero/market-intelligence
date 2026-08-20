@@ -120,8 +120,12 @@ class InvestmentApp {
       if (error) throw error;
       if (!data?.length) return;
 
-      // Clonar baseline para no mutar el original
-      const computed = JSON.parse(JSON.stringify(window.EXISTING_ASSETS));
+      // SIEMPRE desde el baseline puro, nunca desde window.EXISTING_ASSETS.
+      // Ese objeto ya contiene el journal aplicado de la sincronización
+      // anterior, así que clonarlo volvía a sumarlo encima: cada ↺, cada
+      // compra y cada venta duplicaban las cantidades (IREN 1.18 → 2.36 →
+      // 3.54 sin comprar nada). Partir del baseline hace el sync idempotente.
+      const computed = buildHoldings();
 
       // Aplicar transacciones sobre el baseline clonado
       data.forEach(row => {
