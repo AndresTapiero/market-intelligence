@@ -6,7 +6,7 @@
 
 import { SUPABASE_CONFIG } from './config.js';
 import { buildHoldings, buildAssetData, buildColors } from './baseline.js';
-import { computePortfolio, pricesFromAssetData, dcaStatus, upcomingEvents } from './portfolio-model.js';
+import { computePortfolio, pricesFromAssetData, dcaStatus, upcomingEvents, ALLOCATION_TARGETS } from './portfolio-model.js';
 import { fmtUSD, fmtSigned, fmtPrice, fmtPct, signClass } from './format.js';
 import { AuthService } from './auth-service.js';
 import { PortfolioHistoryService } from './portfolio-history-service.js';
@@ -494,33 +494,34 @@ class InvestmentApp {
       const { allocation, byType, totals } = p;
       if (totals.grandTotal <= 0) return;
 
-      const setBar = (barId, pctId, gapId, actual, objetivo) => {
-        const barEl = document.getElementById(barId);
-        const pctEl = document.getElementById(pctId);
-        const gapEl = document.getElementById(gapId);
-        if (barEl) barEl.style.width = Math.min(actual, 100).toFixed(1) + '%';
-        if (pctEl) pctEl.textContent = actual.toFixed(1) + '%';
-        if (gapEl) {
-          const diff = actual - objetivo;
-          gapEl.textContent = (diff >= 0 ? '-' : '+') + Math.abs(diff).toFixed(1) + 'pp';
-          // Estar por encima del objetivo no es "bueno": ya no hay que comprar.
-          gapEl.className = 'alloc-gap mono num ' + (diff >= 0 ? 'neg' : 'pos');
+      // Una fila por objetivo, generada desde ALLOCATION_TARGETS.
+      const filas = document.getElementById('allocRows');
+      if (filas) {
+        filas.innerHTML = '';
+        for (const t of ALLOCATION_TARGETS) {
+          const actual = allocation[t.key] ?? 0;
+          const diff   = actual - t.target;
+          const fila = document.createElement('div');
+          fila.className = 'alloc-row';
+          fila.innerHTML =
+            `<div class="alloc-label"><span class="comp-dot" style="background:${t.color}"></span>${t.label}</div>` +
+            `<div class="alloc-bars"><div class="alloc-bar-track">` +
+              `<div class="alloc-bar-actual" style="width:${Math.min(actual, 100).toFixed(1)}%;background:${t.color}"></div>` +
+              `<div class="alloc-bar-target" style="left:${t.target}%"></div>` +
+            `</div></div>` +
+            `<div class="alloc-nums mono num"><span>${actual.toFixed(1)}%</span> <span class="text-muted">/ ${t.target}%</span></div>` +
+            // Por encima del objetivo no es "bueno": significa que no toca comprar.
+            `<div class="alloc-gap mono num ${diff >= 0 ? 'neg' : 'pos'}">${diff >= 0 ? '-' : '+'}${Math.abs(diff).toFixed(1)}pp</div>`;
+          filas.appendChild(fila);
         }
-      };
+      }
 
-      setBar('allocBtcBar',   'allocBtcPct',   'allocBtcGap',   allocation.btc,   30);
-      setBar('allocEtfBar',   'allocEtfPct',   'allocEtfGap',   allocation.etf,   30);
-      setBar('allocStockBar', 'allocStockPct', 'allocStockGap', allocation.stock, 25);
-      setBar('allocAltBar',   'allocAltPct',   'allocAltGap',   allocation.alt,   15);
-
-      // Hint: la categoría más alejada de su objetivo por debajo.
-      const brechas = [
-        { name: 'ETFs',            diff: 30 - allocation.etf   },
-        { name: 'Acciones indiv.', diff: 25 - allocation.stock },
-        { name: 'Altcoins',        diff: allocation.alt - 15   },
-        { name: 'Bitcoin',         diff: allocation.btc - 30   },
-      ];
-      const prioritaria = brechas.filter(g => g.diff > 0).sort((a, b) => b.diff - a.diff)[0];
+      // Hint: la categoría más por debajo de su objetivo.
+      const brechas = ALLOCATION_TARGETS
+        .map(t => ({ name: t.label, diff: t.target - (allocation[t.key] ?? 0) }))
+        .filter(g => g.diff > 0)
+        .sort((a, b) => b.diff - a.diff);
+      const prioritaria = brechas[0];
       const hintEl = document.getElementById('allocHint');
       if (hintEl && prioritaria) {
         hintEl.innerHTML = '💡 Tu próxima inversión debería priorizar <strong>' +

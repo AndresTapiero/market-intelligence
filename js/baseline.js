@@ -27,6 +27,8 @@ export const BASELINE = {
   // ── Crypto ────────────────────────────────────────────────────────────────
   btc:     { qty: 0.016271, costAvg: 76370.002869, type: 'crypto', label: 'Bitcoin',   icon: '₿', color: '#f7931a', seedPrice: 63736.05 },
   eth:     { qty: 0.1736,   costAvg: 2532.66,      type: 'crypto', label: 'Ethereum',  icon: 'Ξ', color: '#627eea', seedPrice: 1868.43  },
+  // Sin posición todavía: sólo aporta metadatos para cuando se compre.
+  xrp:     { qty: 0,        costAvg: 0,            type: 'crypto', label: 'XRP',       icon: 'X', color: '#23292f', seedPrice: 0.52     },
   sol:     { qty: 4.179,    costAvg: 173.74,       type: 'crypto', label: 'Solana',    icon: '◎', color: '#9945ff', seedPrice: 73.32    },
   tao:     { qty: 0.7369,   costAvg: 350.93,       type: 'crypto', label: 'Bittensor', icon: 'τ', color: '#38bdf8', seedPrice: 190.52   },
   uni:     { qty: 30.68,    costAvg: 9.191,        type: 'crypto', label: 'Uniswap',   icon: 'U', color: '#ff007a', seedPrice: 3.86     },

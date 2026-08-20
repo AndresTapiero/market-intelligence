@@ -141,10 +141,12 @@ export function computePortfolio(holdings, prices = {}, cash = 0) {
   const pnl    = market - cost;
   const grandTotal = market + efectivo;
 
-  // Asignación objetivo: BTC va aparte del resto de cripto, y los ETFs aparte
-  // de las acciones individuales. Los porcentajes son sobre el total CON cash.
+  // El porcentaje de asignación es sobre lo INVERTIDO, no sobre el total con
+  // cash: unos objetivos que suman 100% serían inalcanzables por definición si
+  // el cash entrara en el denominador. El cash se reporta aparte, sobre el
+  // gran total, que es como tiene sentido leerlo.
   const valorDe = filtro => byAsset.filter(filtro).reduce((s, a) => s + a.market, 0);
-  const pctDe   = v => (grandTotal > 0 ? (v / grandTotal) * 100 : 0);
+  const pctDe   = v => (market > 0 ? (v / market) * 100 : 0);
 
   return {
     totals: {
@@ -159,15 +161,29 @@ export function computePortfolio(holdings, prices = {}, cash = 0) {
       cryptoPct: market > 0 ? (crypto.market / market) * 100 : 0,
       stocksPct: market > 0 ? (stocks.market / market) * 100 : 0,
     },
+    // BTC y ETH tienen objetivo propio; `alt` es todo el resto de cripto.
     allocation: {
       btc:   pctDe(valorDe(a => a.key === 'btc')),
-      alt:   pctDe(valorDe(a => a.type === 'crypto' && a.key !== 'btc')),
+      eth:   pctDe(valorDe(a => a.key === 'eth')),
+      alt:   pctDe(valorDe(a => a.type === 'crypto' && a.key !== 'btc' && a.key !== 'eth')),
       etf:   pctDe(valorDe(a => a.type === 'etf')),
       stock: pctDe(valorDe(a => a.type === 'stock')),
-      cash:  pctDe(efectivo),
+      cash:  grandTotal > 0 ? (efectivo / grandTotal) * 100 : 0,
     },
   };
 }
+
+// ─── ASIGNACIÓN OBJETIVO ──────────────────────────────────────────────────────
+// Estrategia: girar hacia renta variable y concentrar la cripto en BTC y ETH.
+// Las altcoins quedan en salida gradual (5%), sin forzar ventas.
+// Suman 100% porque se miden sobre lo invertido, no sobre el total con cash.
+export const ALLOCATION_TARGETS = [
+  { key: 'stock', label: 'Acciones indiv.', target: 35, color: '#4d8fff' },
+  { key: 'etf',   label: 'ETFs',            target: 25, color: '#00d4a0' },
+  { key: 'btc',   label: 'Bitcoin',         target: 25, color: '#f7931a' },
+  { key: 'eth',   label: 'Ethereum',        target: 10, color: '#627eea' },
+  { key: 'alt',   label: 'Altcoins',        target:  5, color: '#8b6dff' },
+];
 
 // ─── DCA ──────────────────────────────────────────────────────────────────────
 // La estrategia: $50 en BTC y $50 en acciones cada mes. `dia` es cuándo toca.

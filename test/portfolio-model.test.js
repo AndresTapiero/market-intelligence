@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   applyJournal, computePortfolio, weightedCostAvg, sellPnl, esEquity,
+  ALLOCATION_TARGETS as TARGETS,
 } from '../js/portfolio-model.js';
 
 const compra = (ticker, qty, precio, fecha = '2026-01-01', tipo = 'crypto') =>
@@ -215,5 +216,66 @@ describe('esEquity', () => {
     expect(esEquity('stock')).toBe(true);
     expect(esEquity('etf')).toBe(true);
     expect(esEquity('crypto')).toBe(false);
+  });
+});
+
+describe('asignación objetivo', () => {
+  const holdings = {
+    btc:  { qty: 1,  costAvg: 100, type: 'crypto', label: 'Bitcoin' },
+    eth:  { qty: 10, costAvg: 10,  type: 'crypto', label: 'Ethereum' },
+    sol:  { qty: 10, costAvg: 10,  type: 'crypto', label: 'Solana' },
+    voo:  { qty: 1,  costAvg: 100, type: 'etf',    label: 'VOO' },
+    nvda: { qty: 1,  costAvg: 100, type: 'stock',  label: 'NVIDIA' },
+  };
+  // 100 cada uno → 500 invertido, 20% por categoría
+  const prices = { btc: 100, eth: 10, sol: 10, voo: 100, nvda: 100 };
+
+  it('ETH tiene su propio bucket, separado de las altcoins', () => {
+    const { allocation } = computePortfolio(holdings, prices, 0);
+    expect(allocation.eth).toBeCloseTo(20, 6);
+    expect(allocation.alt).toBeCloseTo(20, 6);   // solo SOL
+    expect(allocation.btc).toBeCloseTo(20, 6);
+  });
+
+  it('los porcentajes se miden sobre lo invertido, no sobre el total con cash', () => {
+    // Con objetivos que suman 100%, incluir el cash los haría inalcanzables
+    const sinCash = computePortfolio(holdings, prices, 0).allocation;
+    const conCash = computePortfolio(holdings, prices, 500).allocation;
+    expect(conCash.btc).toBeCloseTo(sinCash.btc, 6);
+  });
+
+  it('las categorías de inversión suman 100%', () => {
+    const a = computePortfolio(holdings, prices, 250).allocation;
+    const suma = a.btc + a.eth + a.alt + a.etf + a.stock;
+    expect(suma).toBeCloseTo(100, 6);
+  });
+
+  it('el cash sí se mide sobre el gran total', () => {
+    const a = computePortfolio(holdings, prices, 500).allocation;
+    expect(a.cash).toBeCloseTo(50, 6);   // 500 de 1000
+  });
+
+  it('un portafolio vacío no divide entre cero', () => {
+    const a = computePortfolio({}, {}, 100).allocation;
+    for (const v of Object.values(a)) expect(Number.isFinite(v)).toBe(true);
+    expect(a.btc).toBe(0);
+  });
+});
+
+describe('ALLOCATION_TARGETS', () => {
+  it('suman exactamente 100%', () => {
+    expect(TARGETS.reduce((s, t) => s + t.target, 0)).toBe(100);
+  });
+
+  it('hay una clave de allocation por cada objetivo', () => {
+    const a = computePortfolio({}, {}, 0).allocation;
+    for (const t of TARGETS) expect(a).toHaveProperty(t.key);
+  });
+
+  it('la renta variable pesa más que la cripto', () => {
+    const rv     = TARGETS.filter(t => ['stock','etf'].includes(t.key)).reduce((s,t) => s+t.target, 0);
+    const cripto = TARGETS.filter(t => ['btc','eth','alt'].includes(t.key)).reduce((s,t) => s+t.target, 0);
+    expect(rv).toBeGreaterThan(cripto);
+    expect(rv).toBe(60);
   });
 });

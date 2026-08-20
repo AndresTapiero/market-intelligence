@@ -1,38 +1,9 @@
 <h2 class="section-title">Asignación objetivo vs real<span class="info-icon" data-tooltip-key="risk_profile">ⓘ</span></h2>
 <div class="card mb">
   <div class="alloc-legend"><span class="alloc-legend-item"><span class="alloc-swatch"></span>Actual</span><span class="alloc-legend-item"><span class="alloc-marker"></span>Objetivo</span></div>
-  <div class="alloc-row">
-    <div class="alloc-label"><span class="comp-dot" style="background:#f7931a"></span>Bitcoin</div>
-    <div class="alloc-bars">
-      <div class="alloc-bar-track"><div class="alloc-bar-actual" id="allocBtcBar" style="width:0%;background:#f7931a"></div><div class="alloc-bar-target" style="left:30%"></div></div>
-    </div>
-    <div class="alloc-nums mono num"><span id="allocBtcPct">—</span> <span class="text-muted">/ 30%</span></div>
-    <div class="alloc-gap mono num" id="allocBtcGap">—</div>
-  </div>
-  <div class="alloc-row">
-    <div class="alloc-label"><span class="comp-dot" style="background:#00d4a0"></span>ETFs</div>
-    <div class="alloc-bars">
-      <div class="alloc-bar-track"><div class="alloc-bar-actual" id="allocEtfBar" style="width:0%;background:#00d4a0"></div><div class="alloc-bar-target" style="left:30%"></div></div>
-    </div>
-    <div class="alloc-nums mono num"><span id="allocEtfPct">—</span> <span class="text-muted">/ 30%</span></div>
-    <div class="alloc-gap mono num" id="allocEtfGap">—</div>
-  </div>
-  <div class="alloc-row">
-    <div class="alloc-label"><span class="comp-dot" style="background:#4d8fff"></span>Acciones indiv.</div>
-    <div class="alloc-bars">
-      <div class="alloc-bar-track"><div class="alloc-bar-actual" id="allocStockBar" style="width:0%;background:#4d8fff"></div><div class="alloc-bar-target" style="left:25%"></div></div>
-    </div>
-    <div class="alloc-nums mono num"><span id="allocStockPct">—</span> <span class="text-muted">/ 25%</span></div>
-    <div class="alloc-gap mono num" id="allocStockGap">—</div>
-  </div>
-  <div class="alloc-row">
-    <div class="alloc-label"><span class="comp-dot" style="background:#8b6dff"></span>Altcoins (HOLD)</div>
-    <div class="alloc-bars">
-      <div class="alloc-bar-track"><div class="alloc-bar-actual" id="allocAltBar" style="width:0%;background:#8b6dff"></div><div class="alloc-bar-target" style="left:15%"></div></div>
-    </div>
-    <div class="alloc-nums mono num"><span id="allocAltPct">—</span> <span class="text-muted">/ 15%</span></div>
-    <div class="alloc-gap mono num" id="allocAltGap">—</div>
-  </div>
+  <!-- Las filas las genera app._updateAnalisisTab() desde ALLOCATION_TARGETS,
+       para que objetivos y UI no puedan divergir. -->
+  <div id="allocRows"></div>
   <div class="alloc-hint" id="allocHint">💡 Cargando asignación...</div>
 </div>
 
