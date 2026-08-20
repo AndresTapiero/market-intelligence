@@ -1,9 +1,9 @@
 # Market Intelligence
 
-PWA de seguimiento de portafolio de inversiones personal — crypto + acciones USA.
-Análisis mensual automático vía Anthropic API (Claude + web_search). **Supabase como única fuente de verdad.**
+PWA de seguimiento de portafolio personal — crypto + acciones USA.
+Análisis mensual automático vía Anthropic API. **Supabase como única fuente de verdad.**
 
-**Build:** v23 · **Estado:** ✅ Producción
+**Build:** v24 · **Estado:** ✅ Producción
 
 ---
 
@@ -11,7 +11,7 @@ Análisis mensual automático vía Anthropic API (Claude + web_search). **Supaba
 
 1. Abre la app (GitHub Pages) e inicia sesión
 2. Registra compras y ventas desde **📥 Registrar**
-3. El día 26 de cada mes, GitHub Actions actualiza precios y análisis automáticamente
+3. El día 26 de cada mes, GitHub Actions actualiza precios y análisis
 
 Sin scripts locales. Sin localStorage. Todo persiste en Supabase.
 
@@ -23,172 +23,247 @@ Sin scripts locales. Sin localStorage. Todo persiste en Supabase.
 |---|---|---|
 | **UI** | HTML + CSS + JS vanilla | PWA sin frameworks, 4 pestañas |
 | **Auth + DB** | Supabase | Login, transacciones, historial, cash |
-| **Análisis** | Anthropic API (claude-opus-4-8 + web_search) | Precios en tiempo real + análisis |
-| **CI/CD** | GitHub Actions | Análisis mensual automático (día 26) |
+| **Análisis** | Anthropic API (`claude-sonnet-5` + web_search) | Precios reales + análisis mensual |
+| **Tests** | Vitest | 70 tests sobre las funciones puras |
+| **CI/CD** | GitHub Actions | Análisis mensual (día 26) |
 | **Hosting** | GitHub Pages | Sitio estático |
 
 ---
 
-## Arquitectura de archivos
+## Arquitectura
 
 ```
 latest-report.html          ← Shell PWA (login, sticky bar, nav, modales)
-css/
-  tokens.css                ← Variables CSS (colores, espaciado)
-  base.css                  ← Reset, tipografía, utilidades
-  layout.css                ← Sticky bar, tabs, grids, responsive móvil
-  components.css            ← Cards, botones, modales, formularios
-  features.css              ← PnL, composición, historial de ventas, ROI
-tabs/                       ← Contenido lazy-loaded por tab (sin caché)
-  resumen.html              ← Regenerado por analyze.js cada mes
-  activos.html              ← Señales, PnL, composición del portafolio
-  transacciones.html        ← DCA tracker, bitácora, historial ventas
-  analisis.html             ← Asignación objetivo, macro, simulador COP
+css/                        ← tokens · base · layout · components · features
+tabs/                       ← Contenido lazy-loaded por pestaña
+  resumen.html                Regenerado por analyze.js cada mes
+  activos.html                Señales, PnL, composición
+  transacciones.html          Franja DCA, bitácora, eventos, historial de ventas
+  analisis.html               Asignación objetivo, macro, simulador COP
+
 js/
-  app.js                    ← Orquestador (ES module, Facade pattern)
-  config.js                 ← Supabase URL/key + tabla names
-  auth-service.js           ← Supabase Auth (login/logout/session)
-  transaction-service.js    ← recordBuy() / recordSale() → inv_journal
-  portfolio-service.js      ← Carga transacciones desde Supabase
-  portfolio-history-service.js ← Reportes históricos
-  ui-manager.js             ← Modales, previews de compra/venta
-  data.js                   ← Baseline de activos, colores (sin localStorage)
-  cash.js                   ← CURRENT_CASH sincronizado con Supabase
-  portfolio-ui.js           ← renderPnl(), renderComp(), populateAssetSelects()
-  sell-modal.js             ← calcSellPreview(), sellSelectAll()
-  sell-history.js           ← SELL_HISTORY, renderSellHistory()
-  tab-loader.js             ← Lazy fetch de tabs, evento portfolio-synced
-  ui-utils.js               ← showToast, exportPDF, loadPortfolioComposition
-analyze.js                  ← Script mensual: Anthropic → Supabase → git push
-test-dry-run.js             ← Valida secrets y conexión antes de analizar
-package.json                ← Dependencias solo para analyze.js
-.github/workflows/
-  weekly-analysis.yml       ← Cron día 26 + workflow_dispatch manual
+  ── Datos ──────────────────────────────────────────────────────────
+  baseline.js               FUENTE ÚNICA de las posiciones de partida.
+                            La importan la app y analyze.js.
+  version.js                Build, título, footer y nombre del PDF.
+  data.js                   Sólo VALUATIONS (margen de seguridad).
+
+  ── Lógica pura (testeable) ────────────────────────────────────────
+  portfolio-model.js        applyJournal · computePortfolio ·
+                            weightedCostAvg · sellPnl · dcaStatus ·
+                            upcomingEvents · ALLOCATION_TARGETS
+  format.js                 fmtUSD · fmtPrice · fmtQty · fmtPct · fmtCOP
+
+  ── Servicios Supabase ─────────────────────────────────────────────
+  config.js                 URL, clave publicable y nombres de tabla
+  auth-service.js           Login / logout / sesión
+  transaction-service.js    recordBuy() · recordSale() → inv_journal
+  cash-service.js           get() · set() → portfolio_cash
+  portfolio-history-service.js
+
+  ── UI ─────────────────────────────────────────────────────────────
+  app.js                    Orquestador. Calcula el modelo UNA vez por
+                            sync y lo publica en window.PORTFOLIO.
+  portfolio-ui.js           renderPnl() · renderComp()
+  ui-manager.js             Modales y previews de compra
+  sell-modal.js             Preview de venta
+  sell-history.js           Tabla de ventas
+  tab-loader.js             Carga diferida de pestañas
+  cash.js                   Display y modal de cash
+  ui-utils.js               Toasts, PDF, widget COP
+
+analyze.js                  Script mensual: Anthropic → Supabase
+test/                       portfolio-model · format · dca
+scripts/                    Migraciones SQL
+.github/workflows/monthly-analysis.yml
 ```
+
+### Dos reglas que sostienen el diseño
+
+**1. El baseline vive en un solo sitio.** `js/baseline.js` tiene las posiciones
+previas a la app. Todo lo registrado desde el modal está en `inv_journal` y se
+aplica encima. La app y el analizador importan el mismo archivo, así que no
+pueden discrepar.
+
+**2. El cálculo financiero es puro.** `portfolio-model.js` no toca el DOM, ni
+`window`, ni Supabase: todo entra por parámetros. Por eso se puede testear sin
+navegador, y por eso `analyze.js` puede usar exactamente el mismo motor que el
+dashboard.
 
 ---
 
-## Supabase — Tablas y RLS
+## Supabase
 
-### `inv_journal` — Compras y ventas (misma tabla)
-| Campo | Tipo | Compra | Venta |
-|---|---|---|---|
-| `ticker` | text | ✅ | ✅ |
-| `fecha` | date | ✅ | ✅ |
-| `categoria` | text | `core`/`satelite`/`legado` | `satelite` |
-| `numero_acciones` | numeric | qty comprada | qty vendida |
-| `precio_entrada` | numeric | precio de compra | costAvg al vender |
-| `inversion_monto` | numeric | qty × precio | monto bruto |
-| `precio_salida` | numeric | — | precio de venta |
-| `fecha_venta` | date | — | ✅ distingue venta de compra |
-| `ganancia_perdida_pct` | numeric | — | P&L% calculado |
-| `comision` | numeric | — | fee del broker |
-| `monto_neto` | numeric | — | bruto − comisión |
-| `razon_venta` | text | — | razón de la venta |
-| `tesis_inversion` | text | fundamento | observaciones |
+### `inv_journal` — Compras y ventas
 
-**Políticas RLS:** SELECT, INSERT, DELETE con `auth.uid() = user_id`
+Una fila por operación. Lo que distingue una venta es que `fecha_venta` no sea
+nulo.
+
+| Campo | Compra | Venta |
+|---|---|---|
+| `ticker` | ✅ | ✅ |
+| `fecha` | ✅ | ✅ |
+| `tipo` | `stock`/`etf`/`crypto` | — |
+| `categoria` | `core`/`satelite`/`legado` | `satelite` |
+| `numero_acciones` | qty comprada | qty vendida |
+| `precio_entrada` | precio efectivo (incl. fee) | costAvg al vender |
+| `inversion_monto` | qty × precio + fee | monto bruto |
+| `precio_salida` | — | precio de venta |
+| `fecha_venta` | — | ✅ distingue venta de compra |
+| `comision` | fee del broker | fee del broker |
+| `monto_neto` | — | bruto − comisión |
+| `tesis_inversion` | fundamento | observaciones |
+
+### `portfolio_cash` — Cash disponible
+
+Una fila por usuario. **Único almacén del cash.** La app lo escribe al
+registrar operaciones o ajustarlo a mano; `analyze.js` lo lee para el reporte.
 
 ### `portfolio_history` — Reportes mensuales
-Snapshot del portafolio por `report_date`. `portfolio_snapshot` (JSONB) contiene:
-totales, P&L, cash, analystOpinion, macro, decisiones, oportunidades.
 
-**Políticas RLS:** SELECT, INSERT, UPDATE con `auth.uid() = user_id`
+Snapshot por `report_date`, con `UNIQUE(user_id, report_date)`.
+`portfolio_snapshot` (JSONB) incluye totales, P&L, cash, `analystOpinion`,
+`macro`, `actions`, `newOpportunities` y `upcomingEvents`.
 
-### `portfolio_assets` — Activos por reporte
-`asset_key`, `price`, `change_7d`, `signal` (BUY/HOLD/WAIT), `context` por reporte.
+### `portfolio_assets` — Precios por reporte
+
+`asset_key`, **`price_num`** (numérico — es el que lee la app), `price` (texto
+original, para auditoría), `change_7d`, `signal`, `context`.
+
+**Políticas:** RLS con `auth.uid() = user_id` en todas. `service_role` tiene
+GRANT completo para que el analizador funcione sin sesión.
 
 ---
 
 ## Flujo al hacer login
 
 ```
-1. _loadLatestAssetData()         → precios/señales desde portfolio_assets
-2. _syncPortfolioFromSupabase()   → clona BASELINE → aplica inv_journal en orden
-   ├── Compras: suma qty, recalcula costAvg ponderado
-   ├── Ventas: resta qty (quedan en 0 al vender todo)
-   └── Reemplaza window.EXISTING_ASSETS (no muta el original)
-3. CURRENT_CASH                   → portfolio_history.portfolio_snapshot.cash
-4. _loadBuyHistory()              → bitácora desde inv_journal
-5. Historial de ventas            → inv_journal donde fecha_venta IS NOT NULL
-6. Dispara portfolio-synced       → re-renderiza tabs, sticky bar, resumen
+1. loadHistoricalReports()   → reportes, macro y eventos
+2. _loadCash()               → portfolio_cash
+3. _syncPortfolioFromSupabase()
+   ├── _loadLatestAssetData()  precios desde portfolio_assets.price_num
+   ├── buildHoldings()         SIEMPRE desde el baseline puro
+   └── aplica inv_journal en orden cronológico
+4. _recomputeModel()         → window.PORTFOLIO
+5. Renderizadores            → todos leen window.PORTFOLIO
 ```
+
+El paso 3 es **idempotente**: sincronizar N veces da el mismo resultado. Partir
+del baseline y no del estado vivo es lo que lo garantiza.
 
 ---
 
-## Registro de operaciones (UI)
+## Análisis mensual
 
-### Compra — modal 📥 Registrar
-- Selecciona activo existente (tipo auto-detectado) o nuevo ticker
-- Ingresa cantidad, precio, fecha, precio objetivo, fundamento
-- Preview muestra: monto total, nueva cantidad y nuevo costAvg ponderado
-- **Registrar compra** → `inv_journal`, descuenta del cash, actualiza PnL en tiempo real
-
-### Venta — modal 📤 Registrar
-- Selecciona activo → se llena automáticamente el costo promedio (editable)
-- Botón **Vender todo** llena la cantidad completa
-- Preview muestra: bruto → comisión → neto → **P&L $ y % en tiempo real** (verde/rojo)
-- **Registrar venta** → `inv_journal`, suma al cash, aparece en historial de ventas
-
-### Cash (Hapi)
-- Botón **✏️ Actualizar** en Transacciones sincroniza el cash real
-- Se descuenta en compras y suma en ventas automáticamente
-- Persiste en `portfolio_history.portfolio_snapshot.cash` (sin localStorage)
-
----
-
-## Análisis mensual (GitHub Actions)
-
-El workflow corre el **día 26 de cada mes** (o manualmente desde Actions):
+Corre el **día 26** por cron, o a demanda desde Actions → *Análisis mensual*.
 
 ```
-analyze.js v3:
-1. Lee posiciones desde Supabase (inv_journal + baseline data.js)
-2. Claude (opus-4-8 + web_search) busca precios actuales y genera análisis
-3. Guarda en Supabase:
-   ├── portfolio_history → snapshot + analystOpinion + macro + decisiones
-   └── portfolio_assets  → precio/señal/contexto por activo
-4. Regenera tabs/resumen.html con la narrativa del mes
-5. Git push de tabs/resumen.html (latest-report.html nunca se toca)
+1. Lee cash y posiciones desde Supabase
+2. Elige qué precios buscar: todas las acciones/ETFs + las 4 cripto de
+   mayor peso (9 de 18 activos ≈ 84% del valor). El resto conserva el
+   precio del mes anterior.
+3. Claude busca precios y genera el análisis, con salida forzada por
+   JSON Schema
+4. sanityCheckPrices descarta precios imposibles comparando con el mes
+   anterior; si cae más de un tercio, aborta sin escribir
+5. Guarda en Supabase (upsert) y regenera tabs/resumen.html
+6. El workflow publica el resumen
 ```
 
-### Secrets requeridos en GitHub → Settings → Secrets
+### Por qué el universo de precios está recortado
 
-| Secret | Cómo obtenerlo |
+Buscar los 18 activos costaba ~$1 por corrida y, peor, empujaba al modelo a
+inventar los precios que no podía verificar: en agosto de 2026 eso multiplicó
+la valoración por 2,3 con memecoins subiendo un 1.856%. Un precio de hace un
+mes en un activo que vale $2 es preferible a uno inventado en cualquiera.
+
+### Secrets
+
+| Secret | Dónde |
 |---|---|
 | `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys |
-| `SUPABASE_SERVICE_KEY` | Supabase → Settings → API → service_role |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API Keys → **Secret keys** (`sb_secret_…`) |
 | `PORTFOLIO_USER_ID` | UUID del usuario en Supabase Auth |
 
----
-
-## Sin localStorage — sincronizado entre dispositivos
-
-Ningún dato se guarda en localStorage ni sessionStorage:
-- **Cash**: Supabase (`portfolio_history.portfolio_snapshot.cash`)
-- **Posiciones**: calculadas en tiempo real desde `inv_journal`
-- **Historial de ventas**: `inv_journal` donde `fecha_venta IS NOT NULL`
-- **Tabs**: fetch siempre fresco, sin caché
+> La clave de Supabase debe ser **secreta**, no la publicable. El analizador
+> corre sin sesión y necesita saltarse RLS; con la publicable el rol es `anon`
+> y Postgres responde `permission denied`.
 
 ---
 
-## Desarrollo local
+## Desarrollo
 
 ```bash
-# Servir localmente (fetch() de tabs/ requiere servidor HTTP)
-npx serve .
-# → http://localhost:3000/latest-report.html
-
-# Instalar dependencias del analizador
 npm install
+npm test          # Vitest — 70 tests, sin red ni navegador
+npm run test:watch
 
-# Validar secrets antes de analizar
-node test-dry-run.js
+npx serve .       # → http://localhost:3000/latest-report.html
+                  # Apunta al mismo Supabase: es una prueba real
 
-# Ejecutar análisis manual (requiere .env o vars de entorno)
-ANTHROPIC_API_KEY=... SUPABASE_SERVICE_KEY=... PORTFOLIO_USER_ID=... node analyze.js
+npm run dry-run   # Valida secrets, modelo y migraciones (necesita las 3 env vars)
+npm run analyze   # Corrida completa — CUESTA DINERO
 ```
+
+`npm test` no toca la red. `npm run dry-run` y `npm run analyze` sí, y este
+último gasta tokens de la API.
+
+### Migraciones
+
+Se corren a mano en Supabase → SQL Editor, en este orden. Todas están
+aplicadas en producción a fecha de hoy.
+
+| Archivo | Qué añade |
+|---|---|
+| `create-portfolio-history-tables.sql` | `portfolio_history`, `portfolio_assets` |
+| `migration-add-tipo-column.sql` | `inv_journal.tipo` |
+| `migration-price-numeric.sql` | `portfolio_assets.price_num` + backfill |
+| `migration-cash-table.sql` | `portfolio_cash` con RLS |
+| `migration-fix-grants.sql` | GRANT para `service_role` y `authenticated` |
+
+El resto de `scripts/` es del sembrado inicial de agosto de 2026, cuando el
+proyecto pasó de archivos locales a Supabase. **Ya se aplicó y no hay que
+volver a correrlo**; se conserva sólo como referencia de cómo se cargaron los
+datos históricos:
+
+- `insert-portfolio-data.sql`, `-simple`, `-minimal` — tres variantes del mismo
+  volcado inicial
+- `migrate-history-to-supabase.js`, `migrate-via-console.js` — el traslado desde
+  `history.json`
+- `get-user-id.js`, `get-user-id-dev.js` — obtener el UUID del usuario
+
+Si estorban, se pueden borrar: nada del código los referencia.
 
 ---
 
-**Última actualización:** 2026-08-12 | **Build:** v23
+## Estrategia
+
+**Asignación objetivo** (sobre lo invertido, sin contar cash):
+
+| | Objetivo |
+|---|---|
+| Acciones individuales | 35% |
+| ETFs (VOO/QQQ) | 25% |
+| Bitcoin | 25% |
+| Ethereum | 10% |
+| Altcoins | 5% |
+
+**DCA:** $50 en BTC y $50 en acciones cada mes. La franja de Transacciones se
+pone en verde cuando el aporte del mes ya está hecho.
+
+Las altcoins están en salida gradual, sin forzar ventas. Cambiar los objetivos
+es editar `ALLOCATION_TARGETS` en `portfolio-model.js`: la UI se genera desde
+ahí.
+
+---
+
+## Historial
+
+[`PLAN-DE-MEJORA.md`](PLAN-DE-MEJORA.md) documenta la auditoría de agosto de
+2026 y las siete fases de refactor, con las desviaciones del plan y los bugs
+que aparecieron al ejecutarlo. Útil si algo aquí no cuadra y quieres saber por
+qué está como está.
+
+---
+
+**Última actualización:** 2026-08-20 · **Build:** v24
