@@ -19,6 +19,7 @@ import Anthropic            from '@anthropic-ai/sdk';
 import { createClient }     from '@supabase/supabase-js';
 import { buildHoldings }    from './js/baseline.js';
 import { writeFileSync }    from 'fs';
+import { pathToFileURL }    from 'url';
 import { exec as execCb }   from 'child_process';
 import { promisify }        from 'util';
 
@@ -28,6 +29,10 @@ const exec = promisify(execCb);
 const SUPABASE_URL        = 'https://mfixkkqtjyjcigeqhlvz.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const USER_ID             = process.env.PORTFOLIO_USER_ID;
+
+// Sonnet 5 en vez de Opus: el análisis corre una vez al mes y la diferencia de
+// coste no compensa aquí. Cambiar a 'claude-opus-5' si la calidad no alcanza.
+export const MODEL = 'claude-sonnet-5';
 
 // Activos que reciben análisis narrativo completo (accionables).
 // Esto sí es una decisión de estrategia, no un dato — se queda como constante.
@@ -49,6 +54,146 @@ function deriveKeys(positions) {
     .sort();
 }
 
+// ─── SCHEMA DE SALIDA ─────────────────────────────────────────────────────────
+/**
+ * JSON Schema del análisis, construido con los tickers reales de este mes.
+ *
+ * Se enumeran las claves en vez de usar additionalProperties porque así el
+ * modelo devuelve exactamente los activos que pedimos, ni uno más ni uno menos.
+ *
+ * `price` es number, no string: es lo que impedía que los precios llegaran al
+ * dashboard (ver toNumber y la fase 1). Con el schema, el tipo está garantizado
+ * por construcción y ese bug no puede reaparecer.
+ */
+function buildSchema(keys) {
+  const assetProps = {};
+  for (const key of keys) {
+    const properties = {
+      price:    { type: 'number', description: 'Precio actual en USD. Solo el numero, sin simbolo de moneda ni separadores de miles.' },
+      change7d: { type: 'string', description: 'Variacion a 7 dias, por ejemplo "+1.4%" o "-3.2%".' },
+      signal:   { type: 'string', enum: ['BUY', 'HOLD', 'WAIT'] },
+    };
+    const required = ['price', 'change7d', 'signal'];
+
+    if (ACCIONABLES.includes(key)) {
+      properties.context = { type: 'string', description: '2 oraciones de analisis en ASCII.' };
+      required.push('context');
+    }
+    assetProps[key] = { type: 'object', additionalProperties: false, properties, required };
+  }
+
+  const watchProps = {};
+  for (const key of WATCHLIST) {
+    watchProps[key] = {
+      type: 'object', additionalProperties: false,
+      properties: {
+        price:    { type: 'number' },
+        change7d: { type: 'string' },
+        signal:   { type: 'string', enum: ['BUY', 'WAIT'] },
+        note:     { type: 'string', description: '1 oracion evaluando la entrada, en ASCII.' },
+      },
+      required: ['price', 'change7d', 'signal', 'note'],
+    };
+  }
+
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['analystOpinion', 'riskProfile', 'assets', 'macro', 'actions'],
+    properties: {
+      analystOpinion: { type: 'string', description: '3-4 oraciones ASCII: que funciona, que arrastra, recomendacion del mes.' },
+      riskProfile:    { type: 'string' },
+      assets: {
+        type: 'object', additionalProperties: false,
+        properties: assetProps,
+        required: keys,
+      },
+      macro: {
+        type: 'object', additionalProperties: false,
+        properties: {
+          usdcop:         { type: 'number', description: 'TRM en pesos por dolar. Solo el numero, ej 4150.32' },
+          fedrate:        { type: 'string', description: 'Rango de la tasa FED, ej "4.25%-4.50%"' },
+          btcDominance:   { type: 'string', description: 'Dominancia de BTC, ej "56.4%"' },
+          fearGreed:      { type: 'number', description: 'Indice Fear & Greed de 0 a 100.' },
+          fearGreedLabel: { type: 'string', description: 'Etiqueta en espanol, ej "Miedo".' },
+          narrative:      { type: 'string', description: '2 oraciones de contexto macro en ASCII.' },
+        },
+        required: ['usdcop', 'fedrate', 'btcDominance', 'fearGreed', 'fearGreedLabel', 'narrative'],
+      },
+      newOpportunities: {
+        type: 'array',
+        items: {
+          type: 'object', additionalProperties: false,
+          properties: {
+            asset:  { type: 'string' },
+            reason: { type: 'string', description: 'Por que tiene sentido ahora, 1-2 oraciones ASCII.' },
+            risk:   { type: 'string', description: 'Riesgo principal, en ASCII.' },
+          },
+          required: ['asset', 'reason', 'risk'],
+        },
+      },
+      watchlist: { type: 'object', additionalProperties: false, properties: watchProps },
+      actions: {
+        type: 'array',
+        items: {
+          type: 'object', additionalProperties: false,
+          properties: {
+            num:  { type: 'string', description: 'Numero de dos digitos, ej "01".' },
+            text: { type: 'string', description: 'Accion concreta, en ASCII.' },
+          },
+          required: ['num', 'text'],
+        },
+      },
+    },
+  };
+}
+
+// ─── LLAMADA A LA API ─────────────────────────────────────────────────────────
+/** Reintenta sólo lo que tiene sentido reintentar: rate limits y 5xx. */
+async function callWithRetry(fn, attempts = 3) {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const retryable = err instanceof Anthropic.RateLimitError
+        || (err instanceof Anthropic.APIError && err.status >= 500);
+      if (!retryable || i === attempts - 1) throw err;
+      const wait = 2 ** i * 5000;
+      console.warn(`⚠️ ${err.status ?? '?'} de Anthropic — reintento en ${wait / 1000}s`);
+      await new Promise(r => setTimeout(r, wait));
+    }
+  }
+}
+
+/**
+ * Ejecuta el análisis manejando `stop_reason`.
+ *
+ * web_search corre en el servidor de Anthropic y puede devolver `pause_turn`
+ * para que continúes la conversación. Antes eso no se manejaba: llegaba una
+ * respuesta parcial y un parser tolerante la remendaba cerrando llaves a mano.
+ */
+async function runAnalysis(anthropic, params) {
+  let messages = params.messages;
+
+  for (let turn = 0; turn < 5; turn++) {
+    const response = await callWithRetry(() => anthropic.messages.create({ ...params, messages }));
+
+    switch (response.stop_reason) {
+      case 'pause_turn':
+        messages = [...messages, { role: 'assistant', content: response.content }];
+        console.log(`   … búsqueda en curso, reanudando (turno ${turn + 2})`);
+        continue;
+      case 'max_tokens':
+        throw new Error('Respuesta truncada por max_tokens — súbelo o reduce el alcance del prompt');
+      case 'refusal':
+        throw new Error(`El modelo rechazó la petición: ${response.stop_details?.explanation ?? 'sin detalle'}`);
+      default:
+        return response;
+    }
+  }
+  throw new Error('Demasiados pause_turn consecutivos — la búsqueda no converge');
+}
+
 // ─── PARSEO DE PRECIOS ────────────────────────────────────────────────────────
 /**
  * Convierte a número lo que devuelva el modelo para un precio.
@@ -68,6 +213,14 @@ function toNumber(v) {
   if (cleaned === '' || cleaned === '-' || cleaned === '.') return null;
   const n = parseFloat(cleaned);
   return Number.isFinite(n) ? n : null;
+}
+
+/** La TRM ahora llega como número (schema): se formatea al renderizar. */
+function fmtTRM(v) {
+  const n = toNumber(v);
+  return n === null
+    ? '—'
+    : '$' + n.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' COP';
 }
 
 // ─── POSICIONES DESDE SUPABASE ────────────────────────────────────────────────
@@ -124,24 +277,15 @@ function buildPrompt(positions, cash, keys) {
     .map(k => `${k.toUpperCase()} (qty: ${positions[k].qty.toFixed(6)}, costAvg: $${positions[k].costAvg.toFixed(4)})`)
     .join(', ');
 
-  const assetsTemplate = keys.map(key => {
-    if (ACCIONABLES.includes(key)) {
-      return `"${key}":{"price":"$X","change7d":"+X.X%","signal":"BUY","context":"2 oraciones de analisis ASCII"}`;
-    }
-    return `"${key}":{"price":"$X","change7d":"+X.X%","signal":"HOLD"}`;
-  }).join(',');
+  const accionablesActivos = keys.filter(k => ACCIONABLES.includes(k)).join(', ').toUpperCase();
 
-  const watchTemplate = WATCHLIST.length > 0
-    ? `,"watchlist":{${WATCHLIST.map(k =>
-        `"${k}":{"price":"$X","change7d":"+X.X%","signal":"BUY o WAIT","note":"1 oracion evaluacion de entrada"}`
-      ).join(',')}}`
-    : '';
-
+  // La forma de la respuesta la impone el JSON Schema (ver buildSchema), así que
+  // el prompt no lleva plantilla ni instrucciones de formato: solo el encargo.
   return `Eres el analista financiero personal de Andres Tapiero. Hoy es ${today}.
 
 Busca en la web los precios ACTUALES de hoy de: ${tickersList}.
 Busca tambien la TRM oficial de Colombia (USD/COP) de HOY del Banco de la Republica o fuentes colombianas confiables.
-Haz maximo 7 busquedas agrupando tickers cuando sea posible.
+Agrupa tickers en la misma busqueda cuando sea posible.
 
 PORTAFOLIO ACTUAL (posiciones activas):
 ${activeAssets}
@@ -153,56 +297,21 @@ REGLAS DEL INVERSIONISTA:
 - No vender crypto con perdida
 - Prioridad: eliminar deuda de tarjeta antes de nuevas posiciones
 - Altcoins en HOLD permanente: solo precio, sin analisis narrativo
-- Analisis narrativo SOLO para activos accionables: BTC, VOO, QQQ, NVDA
+- Analisis narrativo SOLO para los activos accionables: ${accionablesActivos}
 - Perfil: moderado-agresivo (volatilidad crypto aceptada, disciplina DCA)
 
-FORMATO: Responde UNICAMENTE JSON valido. Sin texto extra, sin backticks, sin markdown. Solo ASCII en todos los textos.
-
-{"date":"fecha de hoy","analystOpinion":"opinion experta 3-4 oraciones ASCII: que funciona, que arrastra, recomendacion del mes","riskProfile":"Moderado-Agresivo",${assetsTemplate},"macro":{"usdcop":"$X,XXX.XX COP","fedrate":"X%","btcDominance":"XX%","fearGreed":"XX","fearGreedLabel":"etiqueta en espanol","narrative":"2 oraciones contexto macro ASCII"},"newOpportunities":[{"asset":"ticker","reason":"por que tiene sentido ahora 1-2 oraciones ASCII","risk":"riesgo principal ASCII"},{"asset":"ticker","reason":"ASCII","risk":"ASCII"}]${watchTemplate},"actions":[{"num":"01","text":"accion concreta ASCII"},{"num":"02","text":"accion concreta ASCII"},{"num":"03","text":"accion concreta ASCII"}]}`;
-}
-
-// ─── PARSER JSON TOLERANTE ────────────────────────────────────────────────────
-function sanitizeAndParse(raw) {
-  let text = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-  text = text
-    .replace(/[“”„‟]/g, '"')
-    .replace(/[‘’‚‛]/g, "'")
-    .replace(/–|—/g, '-')
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-
-  const start = text.indexOf('{');
-  if (start === -1) throw new Error('No se encontró JSON en la respuesta');
-
-  let depth = 0, end = -1;
-  for (let i = start; i < text.length; i++) {
-    if (text[i] === '{') depth++;
-    else if (text[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
-  }
-
-  if (end !== -1) {
-    try { return JSON.parse(text.slice(start, end + 1)); } catch (_) {}
-  }
-
-  // Modo recuperación: cortar en el último campo válido
-  const body = text.slice(start);
-  const closeCommaRe = /("|\})\s*,/g;
-  let match, lastClose = -1;
-  while ((match = closeCommaRe.exec(body)) !== null) lastClose = match.index + match[1].length - 1;
-  if (lastClose === -1) throw new Error('JSON incompleto y sin campos recuperables');
-
-  const truncated = body.slice(0, lastClose + 1);
-  let open = 0, close = 0;
-  for (const ch of truncated) { if (ch === '{') open++; else if (ch === '}') close++; }
-  return JSON.parse(truncated + '}'.repeat(Math.max(open - close, 0)));
+Los precios van como numero puro, sin simbolo de moneda ni separadores de miles.
+Usa solo ASCII en todos los textos.`;
 }
 
 // ─── CALCULAR SNAPSHOT DEL PORTAFOLIO ────────────────────────────────────────
 function computeSnapshot(positions, analysisData, cash) {
+  const marketData = analysisData.assets ?? {};
   let totalCrypto = 0, totalStocks = 0, costBase = 0;
 
   Object.entries(positions).forEach(([key, pos]) => {
     if (pos.qty <= 0) return;
-    const price = toNumber(analysisData[key]?.price) ?? 0;
+    const price = toNumber(marketData[key]?.price) ?? 0;
     const val   = pos.qty * price;
     const cost     = pos.qty * pos.costAvg;
     if (pos.type === 'crypto') totalCrypto += val;
@@ -305,7 +414,7 @@ function generateResumenHTML(snapshot, analysisData) {
 
 <h2 class="section-title">Contexto macroeconómico</h2>
 <div class="macro-grid mb">
-  <div class="macro-item"><div class="macro-label">TRM hoy</div><div class="macro-value">${macro.usdcop || '—'}</div></div>
+  <div class="macro-item"><div class="macro-label">TRM hoy</div><div class="macro-value">${fmtTRM(macro.usdcop)}</div></div>
   <div class="macro-item"><div class="macro-label">Tasa FED</div><div class="macro-value">${macro.fedrate || '—'}</div></div>
   <div class="macro-item"><div class="macro-label">Dominancia BTC<span class="info-icon" data-tooltip-key="btc_dominance">ⓘ</span></div><div class="macro-value">${macro.btcDominance || '—'}</div></div>
   <div class="macro-item"><div class="macro-label">Fear &amp; Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-value">${macro.fearGreed || '—'} <span style="font-size:11px;color:var(--text-muted)">${macro.fearGreedLabel || ''}</span></div></div>
@@ -374,18 +483,30 @@ async function main() {
 
   // 3. Llamar Anthropic API con web_search
   console.log('🌐 Consultando mercado en tiempo real...');
-  const response = await anthropic.messages.create({
-    model:      'claude-opus-4-8',
-    max_tokens: 6000,
-    tools:      [{ type: 'web_search_20250305', name: 'web_search' }],
-    messages:   [{ role: 'user', content: buildPrompt(positions, cash, activeKeys) }],
+  const response = await runAnalysis(anthropic, {
+    model:      MODEL,
+    max_tokens: 16000,
+    thinking:   { type: 'adaptive' },
+    output_config: {
+      effort: 'high',
+      format: { type: 'json_schema', schema: buildSchema(activeKeys) },
+    },
+    tools:    [{ type: 'web_search_20260209', name: 'web_search', max_uses: 7 }],
+    messages: [{ role: 'user', content: buildPrompt(positions, cash, activeKeys) }],
   });
 
-  const rawText = response.content.filter(b => b.type === 'text').map(b => b.text).join('');
-  if (!rawText.trim()) throw new Error('Respuesta vacía del modelo');
+  const u = response.usage;
+  console.log(`💸 tokens — entrada ${u.input_tokens} · salida ${u.output_tokens}` +
+              (u.cache_read_input_tokens ? ` · cache ${u.cache_read_input_tokens}` : ''));
+
+  // El schema garantiza JSON válido: ya no hace falta el parser tolerante que
+  // normalizaba comillas y cerraba llaves a mano cuando la respuesta se cortaba.
+  const textBlock = response.content.find(b => b.type === 'text');
+  if (!textBlock?.text?.trim()) throw new Error('Respuesta sin bloque de texto');
 
   console.log('🧠 Procesando análisis...');
-  const analysisData = sanitizeAndParse(rawText);
+  const analysisData = JSON.parse(textBlock.text);
+  const assets       = analysisData.assets ?? {};
 
   // 4. Calcular snapshot del portafolio con los precios frescos
   const snapshot = computeSnapshot(positions, analysisData, cash);
@@ -408,11 +529,11 @@ async function main() {
   // Un activo cuyo precio no sea parseable se DESCARTA: mejor quedarse sin
   // precio ese mes que escribir uno corrupto en la fuente de verdad.
   const parsedAssets = activeKeys
-    .map(key => ({ key, priceNum: toNumber(analysisData[key]?.price) }))
+    .map(key => ({ key, priceNum: toNumber(assets[key]?.price) }))
     .filter(({ key, priceNum }) => {
-      if (!analysisData[key]?.price) return false;
+      if (assets[key]?.price === undefined) return false;
       if (priceNum === null || priceNum <= 0) {
-        console.warn(`⚠️ Precio no parseable para ${key.toUpperCase()}: ${JSON.stringify(analysisData[key].price)} — se omite`);
+        console.warn(`⚠️ Precio no parseable para ${key.toUpperCase()}: ${JSON.stringify(assets[key].price)} — se omite`);
         return false;
       }
       return true;
@@ -421,11 +542,11 @@ async function main() {
   const assetRows = parsedAssets.map(({ key, priceNum }) => ({
     report_id: histRow.id,
     asset_key: key,
-    price:     analysisData[key].price,   // original, para auditoría
+    price:     String(assets[key].price),  // original, para auditoría
     price_num: priceNum,                  // el que consume la app
-    change_7d: analysisData[key].change7d || null,
-    signal:    analysisData[key].signal   || 'HOLD',
-    context:   analysisData[key].context  || null,
+    change_7d: assets[key].change7d || null,
+    signal:    assets[key].signal   || 'HOLD',
+    context:   assets[key].context  || null,
   }));
 
   const { error: assetsErr } = await supabase.from('portfolio_assets').insert(assetRows);
@@ -443,14 +564,14 @@ async function main() {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   const emoji = { BUY:'🟢', HOLD:'🟡', WAIT:'🔴' };
   activeKeys.forEach(key => {
-    const d = analysisData[key];
+    const d = assets[key];
     if (d) {
       const e = emoji[d.signal] || '⚪';
       console.log(`  ${e} ${key.toUpperCase().padEnd(9)} ${(d.price||'—').padEnd(14)} ${(d.change7d||'—').padEnd(9)} ${d.signal||'HOLD'}`);
     }
   });
   if (analysisData.macro) {
-    console.log(`\n  USD/COP: ${analysisData.macro.usdcop}`);
+    console.log(`\n  USD/COP: ${fmtTRM(analysisData.macro.usdcop)}`);
     console.log(`  Fear & Greed: ${analysisData.macro.fearGreed} — ${analysisData.macro.fearGreedLabel}`);
     console.log(`  BTC Dominance: ${analysisData.macro.btcDominance} · FED: ${analysisData.macro.fedrate}`);
   }
@@ -471,7 +592,12 @@ async function main() {
   console.log('✅ Análisis completado\n');
 }
 
-main().catch(err => {
-  console.error('\n❌ Error fatal:', err.message);
-  process.exit(1);
-});
+// Sólo ejecuta si se invoca directamente (`node analyze.js`), no al importarlo.
+// Así el dry-run y los tests pueden leer MODEL y las funciones puras sin
+// disparar un análisis real.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(err => {
+    console.error('\n❌ Error fatal:', err.message);
+    process.exit(1);
+  });
+}
