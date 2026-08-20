@@ -1,0 +1,88 @@
+name: Análisis mensual
+
+on:
+  schedule:
+    # Día 26 de cada mes, 12:00 UTC = 07:00 Colombia (UTC-5)
+    - cron: '0 12 26 * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+# Dos disparos manuales seguidos ejecutaban dos análisis en paralelo: dos
+# llamadas pagadas a Anthropic y una de las dos muriendo contra la
+# restricción UNIQUE(user_id, report_date).
+concurrency:
+  group: analisis-mensual
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    # Sin esto, un cuelgue consume el máximo de runner por las bravas.
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Antes de gastar una llamada a la API: que el cálculo esté sano.
+      - name: Tests unitarios
+        run: npm test
+
+      - name: Configurar identidad Git
+        run: |
+          git config user.name  "Market Intelligence Bot"
+          git config user.email "actions@users.noreply.github.com"
+
+      - name: Dry-run (secrets, modelo y migraciones)
+        env:
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PORTFOLIO_USER_ID:    ${{ secrets.PORTFOLIO_USER_ID }}
+        run: npm run dry-run
+
+      - name: Ejecutar análisis mensual
+        env:
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PORTFOLIO_USER_ID:    ${{ secrets.PORTFOLIO_USER_ID }}
+        run: node analyze.js
+
+      # Publicar es responsabilidad del workflow, no del analizador.
+      - name: Publicar el resumen
+        run: |
+          if [[ -n "$(git status --porcelain tabs/resumen.html)" ]]; then
+            git add tabs/resumen.html
+            git commit -m "report: análisis $(date +%F)"
+            git push
+          else
+            echo "Sin cambios en tabs/resumen.html — nada que publicar"
+          fi
+
+      # Sin esto, un mes sin reporte pasa desapercibido hasta que abres la app.
+      # El análisis estuvo roto nueve días en agosto de 2026 sin que nadie lo
+      # notara, porque el cron no vuelve hasta el 26.
+      - name: Avisar si algo falló
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              title: `Análisis mensual falló — ${new Date().toISOString().split('T')[0]}`,
+              body:  `El workflow **Análisis mensual** terminó en error.\n\n[Ver la corrida](${url})\n\nRevisa el paso que falló: el dry-run comprueba secrets, acceso al modelo y migraciones antes de gastar la llamada a la API.`,
+              labels: ['automated'],
+            });

@@ -20,10 +20,6 @@ import { createClient }     from '@supabase/supabase-js';
 import { buildHoldings, BASELINE } from './js/baseline.js';
 import { writeFileSync }    from 'fs';
 import { pathToFileURL }    from 'url';
-import { exec as execCb }   from 'child_process';
-import { promisify }        from 'util';
-
-const exec = promisify(execCb);
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const SUPABASE_URL        = 'https://mfixkkqtjyjcigeqhlvz.supabase.co';
@@ -773,9 +769,16 @@ async function main() {
   const reportDate = new Date().toISOString().split('T')[0];
 
   // 5a. portfolio_history (con snapshot completo incluyendo análisis)
+  // upsert, no insert: portfolio_history tiene UNIQUE(user_id, report_date),
+  // asi que relanzar el workflow el mismo dia fallaba por violacion de
+  // unicidad DESPUES de haber pagado la llamada a Anthropic. Ademas repara el
+  // estado si una corrida anterior murio entre este insert y el de assets.
   const { data: histRow, error: histErr } = await supabase
     .from('portfolio_history')
-    .insert({ user_id: USER_ID, report_date: reportDate, portfolio_snapshot: snapshot })
+    .upsert(
+      { user_id: USER_ID, report_date: reportDate, portfolio_snapshot: snapshot },
+      { onConflict: 'user_id,report_date' }
+    )
     .select('id')
     .single();
   if (histErr) throw new Error(`portfolio_history: ${histErr.message}`);
@@ -806,9 +809,14 @@ async function main() {
     context:   assets[key].context  || null,
   }));
 
-  const { error: assetsErr } = await supabase.from('portfolio_assets').insert(assetRows);
-  if (assetsErr) console.warn('⚠️ portfolio_assets:', assetsErr.message);
-  else           console.log(`✅ portfolio_assets: ${assetRows.length} activos guardados`);
+  // UNIQUE(report_id, asset_key): con upsert una segunda corrida reescribe en
+  // vez de fallar. Y si falla, se lanza: antes solo avisaba y el workflow
+  // terminaba en verde con un reporte sin activos.
+  const { error: assetsErr } = await supabase
+    .from('portfolio_assets')
+    .upsert(assetRows, { onConflict: 'report_id,asset_key' });
+  if (assetsErr) throw new Error(`portfolio_assets: ${assetsErr.message}`);
+  console.log(`✅ portfolio_assets: ${assetRows.length} activos guardados`);
 
   // 6. Regenerar tabs/resumen.html
   const resumenHTML = generateResumenHTML(snapshot, analysisData);
@@ -840,16 +848,10 @@ async function main() {
   console.log('\n  ACCIONES DEL MES:');
   (analysisData.actions || []).forEach(a => console.log(`  ${a.num}. ${a.text}`));
 
-  // 8. Git push (solo tabs/resumen.html — el shell latest-report.html NO se toca)
-  try {
-    await exec(
-      `git add tabs/resumen.html && git commit -m "report: análisis ${reportDate}" && git push`,
-    );
-    console.log(`\n📤 Reporte subido → tabs/resumen.html`);
-    console.log('🌐 El dashboard carga el análisis desde Supabase al hacer login\n');
-  } catch (err) {
-    console.warn('⚠️ Git push falló (puede que no haya cambios):', err.message?.split('\n')[0]);
-  }
+  // La publicacion de tabs/resumen.html la hace el workflow, no este script:
+  // mezclar analisis y despliegue escondia el fallo del push en un catch que
+  // solo avisaba.
+  console.log('\n🌐 El dashboard carga el análisis desde Supabase al hacer login\n');
 
   console.log('✅ Análisis completado\n');
 }
