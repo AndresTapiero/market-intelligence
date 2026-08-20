@@ -511,6 +511,8 @@ class InvestmentApp {
 
       // Totals bar
       set('resumeCostBase',       fmtD(totalCost));
+      const _trm = window.COP_DATA && window.COP_DATA.baseRate;
+      if (_trm) set('resumeCostBaseCop', '≈ $' + Math.round(totalCost * _trm).toLocaleString('es-CO') + ' COP');
       set('resumeCryptoCost',     fmtD(costCrypto));
       set('resumeStocksCost',     fmtD(costStocks));
       set('resumeMarket',         fmtD(totalMarket));
