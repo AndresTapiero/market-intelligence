@@ -143,7 +143,7 @@ const ANALYSIS_SCHEMA = (() => {
     // Structured outputs exige que `required` cubra TODAS las properties
     // declaradas. newOpportunities y watchlist pueden venir como lista vacía,
     // pero tienen que venir.
-    required: ['analystOpinion', 'riskProfile', 'assets', 'macro', 'newOpportunities', 'watchlist', 'actions'],
+    required: ['analystOpinion', 'riskProfile', 'assets', 'macro', 'newOpportunities', 'watchlist', 'upcomingEvents', 'actions'],
     properties: {
       analystOpinion: { type: 'string', description: '3-4 oraciones ASCII: que funciona, que arrastra, recomendacion del mes.' },
       riskProfile:    { type: 'string' },
@@ -174,6 +174,19 @@ const ANALYSIS_SCHEMA = (() => {
             risk:   { type: 'string', description: 'Riesgo principal, en ASCII.' },
           },
           required: ['asset', 'reason', 'risk'],
+        },
+      },
+      upcomingEvents: {
+        type: 'array',
+        description: 'Eventos de mercado relevantes en los proximos 60 dias para este portafolio.',
+        items: {
+          type: 'object', additionalProperties: false,
+          properties: {
+            fecha: { type: 'string', description: 'Fecha en formato YYYY-MM-DD.' },
+            tipo:  { type: 'string', enum: ['fed', 'earnings', 'macro', 'crypto'] },
+            texto: { type: 'string', description: 'Descripcion breve en ASCII, maximo 60 caracteres.' },
+          },
+          required: ['fecha', 'tipo', 'texto'],
         },
       },
       watchlist: {
@@ -507,7 +520,13 @@ capitalizacion cuyo precio no puedes saber sin buscarlo.
 Si tras buscar no encuentras el precio de un activo, pon 0 en "price". Un cero
 se interpreta como "no encontrado" y se conserva el precio del mes pasado; un
 numero inventado corrompe la valoracion del portafolio entero.
-Prioriza buscar los activos de mayor peso: ${keys.slice(0, 6).join(', ')}.`;
+Prioriza buscar los activos de mayor peso: ${keys.slice(0, 6).join(', ')}.
+
+En "upcomingEvents" incluye los eventos de mercado de los PROXIMOS 60 dias que
+afecten a este portafolio: reuniones de la FED, reportes de resultados de las
+acciones que tengo, y hitos macro o cripto relevantes. Fechas reales en formato
+YYYY-MM-DD, nunca pasadas. Si no encuentras ninguno con fecha confirmada,
+devuelve una lista vacia en vez de inventar fechas.`;
 }
 
 // ─── CALCULAR SNAPSHOT DEL PORTAFOLIO ────────────────────────────────────────
@@ -543,6 +562,7 @@ function computeSnapshot(positions, analysisData, cash) {
     actions:          analysisData.actions           || [],
     newOpportunities: analysisData.newOpportunities || [],
     watchlist:        analysisData.watchlist         || {},
+    upcomingEvents:   analysisData.upcomingEvents    || [],
   };
 }
 

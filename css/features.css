@@ -145,3 +145,33 @@
 .watch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g);max-width:720px}
 .watch-card{background:var(--surface);border:1px dashed var(--border);border-radius:var(--r-sm);padding:16px 17px;border-top:2px dashed var(--asset-color,var(--border));opacity:.95}
 .watch-tag{font-size:9px;color:var(--text-muted);font-family:var(--mono);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-subtle)}
+
+/* ── FRANJA DE DCA ───────────────────────────────────────────────────────────
+   Sustituye al DCA Tracker en columna, que ocupaba el 42% del ancho para tres
+   líneas de texto estático. Aquí el estado sale de las compras del mes: verde
+   si ya se cumplió, ámbar si va a medias. */
+.dca-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:var(--g)}
+.dca-tile{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--r-sm);padding:11px 13px;min-width:0}
+.dca-tile.is-done{border-color:rgba(0,217,163,.35);background:linear-gradient(180deg,var(--green-dim),var(--surface))}
+.dca-tile.is-partial{border-color:rgba(245,200,66,.35)}
+.dca-tile.is-loading{color:var(--text-muted);font-size:11px;justify-content:center}
+.dca-tile-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.dca-tile-body{flex:1;min-width:0}
+.dca-tile-label{font-size:11px;color:var(--text-muted);letter-spacing:.2px}
+.dca-tile-state{font-size:13px;font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dca-tile.is-done .dca-tile-state{color:var(--green)}
+.dca-tile.is-partial .dca-tile-state{color:var(--yellow)}
+.dca-tile-sub{font-size:9.5px;color:var(--text-muted);margin-top:1px}
+.dca-tile-meta{text-align:right;flex-shrink:0}
+.dca-tile-check{font-size:13px;line-height:1;color:var(--text-muted)}
+.dca-tile.is-done .dca-tile-check{color:var(--green)}
+.dca-tile.is-partial .dca-tile-check{color:var(--yellow)}
+.dca-tile-next{font-size:9.5px;color:var(--text-muted);font-family:var(--mono);margin-top:3px}
+.dca-tile .cash-update-btn{flex-shrink:0;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+
+.cal-empty{color:var(--text-muted);font-size:11px;padding:14px 0;text-align:center}
+
+@media(max-width:600px){
+  .dca-strip{grid-template-columns:1fr;gap:8px}
+  .dca-tile{padding:9px 11px}
+}

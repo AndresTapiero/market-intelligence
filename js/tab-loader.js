@@ -97,6 +97,9 @@
     }
     if (e.detail && e.detail.tab === 'transacciones') {
       // Re-initialize log filter and cash display after tab loads
+      if (typeof window.renderDca         === 'function') window.renderDca();
+      if (typeof window.renderEvents      === 'function') window.renderEvents();
+      if (typeof window.renderMonthFilter === 'function') window.renderMonthFilter();
       var select = document.getElementById('logMonthFilter');
       if (select && typeof window.filterLogByMonth === 'function') window.filterLogByMonth(select.value);
       if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();

@@ -169,6 +169,110 @@ export function computePortfolio(holdings, prices = {}, cash = 0) {
   };
 }
 
+// ─── DCA ──────────────────────────────────────────────────────────────────────
+// La estrategia: $50 en BTC y $50 en acciones cada mes. `dia` es cuándo toca.
+export const DCA_TARGETS = [
+  { id: 'btc',     label: 'DCA Bitcoin',  icon: '₿',  color: '#f7931a', tickers: ['btc'],               monto: 50, dia: 1  },
+  { id: 'stocks',  label: 'DCA Acciones', icon: '📈', color: '#00d4a0', tickers: ['voo', 'qqq'],        monto: 50, dia: 30 },
+];
+
+/** Primer día del mes de `fecha`, en horario local. */
+const inicioDeMes = fecha => new Date(fecha.getFullYear(), fecha.getMonth(), 1);
+
+/**
+ * Estado del DCA del mes en curso, derivado del journal.
+ *
+ * Antes el tracker mostraba "$50 USD / mes", "Próximo: agosto 1, 2026" y unos
+ * contadores "+4 / $200" escritos a mano que nunca se movían. Ahora sale de las
+ * compras reales: si este mes ya pusiste los $50, la ficha se marca cumplida.
+ *
+ * @param {Array}  journal  filas de inv_journal
+ * @param {Date}   hoy
+ * @param {Array}  targets  por defecto DCA_TARGETS
+ */
+export function dcaStatus(journal, hoy = new Date(), targets = DCA_TARGETS) {
+  const desde = inicioDeMes(hoy);
+
+  const delMes = (journal ?? []).filter(row => {
+    if (row.fecha_venta) return false;            // las ventas no cuentan como DCA
+    const f = new Date(row.fecha);
+    return !Number.isNaN(+f) && f >= desde && f <= hoy;
+  });
+
+  return targets.map(t => {
+    const invertido = delMes
+      .filter(r => t.tickers.includes(String(r.ticker ?? '').toLowerCase()))
+      .reduce((s, r) => {
+        const monto = parseFloat(r.inversion_monto);
+        if (Number.isFinite(monto)) return s + monto;
+        // Fallback si falta inversion_monto: cantidad × precio
+        return s + (parseFloat(r.numero_acciones) || 0) * (parseFloat(r.precio_entrada) || 0);
+      }, 0);
+
+    const completo = invertido >= t.monto;
+    return {
+      ...t,
+      invertido,
+      completo,
+      falta: Math.max(0, t.monto - invertido),
+      // Parcial: puso algo pero no lo suficiente.
+      parcial: invertido > 0 && !completo,
+      proxima: proximaFecha(t.dia, hoy, completo),
+    };
+  });
+}
+
+/**
+ * Próxima fecha en que toca un DCA.
+ *
+ * Si ya está cumplido este mes, apunta al mes siguiente. `dia` se recorta al
+ * último día real del mes, para que "día 30" funcione en febrero.
+ */
+export function proximaFecha(dia, hoy = new Date(), yaCumplido = false) {
+  const candidato = mes => {
+    const ultimo = new Date(hoy.getFullYear(), mes + 1, 0).getDate();
+    return new Date(hoy.getFullYear(), mes, Math.min(dia, ultimo));
+  };
+
+  let f = candidato(hoy.getMonth());
+  if (yaCumplido || f < new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())) {
+    f = candidato(hoy.getMonth() + 1);
+  }
+  return f;
+}
+
+/**
+ * Eventos futuros ordenados: los del DCA (calculados aquí) más los de mercado
+ * que trae el análisis mensual.
+ *
+ * @param {Array} dca            salida de dcaStatus
+ * @param {Array} eventosMercado [{ fecha: 'YYYY-MM-DD', tipo, texto }]
+ * @param {Date}  hoy
+ * @param {number} limite
+ */
+export function upcomingEvents(dca = [], eventosMercado = [], hoy = new Date(), limite = 5) {
+  const hoySinHora = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+
+  const deDca = dca.map(t => ({
+    fecha: t.proxima,
+    tipo:  'dca',
+    texto: `${t.label} $${t.monto}`,
+    color: t.color,
+  }));
+
+  const deMercado = (eventosMercado ?? [])
+    .map(e => {
+      const f = new Date(e.fecha + 'T00:00:00');
+      return Number.isNaN(+f) ? null : { fecha: f, tipo: e.tipo || 'evento', texto: e.texto, color: null };
+    })
+    .filter(Boolean);
+
+  return [...deDca, ...deMercado]
+    .filter(e => e.fecha >= hoySinHora)
+    .sort((a, b) => a.fecha - b.fecha)
+    .slice(0, limite);
+}
+
 /** Mapa clave → precio a partir de la lista de metadatos de mercado. */
 export function pricesFromAssetData(assetData = []) {
   const out = {};

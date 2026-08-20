@@ -42,6 +42,8 @@
 .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
 .macro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--g);margin-bottom:var(--g-lg)}
+/* En Transacciones la bitacora es el contenido principal; los eventos, apoyo. */
+#tab-transacciones .two-col{grid-template-columns:1.6fr 1fr}
 .three-col{display:grid;grid-template-columns:1fr 1.4fr;gap:var(--g);margin-bottom:var(--g-lg)}
 .three-col-stack{display:flex;flex-direction:column;gap:var(--g)}
 .opp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--g)}

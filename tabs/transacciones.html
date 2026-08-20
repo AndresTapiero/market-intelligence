@@ -1,51 +1,31 @@
-<div class="three-col">
-  <div class="card"><h3 class="section-title">DCA Tracker<span class="info-icon" data-tooltip-key="dca">ⓘ</span></h3>
-    <div class="dca-grid">
-      <div class="dca-item">
-        <div class="asset-icon-sm" style="background:#f7931a22;color:#f7931a">₿</div>
-        <div class="dca-info"><div class="dca-name">DCA Bitcoin</div><div class="dca-amount mono">$50 USD / mes</div><div class="dca-next">Próximo: agosto 1, 2026</div></div>
-        <div class="dca-stats"><div class="mono pos">+4</div><div class="mono text-muted">$200</div></div>
-      </div>
-      <div class="dca-item">
-        <div class="asset-icon-sm" style="background:#00d4a022;color:#00d4a0">📈</div>
-        <div class="dca-info"><div class="dca-name">DCA Acciones</div><div class="dca-amount mono">$50 USD / mes</div><div class="dca-next">Próximo: julio 30, 2026</div></div>
-        <div class="dca-stats"><div class="mono pos">+4</div><div class="mono text-muted">$200</div></div>
-      </div>
-      <div class="dca-item">
-        <div class="asset-icon-sm" style="background:rgba(90,96,128,0.15);color:var(--text-muted);font-size:13px">$</div>
-        <div class="dca-info">
-          <div class="dca-name">Cash disponible (Hapi)</div>
-          <div class="dca-amount mono" id="cashDisplayAmount">$200.00 USD</div>
-          <div class="dca-next" id="cashDisplayDate">Actualizado hace 18 días</div>
-        </div>
-        <button class="cash-update-btn" onclick="openCashModal()" aria-label="Actualizar cash">✏️ Actualizar</button>
-      </div>
-    </div>
-  </div>
-  <div class="three-col-stack">
+<!-- Franja de estado: DCA del mes y cash. La pinta app._renderDca(). -->
+<div class="dca-strip" id="dcaStrip">
+  <div class="dca-tile is-loading"><div class="dca-tile-label">Cargando estado del DCA…</div></div>
+</div>
+
+<div class="two-col">
   <div class="card">
     <div class="log-card-header">
       <h3 class="section-title" style="margin-bottom:0">Bitácora de compras</h3>
       <select class="log-month-select" id="logMonthFilter" onchange="filterLogByMonth(this.value)">
         <option value="all">Todos los meses</option>
-        <option value="2026-08" selected>Agosto 2026</option>
-        <option value="2026-07">Julio 2026</option>
       </select>
     </div>
     <div class="log-list">
-    <div class="log-header"><span>Fecha</span><span>Activo</span><span>Cantidad</span><span>Precio unit.</span><span>Monto USD</span><span></span></div>
-    <div class="log-scroll" id="logScroll">
-      <div class="log-empty" style="color:var(--text-muted);padding:14px 0;text-align:center;font-size:11px">Cargando bitácora...</div>
+      <div class="log-header"><span>Fecha</span><span>Activo</span><span>Cantidad</span><span>Precio unit.</span><span>Monto USD</span><span></span></div>
+      <div class="log-scroll" id="logScroll">
+        <div class="log-empty" style="color:var(--text-muted);padding:14px 0;text-align:center;font-size:11px">Cargando bitácora...</div>
+      </div>
+      <div class="log-empty" id="logEmpty" style="display:none">Sin compras registradas ese mes.</div>
     </div>
-    <div class="log-empty" id="logEmpty" style="display:none">Sin compras registradas ese mes.</div>
-  </div></div>
-  <div class="card"><h3 class="section-title">Próximos eventos</h3><div class="cal-grid">
-    <div class="cal-row"><div class="cal-fecha mono" style="color:var(--blue)">Jun 18</div><div class="cal-dot" style="background:var(--blue)"></div><div class="cal-evento">Decisión FED — tasas de interés</div></div>
-    <div class="cal-row"><div class="cal-fecha mono" style="color:var(--yellow)">Jun 25</div><div class="cal-dot" style="background:var(--yellow)"></div><div class="cal-evento">Earnings NVDA Q2 (estimado)</div></div>
-    <div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jun 30</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Acciones — VOO/QQQ $50</div></div>
-    <div class="cal-row"><div class="cal-fecha mono" style="color:var(--accent)">Jul 1</div><div class="cal-dot" style="background:var(--accent)"></div><div class="cal-evento">DCA Bitcoin $50</div></div>
-  </div></div>
-  </div><!-- /three-col-stack -->
+  </div>
+
+  <div class="card">
+    <h3 class="section-title">Próximos eventos</h3>
+    <div class="cal-grid" id="eventsGrid">
+      <div class="cal-empty">Cargando eventos…</div>
+    </div>
+  </div>
 </div>
 
 <div class="card mb" id="sellHistoryCard" style="display:none">

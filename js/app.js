@@ -6,7 +6,7 @@
 
 import { SUPABASE_CONFIG } from './config.js';
 import { buildHoldings, buildAssetData, buildColors } from './baseline.js';
-import { computePortfolio, pricesFromAssetData } from './portfolio-model.js';
+import { computePortfolio, pricesFromAssetData, dcaStatus, upcomingEvents } from './portfolio-model.js';
 import { fmtUSD, fmtSigned, fmtPrice, fmtPct, signClass } from './format.js';
 import { AuthService } from './auth-service.js';
 import { PortfolioHistoryService } from './portfolio-history-service.js';
@@ -116,6 +116,8 @@ class InvestmentApp {
         .order('fecha', { ascending: true });
 
       if (error) throw error;
+      // Guardado para el estado del DCA, los eventos y el filtro de meses.
+      this._journal = data || [];
       if (!data?.length) return;
 
       // SIEMPRE desde el baseline puro, nunca desde window.EXISTING_ASSETS.
@@ -188,6 +190,9 @@ class InvestmentApp {
       this._updateResumenCards();
       this._updateAnalisisTab();
       this._renderPortfolioChart();
+      this._renderDca();
+      this._renderEvents();
+      this._renderMonthFilter();
       await this._loadBuyHistory();
       document.dispatchEvent(new CustomEvent('portfolio-synced'));
 
@@ -684,6 +689,22 @@ class InvestmentApp {
       const btc = p.byAsset.find(a => a.key === 'btc');
       if (btc) set('stickyBtc', fmtPrice(btc.price));
 
+      // "vs mes" mostraba +1.5% fijo: ningún código escribía nunca en ese
+      // elemento. Ahora se compara contra el total del reporte anterior, y si
+      // no hay con qué comparar se dice, en vez de inventar un número.
+      const anterior = Number(this._historicalReports?.[0]?.portfolio_snapshot?.total);
+      const vsEl = document.getElementById('stickyVsMes');
+      if (vsEl) {
+        if (Number.isFinite(anterior) && anterior > 0) {
+          const variacion = (totals.grandTotal / anterior - 1) * 100;
+          vsEl.textContent = fmtPct(variacion);
+          vsEl.className   = 'sticky-stat-val num ' + signClass(variacion);
+        } else {
+          vsEl.textContent = '—';
+          vsEl.className   = 'sticky-stat-val num';
+        }
+      }
+
       // Cards del tab Resumen, si ya están cargados
       set('resumeTotal', fmtUSD(totals.grandTotal));
       set('resumeCash',  fmtUSD(totals.cash));
@@ -1033,6 +1054,121 @@ class InvestmentApp {
     return window.PORTFOLIO;
   }
 
+  /**
+   * Franja de estado del DCA + cash.
+   *
+   * Sustituye al tracker anterior, que mostraba "$50 USD / mes", un "Próximo:
+   * agosto 1, 2026" que ya había pasado y unos contadores "+4 / $200" escritos
+   * a mano. Ahora el estado sale de las compras reales del mes.
+   */
+  _renderDca() {
+    const strip = document.getElementById('dcaStrip');
+    if (!strip) return;
+
+    const estado = dcaStatus(this._journal || []);
+    strip.innerHTML = '';
+
+    for (const t of estado) {
+      const tile = document.createElement('div');
+      tile.className = 'dca-tile ' + (t.completo ? 'is-done' : t.parcial ? 'is-partial' : 'is-pending');
+
+      const estadoTexto = t.completo
+        ? `Hecho · ${fmtUSD(t.invertido)}`
+        : t.parcial
+          ? `Faltan ${fmtUSD(t.falta)}`
+          : `Pendiente · ${fmtUSD(t.monto)}`;
+
+      const proxima = t.proxima.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+
+      tile.innerHTML =
+        `<div class="dca-tile-icon" style="background:${t.color}22;color:${t.color}">${t.icon}</div>` +
+        `<div class="dca-tile-body">` +
+          `<div class="dca-tile-label">${t.label}</div>` +
+          `<div class="dca-tile-state">${estadoTexto}</div>` +
+        `</div>` +
+        `<div class="dca-tile-meta">` +
+          `<div class="dca-tile-check">${t.completo ? '✅' : t.parcial ? '◐' : '○'}</div>` +
+          `<div class="dca-tile-next">${proxima}</div>` +
+        `</div>`;
+      strip.appendChild(tile);
+    }
+
+    // Ficha de cash. Conserva los ids que escribe cash.js.
+    const cash = document.createElement('div');
+    cash.className = 'dca-tile is-cash';
+    cash.innerHTML =
+      `<div class="dca-tile-icon" style="background:rgba(90,96,128,.15);color:var(--text-muted)">$</div>` +
+      `<div class="dca-tile-body">` +
+        `<div class="dca-tile-label">Cash disponible</div>` +
+        `<div class="dca-tile-state mono" id="cashDisplayAmount">—</div>` +
+        `<div class="dca-tile-sub" id="cashDisplayDate"></div>` +
+      `</div>` +
+      `<button class="cash-update-btn" onclick="openCashModal()" aria-label="Actualizar cash disponible">✏️</button>`;
+    strip.appendChild(cash);
+
+    if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
+  }
+
+  /**
+   * Próximos eventos: las fechas de DCA se calculan aquí; las de mercado (FED,
+   * earnings) las trae el análisis mensual y viven en el snapshot.
+   *
+   * Antes esta sección estaba escrita a mano con fechas de junio y julio, que a
+   * finales de agosto llevaban dos meses vencidas.
+   */
+  _renderEvents() {
+    const grid = document.getElementById('eventsGrid');
+    if (!grid) return;
+
+    const delReporte = this._historicalReports?.[0]?.portfolio_snapshot?.upcomingEvents || [];
+    const eventos = upcomingEvents(dcaStatus(this._journal || []), delReporte);
+
+    grid.innerHTML = '';
+    if (!eventos.length) {
+      grid.innerHTML = '<div class="cal-empty">Sin eventos próximos. Se llenan con el análisis mensual.</div>';
+      return;
+    }
+
+    const colorPorTipo = {
+      dca: 'var(--accent)', fed: 'var(--blue)', earnings: 'var(--yellow)',
+      macro: 'var(--orange)', crypto: 'var(--green)',
+    };
+
+    for (const e of eventos) {
+      const color = e.color || colorPorTipo[e.tipo] || 'var(--text-muted)';
+      const row = document.createElement('div');
+      row.className = 'cal-row';
+      row.innerHTML =
+        `<div class="cal-fecha mono" style="color:${color}">${e.fecha.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}</div>` +
+        `<div class="cal-dot" style="background:${color}"></div>` +
+        `<div class="cal-evento"></div>`;
+      row.querySelector('.cal-evento').textContent = e.texto;   // texto del modelo: nunca como HTML
+      grid.appendChild(row);
+    }
+  }
+
+  /** Opciones del filtro de meses, derivadas de la bitácora real. */
+  _renderMonthFilter() {
+    const sel = document.getElementById('logMonthFilter');
+    if (!sel) return;
+
+    const meses = [...new Set((this._journal || [])
+      .filter(r => !r.fecha_venta && r.fecha)
+      .map(r => String(r.fecha).substring(0, 7)))].sort().reverse();
+
+    const previo = sel.value;
+    sel.innerHTML = '<option value="all">Todos los meses</option>';
+    for (const m of meses) {
+      const [a, mm] = m.split('-');
+      const etiqueta = new Date(+a, +mm - 1, 1).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = etiqueta.charAt(0).toUpperCase() + etiqueta.slice(1);
+      sel.appendChild(opt);
+    }
+    sel.value = [...sel.options].some(o => o.value === previo) ? previo : (meses[0] || 'all');
+  }
+
   _rerenderPortfolio() {
     ['stocksPnlContainer','cryptoPnlContainer','stocksCompContainer','cryptoCompContainer']
       .forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
@@ -1065,4 +1201,7 @@ window.deleteTransaction = (id) => app.deleteTransaction(id);
 window.updateResumenCards = () => app._updateResumenCards();
 window.updateAnalisisTab       = () => app._updateAnalisisTab();
 window.renderPortfolioChart    = () => app._renderPortfolioChart();
+window.renderDca               = () => app._renderDca();
+window.renderEvents            = () => app._renderEvents();
+window.renderMonthFilter       = () => app._renderMonthFilter();
 window.saveCashToSupabase = (amount) => app.updateCash(amount);
