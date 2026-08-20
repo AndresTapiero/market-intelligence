@@ -56,45 +56,47 @@ function deriveKeys(positions) {
 
 // ─── SCHEMA DE SALIDA ─────────────────────────────────────────────────────────
 /**
- * JSON Schema del análisis, construido con los tickers reales de este mes.
+ * JSON Schema del análisis.
  *
- * Se enumeran las claves en vez de usar additionalProperties porque así el
- * modelo devuelve exactamente los activos que pedimos, ni uno más ni uno menos.
+ * Los activos se describen con UN sub-schema compartido vía additionalProperties,
+ * no enumerando ticker por ticker. Enumerarlos parecía mejor —garantizaba que el
+ * modelo devolviera exactamente los activos pedidos— pero replica el mismo objeto
+ * una vez por ticker y la API rechaza la petición:
  *
- * `price` es number, no string: es lo que impedía que los precios llegaran al
- * dashboard (ver toNumber y la fase 1). Con el schema, el tipo está garantizado
- * por construcción y ese bug no puede reaparecer.
+ *   400 The compiled grammar is too large [...] Simplify your tool schemas
+ *
+ * Con 18 activos era inviable. La garantía que se pierde se recupera validando
+ * en código tras el parseo (ver validateAssets), que además da un mensaje mucho
+ * más claro que un fallo de schema.
+ *
+ * `price` sigue siendo number, que es lo que impedía que los precios llegaran al
+ * dashboard (ver toNumber y la fase 1).
+ *
+ * El schema es constante: no depende de los tickers del mes, así que el prefijo
+ * de la petición se mantiene estable entre corridas.
  */
-function buildSchema(keys) {
-  const assetProps = {};
-  for (const key of keys) {
-    const properties = {
+const ANALYSIS_SCHEMA = (() => {
+  const assetSchema = {
+    type: 'object', additionalProperties: false,
+    properties: {
       price:    { type: 'number', description: 'Precio actual en USD. Solo el numero, sin simbolo de moneda ni separadores de miles.' },
       change7d: { type: 'string', description: 'Variacion a 7 dias, por ejemplo "+1.4%" o "-3.2%".' },
       signal:   { type: 'string', enum: ['BUY', 'HOLD', 'WAIT'] },
-    };
-    const required = ['price', 'change7d', 'signal'];
+      context:  { type: 'string', description: 'Solo para los activos accionables: 2 oraciones de analisis en ASCII.' },
+    },
+    required: ['price', 'change7d', 'signal'],
+  };
 
-    if (ACCIONABLES.includes(key)) {
-      properties.context = { type: 'string', description: '2 oraciones de analisis en ASCII.' };
-      required.push('context');
-    }
-    assetProps[key] = { type: 'object', additionalProperties: false, properties, required };
-  }
-
-  const watchProps = {};
-  for (const key of WATCHLIST) {
-    watchProps[key] = {
-      type: 'object', additionalProperties: false,
-      properties: {
-        price:    { type: 'number' },
-        change7d: { type: 'string' },
-        signal:   { type: 'string', enum: ['BUY', 'WAIT'] },
-        note:     { type: 'string', description: '1 oracion evaluando la entrada, en ASCII.' },
-      },
-      required: ['price', 'change7d', 'signal', 'note'],
-    };
-  }
+  const watchSchema = {
+    type: 'object', additionalProperties: false,
+    properties: {
+      price:    { type: 'number' },
+      change7d: { type: 'string' },
+      signal:   { type: 'string', enum: ['BUY', 'WAIT'] },
+      note:     { type: 'string', description: '1 oracion evaluando la entrada, en ASCII.' },
+    },
+    required: ['price', 'change7d', 'signal', 'note'],
+  };
 
   return {
     type: 'object',
@@ -104,9 +106,9 @@ function buildSchema(keys) {
       analystOpinion: { type: 'string', description: '3-4 oraciones ASCII: que funciona, que arrastra, recomendacion del mes.' },
       riskProfile:    { type: 'string' },
       assets: {
-        type: 'object', additionalProperties: false,
-        properties: assetProps,
-        required: keys,
+        type: 'object',
+        description: 'Un campo por ticker, en minusculas, con el ticker como clave.',
+        additionalProperties: assetSchema,
       },
       macro: {
         type: 'object', additionalProperties: false,
@@ -132,7 +134,11 @@ function buildSchema(keys) {
           required: ['asset', 'reason', 'risk'],
         },
       },
-      watchlist: { type: 'object', additionalProperties: false, properties: watchProps },
+      watchlist: {
+        type: 'object',
+        description: 'Un campo por ticker de la watchlist, en minusculas.',
+        additionalProperties: watchSchema,
+      },
       actions: {
         type: 'array',
         items: {
@@ -146,6 +152,32 @@ function buildSchema(keys) {
       },
     },
   };
+})();
+
+/**
+ * Comprueba que el modelo devolvió los activos pedidos.
+ *
+ * Reemplaza la garantía que daba enumerar los tickers en el schema, que hubo
+ * que quitar porque la gramática compilada se pasaba de tamaño. Avisa por cada
+ * ticker ausente en vez de tumbar la corrida entera: perder el precio de un
+ * activo un mes es molesto, perder el reporte completo lo es más.
+ */
+function validateAssets(assets, keys) {
+  const faltan = keys.filter(k => !assets[k]);
+  if (faltan.length) {
+    console.warn(`⚠️ El modelo no devolvió: ${faltan.join(', ').toUpperCase()}`);
+  }
+  const sobran = Object.keys(assets).filter(k => !keys.includes(k));
+  if (sobran.length) {
+    console.warn(`⚠️ Activos no solicitados, se ignoran: ${sobran.join(', ').toUpperCase()}`);
+  }
+  if (faltan.length === keys.length) {
+    throw new Error('El modelo no devolvió ningún activo de los solicitados');
+  }
+  const sinContexto = keys.filter(k => ACCIONABLES.includes(k) && assets[k] && !assets[k].context);
+  if (sinContexto.length) {
+    console.warn(`⚠️ Sin análisis narrativo: ${sinContexto.join(', ').toUpperCase()}`);
+  }
 }
 
 // ─── LLAMADA A LA API ─────────────────────────────────────────────────────────
@@ -279,7 +311,7 @@ function buildPrompt(positions, cash, keys) {
 
   const accionablesActivos = keys.filter(k => ACCIONABLES.includes(k)).join(', ').toUpperCase();
 
-  // La forma de la respuesta la impone el JSON Schema (ver buildSchema), así que
+  // La forma de la respuesta la impone ANALYSIS_SCHEMA, así que
   // el prompt no lleva plantilla ni instrucciones de formato: solo el encargo.
   return `Eres el analista financiero personal de Andres Tapiero. Hoy es ${today}.
 
@@ -300,6 +332,11 @@ REGLAS DEL INVERSIONISTA:
 - Analisis narrativo SOLO para los activos accionables: ${accionablesActivos}
 - Perfil: moderado-agresivo (volatilidad crypto aceptada, disciplina DCA)
 
+En "assets" incluye EXACTAMENTE estos ${keys.length} tickers como claves en minusculas,
+uno por cada uno, sin anadir ni omitir ninguno:
+${keys.join(', ')}
+
+El campo "context" solo para los accionables (${accionablesActivos.toLowerCase() || 'ninguno'}); en el resto omitelo.
 Los precios van como numero puro, sin simbolo de moneda ni separadores de miles.
 Usa solo ASCII en todos los textos.`;
 }
@@ -489,7 +526,7 @@ async function main() {
     thinking:   { type: 'adaptive' },
     output_config: {
       effort: 'high',
-      format: { type: 'json_schema', schema: buildSchema(activeKeys) },
+      format: { type: 'json_schema', schema: ANALYSIS_SCHEMA },
     },
     tools:    [{ type: 'web_search_20260209', name: 'web_search', max_uses: 7 }],
     messages: [{ role: 'user', content: buildPrompt(positions, cash, activeKeys) }],
@@ -507,6 +544,7 @@ async function main() {
   console.log('🧠 Procesando análisis...');
   const analysisData = JSON.parse(textBlock.text);
   const assets       = analysisData.assets ?? {};
+  validateAssets(assets, activeKeys);
 
   // 4. Calcular snapshot del portafolio con los precios frescos
   const snapshot = computeSnapshot(positions, analysisData, cash);
