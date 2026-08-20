@@ -187,6 +187,90 @@ function assetsFromList(list) {
   return out;
 }
 
+// ─── CORDURA DE PRECIOS ───────────────────────────────────────────────────────
+// Variación máxima admisible frente al reporte anterior. Generosa a propósito:
+// el crypto se mueve de verdad. Lo que se busca atajar no es un rally, es un
+// precio inventado.
+const LIMITE_VARIACION = { crypto: 100, etf: 40, stock: 60 };
+
+/**
+ * Descarta precios que no pueden ser ciertos comparándolos con el reporte
+ * anterior.
+ *
+ * Hace falta porque el schema obliga al modelo a devolver un número para CADA
+ * activo. Cuando la búsqueda no encuentra un precio —típico en memecoins— el
+ * modelo no puede abstenerse, así que lo inventa. En la corrida del 2026-08-20
+ * eso multiplicó el portafolio por 2,3: GIGA +1856%, TRUMP +1386%, y VOO
+ * cayendo un 8% mientras QQQ subía un 12%, algo imposible entre dos índices
+ * amplios de EEUU.
+ *
+ * Un precio descartado deja al activo con el del mes anterior: degradado pero
+ * no corrupto. Si se descarta demasiado, la respuesta entera no es de fiar y
+ * se aborta antes de escribir nada.
+ */
+function sanityCheckPrices(assets, previos, positions) {
+  const rechazados = [];
+  const revisables = [];
+
+  for (const [key, datos] of Object.entries(assets)) {
+    const nuevo    = toNumber(datos?.price);
+    const anterior = previos[key];
+    if (nuevo === null || anterior === undefined || anterior <= 0) continue;
+
+    revisables.push(key);
+    const variacion = (nuevo / anterior - 1) * 100;
+    const limite    = LIMITE_VARIACION[positions[key]?.type] ?? 60;
+
+    if (Math.abs(variacion) > limite) {
+      rechazados.push({ key, anterior, nuevo, variacion, limite });
+      delete assets[key].price;   // sin precio → no se guarda (ver parsedAssets)
+    }
+  }
+
+  if (rechazados.length) {
+    console.warn(`\n⚠️ ${rechazados.length} precio(s) descartados por variación imposible:`);
+    for (const r of rechazados) {
+      console.warn(`   ${r.key.toUpperCase().padEnd(9)} $${r.anterior} → $${r.nuevo}  ` +
+                   `(${r.variacion >= 0 ? '+' : ''}${r.variacion.toFixed(0)}%, límite ±${r.limite}%)`);
+    }
+    console.warn('   Conservan el precio del reporte anterior.\n');
+  }
+
+  // Si falla más de un tercio, no es un activo raro: es la respuesta entera.
+  if (revisables.length >= 3 && rechazados.length > revisables.length / 3) {
+    throw new Error(
+      `${rechazados.length} de ${revisables.length} precios son inverosímiles — ` +
+      `la respuesta no es fiable y no se guarda. Revisa el prompt o las búsquedas.`
+    );
+  }
+
+  return rechazados;
+}
+
+/** Precios del reporte anterior, para comparar. Vacío si no hay histórico. */
+async function fetchPreviousPrices(supabase) {
+  const { data: prev } = await supabase
+    .from('portfolio_history')
+    .select('id')
+    .eq('user_id', USER_ID)
+    .order('report_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!prev) return {};
+
+  const { data: rows } = await supabase
+    .from('portfolio_assets')
+    .select('asset_key, price_num')
+    .eq('report_id', prev.id);
+
+  const out = {};
+  for (const r of rows ?? []) {
+    const p = Number(r.price_num);
+    if (Number.isFinite(p) && p > 0) out[r.asset_key.toLowerCase()] = p;
+  }
+  return out;
+}
+
 /**
  * Comprueba que el modelo devolvió los activos pedidos.
  *
@@ -371,7 +455,16 @@ ${keys.join(', ')}
 
 El campo "context" llevalo solo en los accionables (${accionablesActivos.toLowerCase() || 'ninguno'}); en el resto dejalo como cadena vacia.
 Los precios van como numero puro, sin simbolo de moneda ni separadores de miles.
-Usa solo ASCII en todos los textos.`;
+Usa solo ASCII en todos los textos.
+
+CRITICO SOBRE LOS PRECIOS:
+Cada precio debe salir de una busqueda web concreta de HOY. No estimes, no
+extrapoles y no uses lo que recuerdes: varios de estos son memecoins de baja
+capitalizacion cuyo precio no puedes saber sin buscarlo.
+Si tras buscar no encuentras el precio de un activo, pon 0 en "price". Un cero
+se interpreta como "no encontrado" y se conserva el precio del mes pasado; un
+numero inventado corrompe la valoracion del portafolio entero.
+Prioriza buscar los activos de mayor peso: ${keys.slice(0, 6).join(', ')}.`;
 }
 
 // ─── CALCULAR SNAPSHOT DEL PORTAFOLIO ────────────────────────────────────────
@@ -551,6 +644,10 @@ async function main() {
   if (!activeKeys.length) throw new Error('No hay posiciones abiertas que analizar');
   console.log(`   ${activeKeys.length} activos con posición abierta: ${activeKeys.join(', ').toUpperCase()}`);
 
+  // Precios del mes pasado, para contrastar los que devuelva el modelo.
+  const previousPrices = await fetchPreviousPrices(supabase);
+  console.log(`   ${Object.keys(previousPrices).length} precios del reporte anterior para comparar`);
+
   // 3. Llamar Anthropic API con web_search
   console.log('🌐 Consultando mercado en tiempo real...');
   const response = await runAnalysis(anthropic, {
@@ -581,6 +678,9 @@ async function main() {
   const analysisData = JSON.parse(textBlock.text);
   const assets       = assetsFromList(analysisData.assets);
   validateAssets(assets, activeKeys);
+
+  // Descartar precios imposibles ANTES de calcular nada ni escribir en Supabase.
+  sanityCheckPrices(assets, previousPrices, positions);
 
   // El resto del script (y el snapshot que se guarda) trabaja con el mapa.
   analysisData.assets = assets;
