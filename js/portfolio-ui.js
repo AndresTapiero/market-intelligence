@@ -22,66 +22,59 @@ function renderPnl() {
   const tmpl = document.getElementById('pnlRowTemplate');
   if (!stocksEl || !cryptoEl || !tmpl) return;
 
-  let sInv = 0, sAct = 0, cInv = 0, cAct = 0;
-  let sCount = 0, cCount = 0;
+  // Consume window.PORTFOLIO, calculado una sola vez por app._recomputeModel().
+  // Antes esta funcion recorria ASSET_DATA y EXISTING_ASSETS por su cuenta,
+  // duplicando el calculo que ya hacian otras cinco funciones.
+  var P = window.PORTFOLIO;
+  if (!P) return;
 
-  window.ASSET_DATA.forEach(function(asset) {
-    const key = asset.ticker.toLowerCase();
-    const holding = window.EXISTING_ASSETS[key];
-    if (!holding || holding.qty <= 0) return;
+  var meta = {};
+  (window.ASSET_DATA || []).forEach(function(a) { meta[a.ticker.toLowerCase()] = a; });
 
-    const costAvg = holding.costAvg;
-    const qty = holding.qty;
-    const currentPrice = asset.price;
-    const invested = qty * costAvg;
-    const actual = qty * currentPrice;
-    const pnlD = actual - invested;
-    const pnlP = (currentPrice - costAvg) / costAvg * 100;
-    const isPos = pnlD >= 0;
-    const color = (window.ASSET_COLORS || {})[key] || 'var(--accent)';
+  P.byAsset.forEach(function(a) {
+    var color = (window.ASSET_COLORS || {})[a.key] || 'var(--accent)';
+    var m = meta[a.key] || {};
+    var isPos = a.pnl >= 0;
 
-    const clone = tmpl.content.cloneNode(true);
-    const icon = clone.querySelector('.asset-icon-sm');
-    icon.textContent = asset.icon;
+    var clone = tmpl.content.cloneNode(true);
+    var icon = clone.querySelector('.asset-icon-sm');
+    icon.textContent = m.icon || a.ticker[0];
     icon.style.background = color + '22';
     icon.style.color = color;
 
-    clone.querySelector('.pnl-name').textContent = asset.ticker;
-    clone.querySelector('.pnl-qty').textContent = formatQty(qty);
+    clone.querySelector('.pnl-name').textContent = a.ticker;
+    clone.querySelector('.pnl-qty').textContent = window.formatQty(a.qty);
+
     var badge = clone.querySelector('.pnl-type-badge');
     if (badge) {
-      if (asset.type === 'etf')   { badge.textContent = 'ETF';    badge.className = 'pnl-type-badge etf'; }
-      else if (asset.type === 'stock') { badge.textContent = 'Acción'; badge.className = 'pnl-type-badge stock'; }
+      if (a.type === 'etf')        { badge.textContent = 'ETF';    badge.className = 'pnl-type-badge etf'; }
+      else if (a.type === 'stock') { badge.textContent = 'Accion'; badge.className = 'pnl-type-badge stock'; }
       else                         { badge.style.display = 'none'; }
     }
 
-    // Columna Invertido (total costo base + precio unitario de compra)
-    const investedEl  = clone.querySelector('.pnl-invested');
-    const costUnitEl  = clone.querySelector('.pnl-cost-unit');
-    if (investedEl) investedEl.textContent = '$' + invested.toFixed(0);
-    if (costUnitEl)  costUnitEl.textContent = '@ ' + fmtPrice(costAvg);
+    var investedEl = clone.querySelector('.pnl-invested');
+    var costUnitEl = clone.querySelector('.pnl-cost-unit');
+    if (investedEl) investedEl.textContent = '$' + a.cost.toFixed(0);
+    if (costUnitEl) costUnitEl.textContent = '@ ' + fmtPrice(a.costAvg);
 
-    // Columna Valor hoy (total a precios actuales + precio unitario de mercado)
-    const actualEl      = clone.querySelector('.pnl-actual');
-    const marketUnitEl  = clone.querySelector('.pnl-market-unit');
-    if (actualEl)     actualEl.textContent    = '$' + actual.toFixed(0);
-    if (marketUnitEl) marketUnitEl.textContent = '@ ' + fmtPrice(currentPrice);
+    var actualEl     = clone.querySelector('.pnl-actual');
+    var marketUnitEl = clone.querySelector('.pnl-market-unit');
+    if (actualEl)     actualEl.textContent     = '$' + a.market.toFixed(0);
+    if (marketUnitEl) marketUnitEl.textContent = '@ ' + fmtPrice(a.price);
 
-    const dollarEl = clone.querySelector('.pnl-dollar');
-    const pctEl   = clone.querySelector('.pnl-pct');
-    dollarEl.textContent = (isPos ? '+$' : '-$') + Math.abs(pnlD).toFixed(0);
+    var dollarEl = clone.querySelector('.pnl-dollar');
+    var pctEl    = clone.querySelector('.pnl-pct');
+    dollarEl.textContent = (isPos ? '+$' : '-$') + Math.abs(a.pnl).toFixed(0);
     dollarEl.className   = 'mono num pnl-dollar ' + (isPos ? 'pos' : 'neg');
-    pctEl.textContent    = (isPos ? '+' : '') + pnlP.toFixed(1) + '%';
+    pctEl.textContent    = (isPos ? '+' : '') + a.pnlPct.toFixed(1) + '%';
     pctEl.className      = 'mono num small pnl-pct ' + (isPos ? 'pos' : 'neg');
 
-    if (asset.type === 'stock' || asset.type === 'etf') {
-      stocksEl.appendChild(clone);
-      sInv += invested; sAct += actual; sCount++;
-    } else {
-      cryptoEl.appendChild(clone);
-      cInv += invested; cAct += actual; cCount++;
-    }
+    (a.type === 'crypto' ? cryptoEl : stocksEl).appendChild(clone);
   });
+
+  var sInv = P.byType.stocks.cost,  sAct = P.byType.stocks.market;
+  var cInv = P.byType.crypto.cost,  cAct = P.byType.crypto.market;
+  var sCount = P.byType.stocks.count, cCount = P.byType.crypto.count;
 
   var setEl = function(id, text, cls) {
     var el = document.getElementById(id);
@@ -120,17 +113,15 @@ function renderComp() {
   const tmpl = document.getElementById('compRowTemplate');
   if (!stocksEl || !cryptoEl || !tmpl) return;
 
-  const stocks = [], cryptos = [];
-  let sTotal = 0, cTotal = 0;
+  var P = window.PORTFOLIO;
+  if (!P) return;
 
-  window.ASSET_DATA.forEach(function(asset) {
-    const key = asset.ticker.toLowerCase();
-    const holding = window.EXISTING_ASSETS[key];
-    if (!holding || holding.qty <= 0) return;
-    const actual = holding.qty * asset.price;
-    const entry = { ticker: asset.ticker, actual: actual, color: (window.ASSET_COLORS || {})[key] || 'var(--accent)' };
-    if (asset.type === 'stock' || asset.type === 'etf') { stocks.push(entry); sTotal += actual; }
-    else { cryptos.push(entry); cTotal += actual; }
+  var stocks = [], cryptos = [];
+  var sTotal = P.byType.stocks.market, cTotal = P.byType.crypto.market;
+
+  P.byAsset.forEach(function(a) {
+    var entry = { ticker: a.ticker, actual: a.market, color: (window.ASSET_COLORS || {})[a.key] || 'var(--accent)' };
+    (a.type === 'crypto' ? cryptos : stocks).push(entry);
   });
 
   stocks.sort(function(a,b) { return b.actual - a.actual; });

@@ -6,6 +6,8 @@
 
 import { SUPABASE_CONFIG } from './config.js';
 import { buildHoldings, buildAssetData, buildColors } from './baseline.js';
+import { computePortfolio, pricesFromAssetData } from './portfolio-model.js';
+import { fmtUSD, fmtSigned, fmtPrice, fmtPct, signClass } from './format.js';
 import { AuthService } from './auth-service.js';
 import { PortfolioService } from './portfolio-service.js';
 import { PortfolioHistoryService } from './portfolio-history-service.js';
@@ -184,6 +186,7 @@ class InvestmentApp {
 
       console.log('✅ Portafolio sincronizado desde Supabase');
       window.populateAssetSelects?.();
+      this._recomputeModel();
       this._rerenderPortfolio();
       this._updateStickyBar();
       this._updateResumenCards();
@@ -486,114 +489,115 @@ class InvestmentApp {
 
   _updateAnalisisTab() {
     try {
-      const assets    = window.EXISTING_ASSETS || {};
-      const assetData = window.ASSET_DATA || [];
-      const cash      = window.CURRENT_CASH || 0;
+      const p = window.PORTFOLIO || this._recomputeModel();
+      const { allocation, byType, totals } = p;
+      if (totals.grandTotal <= 0) return;
 
-      // Calcular valores por categoría
-      let btcVal = 0, etfVal = 0, stockVal = 0, altVal = 0, totalCrypto = 0, totalStocks = 0;
-
-      assetData.forEach(a => {
-        const key = a.ticker.toLowerCase();
-        const h   = assets[key];
-        if (!h || h.qty <= 0) return;
-        const val = h.qty * a.price;
-
-        if (a.type === 'etf')    { etfVal    += val; totalStocks += val; }
-        else if (a.type === 'stock') { stockVal  += val; totalStocks += val; }
-        else if (key === 'btc')  { btcVal    += val; totalCrypto += val; }
-        else                     { altVal    += val; totalCrypto += val; }
-      });
-
-      const total = totalCrypto + totalStocks + cash;
-      if (total <= 0) return;
-
-      const pct = v => (v / total * 100);
-      const fmtPct = v => v.toFixed(1) + '%';
-      const gap = (actual, target) => {
-        const diff = actual - target;
-        const el_cls = diff >= 0 ? 'neg' : 'pos'; // sobre el objetivo = negativo (ya lo tienes)
-        return { text: (diff >= 0 ? '-' : '+') + Math.abs(diff).toFixed(1) + 'pp', cls: el_cls };
-      };
-
-      const setBar = (barId, pctId, gapId, val, target) => {
-        const p    = pct(val);
-        const barEl  = document.getElementById(barId);
-        const pctEl  = document.getElementById(pctId);
-        const gapEl  = document.getElementById(gapId);
-        if (barEl) barEl.style.width = Math.min(p, 100).toFixed(1) + '%';
-        if (pctEl) pctEl.textContent = fmtPct(p);
+      const setBar = (barId, pctId, gapId, actual, objetivo) => {
+        const barEl = document.getElementById(barId);
+        const pctEl = document.getElementById(pctId);
+        const gapEl = document.getElementById(gapId);
+        if (barEl) barEl.style.width = Math.min(actual, 100).toFixed(1) + '%';
+        if (pctEl) pctEl.textContent = actual.toFixed(1) + '%';
         if (gapEl) {
-          const g = gap(p, target);
-          gapEl.textContent = g.text;
-          gapEl.className   = 'alloc-gap mono num ' + g.cls;
+          const diff = actual - objetivo;
+          gapEl.textContent = (diff >= 0 ? '-' : '+') + Math.abs(diff).toFixed(1) + 'pp';
+          // Estar por encima del objetivo no es "bueno": ya no hay que comprar.
+          gapEl.className = 'alloc-gap mono num ' + (diff >= 0 ? 'neg' : 'pos');
         }
       };
 
-      setBar('allocBtcBar',   'allocBtcPct',   'allocBtcGap',   btcVal,   30);
-      setBar('allocEtfBar',   'allocEtfPct',   'allocEtfGap',   etfVal,   30);
-      setBar('allocStockBar', 'allocStockPct', 'allocStockGap', stockVal, 25);
-      setBar('allocAltBar',   'allocAltPct',   'allocAltGap',   altVal,   15);
+      setBar('allocBtcBar',   'allocBtcPct',   'allocBtcGap',   allocation.btc,   30);
+      setBar('allocEtfBar',   'allocEtfPct',   'allocEtfGap',   allocation.etf,   30);
+      setBar('allocStockBar', 'allocStockPct', 'allocStockGap', allocation.stock, 25);
+      setBar('allocAltBar',   'allocAltPct',   'allocAltGap',   allocation.alt,   15);
 
-      // Hint dinámico: categoría más alejada del objetivo
-      const gaps = [
-        { name: 'ETFs',            diff: 30 - pct(etfVal)   },
-        { name: 'Acciones indiv.', diff: 25 - pct(stockVal) },
-        { name: 'Altcoins',        diff: pct(altVal) - 15   },
-        { name: 'Bitcoin',         diff: pct(btcVal) - 30   },
+      // Hint: la categoría más alejada de su objetivo por debajo.
+      const brechas = [
+        { name: 'ETFs',            diff: 30 - allocation.etf   },
+        { name: 'Acciones indiv.', diff: 25 - allocation.stock },
+        { name: 'Altcoins',        diff: allocation.alt - 15   },
+        { name: 'Bitcoin',         diff: allocation.btc - 30   },
       ];
-      const mostNeeded = gaps.filter(g => g.diff > 0).sort((a,b) => b.diff - a.diff)[0];
+      const prioritaria = brechas.filter(g => g.diff > 0).sort((a, b) => b.diff - a.diff)[0];
       const hintEl = document.getElementById('allocHint');
-      if (hintEl && mostNeeded) {
-        hintEl.innerHTML = '💡 Tu próxima inversión debería priorizar <strong>' + mostNeeded.name + '</strong> (' + mostNeeded.diff.toFixed(1) + ' pp por debajo del objetivo).';
+      if (hintEl && prioritaria) {
+        hintEl.innerHTML = '💡 Tu próxima inversión debería priorizar <strong>' +
+          prioritaria.name + '</strong> (' + prioritaria.diff.toFixed(1) + ' pp por debajo del objetivo).';
       } else if (hintEl) {
         hintEl.textContent = '✅ Portafolio alineado con los objetivos de asignación.';
       }
 
-      // Actualizar COP widget con valores reales
+      // Widget de conversión a pesos
       if (window.COP_DATA) {
-        window.COP_DATA.totalUsd  = totalCrypto + totalStocks;
-        window.COP_DATA.cryptoUsd = totalCrypto;
-        window.COP_DATA.stocksUsd = totalStocks;
-        window.COP_DATA.cashUsd   = cash;
+        window.COP_DATA.totalUsd  = totals.market;
+        window.COP_DATA.cryptoUsd = byType.crypto.market;
+        window.COP_DATA.stocksUsd = byType.stocks.market;
+        window.COP_DATA.cashUsd   = totals.cash;
         if (typeof window.initCopWidget === 'function') window.initCopWidget();
       }
+
+      this._renderMacro();
     } catch (err) {
       console.warn('⚠️ Error actualizando análisis:', err.message);
     }
   }
 
+  /**
+   * Contexto macro desde el último reporte.
+   *
+   * Estaba escrito a mano en tabs/analisis.html: TRM $3,230.44, FED 4.25%,
+   * dominancia 56.4%, Fear & Greed 27 — congelados desde que se escribió el
+   * archivo, aunque analyze.js los trae frescos a Supabase cada mes.
+   */
+  _renderMacro() {
+    const macro = this._historicalReports?.[0]?.portfolio_snapshot?.macro;
+    if (!macro) return;
+
+    const set = (id, text) => { const el = document.getElementById(id); if (el && text) el.textContent = text; };
+
+    const trm = Number(macro.usdcop);
+    if (Number.isFinite(trm) && trm > 0) {
+      set('macroUsdCop', '$' + trm.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' COP');
+      // El simulador de pesos usaba una TRM fija en ui-utils.js.
+      if (window.COP_DATA) window.COP_DATA.baseRate = trm;
+    }
+    set('macroFedRate',   macro.fedrate);
+    set('macroBtcDom',    macro.btcDominance);
+    set('macroFearGreed', macro.fearGreed != null ? String(macro.fearGreed) : null);
+    set('macroFearLabel', macro.fearGreedLabel);
+    set('macroNarrative', macro.narrative);
+  }
+
   _updateResumenCards() {
     try {
-      const assets    = window.EXISTING_ASSETS || {};
-      const assetData = window.ASSET_DATA || [];
+      const P = window.PORTFOLIO || this._recomputeModel();
+      const { totals, byType, byAsset } = P;
 
-      let totalCrypto = 0, totalStocks = 0, costCrypto = 0, costStocks = 0;
-      const stockResults = [], cryptoResults = [];
-
-      assetData.forEach(a => {
-        const key = a.ticker.toLowerCase();
-        const h   = assets[key];
-        if (!h || h.qty <= 0) return;
-        const val  = h.qty * a.price;
-        const cost = h.qty * h.costAvg;
-        const pnlPct = ((a.price - h.costAvg) / h.costAvg * 100);
-        const entry = { ticker: a.ticker, label: a.label || a.ticker, val, cost, pnlPct, change: a.change || '—' };
-        if (a.type === 'stock' || a.type === 'etf') { totalStocks += val; costStocks += cost; stockResults.push(entry); }
-        else                    { totalCrypto += val; costCrypto += cost; cryptoResults.push(entry); }
+      // Los cambios porcentuales del reporte (change) siguen viniendo de
+      // ASSET_DATA: son metadatos de mercado, no cálculo de portafolio.
+      const meta = {};
+      (window.ASSET_DATA || []).forEach(a => { meta[a.ticker.toLowerCase()] = a; });
+      const entrada = a => ({
+        ticker: a.ticker, label: a.label, val: a.market, cost: a.cost,
+        pnlPct: a.pnlPct, change: meta[a.key]?.change || '—',
       });
 
-      const totalMarket = totalCrypto + totalStocks;
-      const totalCost   = costCrypto + costStocks;
-      const pnl         = totalMarket - totalCost;
-      const pnlPct      = totalCost > 0 ? (pnl / totalCost * 100) : 0;
-      const cryptoPnlPct = costCrypto > 0 ? ((totalCrypto - costCrypto) / costCrypto * 100) : 0;
-      const stocksPnlPct = costStocks > 0 ? ((totalStocks - costStocks) / costStocks * 100) : 0;
-      const cash         = window.CURRENT_CASH || 0;
+      const stockResults  = byAsset.filter(a => a.type !== 'crypto').map(entrada);
+      const cryptoResults = byAsset.filter(a => a.type === 'crypto').map(entrada);
 
-      const fmtD  = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 });
-      const fmtPct = (n, plus=true) => (n >= 0 && plus ? '+' : n < 0 ? '' : '') + n.toFixed(1) + '%';
-      const cls   = n => n >= 0 ? 'pos' : 'neg';
+      const totalCrypto = byType.crypto.market, costCrypto = byType.crypto.cost;
+      const totalStocks = byType.stocks.market, costStocks = byType.stocks.cost;
+      const totalMarket = totals.market;
+      const totalCost   = totals.cost;
+      const pnl         = totals.pnl;
+      const pnlPct      = totals.pnlPct;
+      const cryptoPnlPct = byType.crypto.pnlPct;
+      const stocksPnlPct = byType.stocks.pnlPct;
+      const cash         = totals.cash;
+
+      const fmtD  = n => fmtUSD(n);
+      const cls   = n => signClass(n);
       const set   = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
       const setClass = (id, c) => { const el = document.getElementById(id); if (el) el.className = c; };
 
@@ -668,53 +672,25 @@ class InvestmentApp {
 
   _updateStickyBar() {
     try {
-      const assets = window.EXISTING_ASSETS || {};
-      const assetData = window.ASSET_DATA || [];
+      const p = window.PORTFOLIO || this._recomputeModel();
+      const { totals } = p;
 
-      let total = 0;
-      let costBase = 0;
+      const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
-      assetData.forEach(function(asset) {
-        const key = asset.ticker.toLowerCase();
-        const holding = assets[key];
-        if (!holding || holding.qty <= 0) return;
-        total += holding.qty * asset.price;
-        costBase += holding.qty * holding.costAvg;
-      });
+      set('stickyTotal', fmtUSD(totals.grandTotal));
 
-      const cashAmount = window.CURRENT_CASH || 0;
-      total += cashAmount;
-
-      const pnl = total - cashAmount - costBase; // PnL solo sobre activos invertidos
-
-      // BTC price
-      const btcAsset = assetData.find(a => a.ticker === 'BTC');
-      const btcPrice = btcAsset ? btcAsset.price : null;
-
-      // Update DOM
-      const totalEl = document.getElementById('stickyTotal');
       const pnlEl = document.getElementById('stickyPnl');
-      const btcEl = document.getElementById('stickyBtc');
-
-      const fmtUSD = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
-      if (totalEl) totalEl.textContent = fmtUSD(total);
-
       if (pnlEl) {
-        const isPos = pnl >= 0;
-        pnlEl.textContent = (isPos ? '+' : '-') + fmtUSD(pnl);
-        pnlEl.className = 'sticky-stat-val num ' + (isPos ? 'pos' : 'neg');
+        pnlEl.textContent = fmtSigned(totals.pnl);
+        pnlEl.className   = 'sticky-stat-val num ' + signClass(totals.pnl);
       }
 
-      if (btcEl && btcPrice !== null) {
-        btcEl.textContent = '$' + btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
+      const btc = p.byAsset.find(a => a.key === 'btc');
+      if (btc) set('stickyBtc', fmtPrice(btc.price));
 
-      // Actualizar cards del tab Resumen (si ya están cargados)
-      const resumeTotal = document.getElementById('resumeTotal');
-      const resumeCash  = document.getElementById('resumeCash');
-      if (resumeTotal) resumeTotal.textContent = fmtUSD(total);
-      if (resumeCash)  resumeCash.textContent  = fmtUSD(cashAmount);
+      // Cards del tab Resumen, si ya están cargados
+      set('resumeTotal', fmtUSD(totals.grandTotal));
+      set('resumeCash',  fmtUSD(totals.cash));
     } catch (err) {
       console.warn('⚠️ Error actualizando sticky bar:', err.message);
     }
@@ -1083,6 +1059,23 @@ class InvestmentApp {
   async _refreshBalanceAfterSell(netAmount = 0) {
     await this.updateCash(window.CURRENT_CASH + netAmount);
     await this._syncPortfolioFromSupabase();
+  }
+
+  /**
+   * Calcula el portafolio UNA vez y lo publica en window.PORTFOLIO.
+   *
+   * Todos los renderizadores leen de ahí en vez de recorrer ASSET_DATA y
+   * EXISTING_ASSETS por su cuenta, que es lo que antes estaba duplicado en
+   * seis sitios con variaciones sutiles. Va por window porque portfolio-ui.js
+   * y las vistas son scripts clásicos y no pueden importar módulos.
+   */
+  _recomputeModel() {
+    window.PORTFOLIO = computePortfolio(
+      window.EXISTING_ASSETS || {},
+      pricesFromAssetData(window.ASSET_DATA || []),
+      window.CURRENT_CASH || 0
+    );
+    return window.PORTFOLIO;
   }
 
   _rerenderPortfolio() {
