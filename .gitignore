@@ -14,4 +14,3 @@ run-weekly.sh
 # Logs
 logs/
 .raw-response-cache.json
-latest-report.html

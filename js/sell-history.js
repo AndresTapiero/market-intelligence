@@ -44,15 +44,18 @@ function renderSellHistory() {
     const isPos = s.pnl >= 0;
     const color = (window.ASSET_COLORS || {})[s.key] || 'var(--accent)';
     const tr = document.createElement('tr');
+    // Las clases col-* deben coincidir con las de <thead>: el CSS oculta
+    // columnas en movil por clase, no por nth-child, para que reordenar aqui
+    // no haga desaparecer la columna equivocada.
     tr.innerHTML =
-      '<td class="mono">' + s.date + '</td>' +
+      '<td class="mono col-fecha">' + s.date + '</td>' +
       '<td><span class="mono" style="color:' + color + ';font-weight:700">' + s.ticker + '</span></td>' +
-      '<td class="mono num">' + window.formatQty(s.qty) + '</td>' +
+      '<td class="mono num col-cantidad">' + window.formatQty(s.qty) + '</td>' +
       '<td class="mono num">' + (s.costAvg ? window.fmtPrice(s.costAvg) : '—') + '</td>' +
-      '<td class="mono num">' + window.fmtPrice(s.price) + '</td>' +
-      '<td class="mono num">$' + s.gross.toFixed(2) + '</td>' +
-      '<td class="mono num" style="color:var(--red)">' + (s.commission > 0 ? '-$' + s.commission.toFixed(2) : '—') + '</td>' +
-      '<td class="mono num">$' + s.net.toFixed(2) + '</td>' +
+      '<td class="mono num col-venta">' + window.fmtPrice(s.price) + '</td>' +
+      '<td class="mono num col-bruto">$' + s.gross.toFixed(2) + '</td>' +
+      '<td class="mono num col-comision" style="color:var(--red)">' + (s.commission > 0 ? '-$' + s.commission.toFixed(2) : '—') + '</td>' +
+      '<td class="mono num col-neto">$' + s.net.toFixed(2) + '</td>' +
       '<td class="mono num ' + (isPos ? 'pos' : 'neg') + '" style="font-weight:700">' + (isPos ? '+$' : '-$') + Math.abs(s.pnl).toFixed(2) + '</td>' +
       '<td class="mono num ' + (isPos ? 'pos' : 'neg') + '">' + (isPos ? '+' : '') + s.pnlPct.toFixed(1) + '%</td>';
     body.appendChild(tr);

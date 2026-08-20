@@ -9,7 +9,6 @@ import { buildHoldings, buildAssetData, buildColors } from './baseline.js';
 import { computePortfolio, pricesFromAssetData } from './portfolio-model.js';
 import { fmtUSD, fmtSigned, fmtPrice, fmtPct, signClass } from './format.js';
 import { AuthService } from './auth-service.js';
-import { PortfolioService } from './portfolio-service.js';
 import { PortfolioHistoryService } from './portfolio-history-service.js';
 import { TransactionService } from './transaction-service.js';
 import { CashService } from './cash-service.js';
@@ -28,7 +27,6 @@ class InvestmentApp {
   constructor() {
     this.supabase = null;
     this.authService = null;
-    this.portfolioService = null;
     this.portfolioHistoryService = null;
     this.transactionService = null;
     this.cashService = null;
@@ -46,7 +44,6 @@ class InvestmentApp {
 
       // Crear servicios (Dependency Injection)
       this.authService = new AuthService(this.supabase);
-      this.portfolioService = new PortfolioService(this.supabase, this.authService);
       this.portfolioHistoryService = new PortfolioHistoryService(this.supabase, this.authService);
       this.transactionService = new TransactionService(this.supabase, this.authService);
       this.cashService = new CashService(this.supabase, this.authService);
@@ -69,7 +66,6 @@ class InvestmentApp {
 
   async afterLogin() {
     document.getElementById('login-gate').style.display = 'none';
-    await this.portfolioService.loadTransactions();
     this._historicalReports = await this.portfolioHistoryService.loadHistoricalReports();
     this.uiManager.updateAuthStatus();
 
@@ -787,7 +783,7 @@ class InvestmentApp {
       await this._syncPortfolioFromSupabase();
     } catch (err) {
       console.warn('⚠️ Error eliminando transacción:', err.message);
-      alert('No se pudo eliminar. Verifica que la política RLS esté activa:\nCREATE POLICY "Delete own entries" ON inv_journal FOR DELETE USING (auth.uid() = user_id);');
+      this.uiManager.showError('No se pudo eliminar la transacción. Intenta de nuevo.');
     }
   }
 
@@ -808,47 +804,6 @@ class InvestmentApp {
     if (typeof window.updateCashDisplayPublic === 'function') window.updateCashDisplayPublic();
   }
 
-  async _loadSellHistoryFromSupabase() {
-    try {
-      const user = this.authService.getCurrentUser();
-      if (!user) return;
-
-      const { data, error } = await this.supabase
-        .from('inv_journal')
-        .select('ticker, numero_acciones, precio_salida, inversion_monto, comision, monto_neto, ganancia_perdida_pct, precio_entrada, fecha_venta, razon_venta, tesis_inversion')
-        .eq('user_id', user.id)
-        .not('fecha_venta', 'is', null)
-        .order('fecha_venta', { ascending: false });
-
-      if (error) throw error;
-      if (!data?.length) return;
-
-      window.SELL_HISTORY = data.map(r => {
-        const qty    = r.numero_acciones || 0;
-        const price  = r.precio_salida   || 0;
-        const costAvg = r.precio_entrada  || 0;
-        const gross  = r.inversion_monto || qty * price;
-        const comm   = r.comision        || 0;
-        const net    = r.monto_neto      || gross - comm;
-        const pnl    = net - (qty * costAvg);
-        const pnlPct = r.ganancia_perdida_pct ?? (costAvg > 0 ? (pnl / (qty * costAvg) * 100) : 0);
-        const date   = r.fecha_venta
-          ? new Date(r.fecha_venta).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
-          : '—';
-        return {
-          key: r.ticker.toLowerCase(),
-          ticker: r.ticker,
-          qty, price, gross, commission: comm, net, pnl, pnlPct, date,
-          reason: r.razon_venta || ''
-        };
-      });
-
-      console.log(`✅ ${window.SELL_HISTORY.length} ventas cargadas desde Supabase`);
-      window.renderSellHistory?.();
-    } catch (err) {
-      console.warn('⚠️ Error cargando historial de ventas:', err.message);
-    }
-  }
 
   async doLogin() {
     const btn = document.getElementById('login-btn');

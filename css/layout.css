@@ -1,5 +1,5 @@
 /* STICKY BAR */
-.sticky-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,12,16,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-subtle);padding:12px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;row-gap:10px}
+.sticky-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,12,16,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-subtle);padding:12px 24px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;row-gap:10px}
 .sticky-logo{font-size:14px;font-weight:800;letter-spacing:-.4px;white-space:nowrap}
 .sticky-logo span{color:var(--accent)}
 .build-tag{font-size:8px;font-weight:600;color:var(--text-muted)!important;background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:6px;font-family:var(--mono);vertical-align:middle}
@@ -86,12 +86,14 @@
   .dca-item{padding:10px;gap:10px}
   .log-list{overflow-x:auto}
   .sell-stat-val{font-size:15px}
-  /* Historial de ventas: ocultar columnas secundarias en tablet/móvil */
-  .sell-hist-table th:nth-child(1), .sell-hist-table td:nth-child(1),
-  .sell-hist-table th:nth-child(3), .sell-hist-table td:nth-child(3),
-  .sell-hist-table th:nth-child(6), .sell-hist-table td:nth-child(6),
-  .sell-hist-table th:nth-child(7), .sell-hist-table td:nth-child(7),
-  .sell-hist-table th:nth-child(8), .sell-hist-table td:nth-child(8) { display:none }
+  /* Historial de ventas: ocultar por clase semántica, no por posición.
+     Antes se usaba nth-child, acoplado al orden en que sell-history.js genera
+     los <td>: reordenar una columna hacia desaparecer la equivocada. */
+  .sell-hist-table .col-fecha,
+  .sell-hist-table .col-cantidad,
+  .sell-hist-table .col-bruto,
+  .sell-hist-table .col-comision,
+  .sell-hist-table .col-neto { display:none }
 }
 @media(max-width:480px){
   body{padding:12px}
@@ -125,9 +127,12 @@
   .sell-stat{padding:10px 10px}
   .sell-stat-val{font-size:14px}
   .sell-stat-label{font-size:8px}
-  /* Historial ventas <480px: solo Activo, P.Compra, P&L $ y P&L % */
-  .sell-hist-table th:nth-child(5), .sell-hist-table td:nth-child(5) { display:none }
+  /* <480px: solo Activo, P.Compra, P&L $ y P&L % */
+  .sell-hist-table .col-venta { display:none }
   /* Tabs: font aún más pequeño para que quepan */
   .tab-btn{font-size:10px;padding:6px 8px}
 }
 @media(max-width:600px){.alloc-row{grid-template-columns:90px 1fr 70px 50px;gap:8px}.alloc-label{font-size:10px}}
+
+/* Area tactil minima de 44px en el boton de borrar de la bitacora. */
+.log-del-btn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}

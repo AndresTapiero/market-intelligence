@@ -62,7 +62,7 @@ function exportPDF() {
   btn.textContent = '⏳ Generando...';
   var opt = {
     margin: 8,
-    filename: 'market-intelligence-agosto-de-2026.pdf',
+    filename: (window.pdfFilename ? window.pdfFilename() : 'market-intelligence.pdf'),
     image: { type: 'jpeg', quality: 0.95 },
     html2canvas: { scale: 2, backgroundColor: '#0a0c10', useCORS: true },
     jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }
@@ -100,17 +100,11 @@ function switchRegModal(action) {
 }
 window.switchRegModal = switchRegModal;
 
-// ---- BUY MODAL ----
-function openBuyModal() { document.getElementById('buyModalOverlay').classList.add('show'); }
-function closeBuyModal() { document.getElementById('buyModalOverlay').classList.remove('show'); }
-window.openBuyModal = openBuyModal;
-window.closeBuyModal = closeBuyModal;
-
-// ---- SELL MODAL ----
-function openSellModal() { document.getElementById('sellModalOverlay').classList.add('show'); }
-function closeSellModal() { document.getElementById('sellModalOverlay').classList.remove('show'); }
-window.openSellModal = openSellModal;
-window.closeSellModal = closeSellModal;
+// Los modales los abre y cierra app.js, que ademas limpia el formulario.
+// Aqui habia una segunda definicion que solo anadia la clase CSS: ganaba
+// app.js por orden de carga (los modulos van despues de los defer), asi que
+// reordenar un <script> reintroducia el bug de "el modal conserva los datos
+// de la compra anterior".
 
 // ---- ASSET SELECT CHANGE ----
 function onAssetSelectChange() {
@@ -156,16 +150,6 @@ window.getSelectedAssetKey = function() {
   }
   return val;
 };
-
-// ---- COPY COMMAND (stub) ----
-function copyCommand() {}
-window.copyCommand = copyCommand;
-
-function generateCashCommand() {}
-window.generateCashCommand = generateCashCommand;
-
-function copyCashCommand() {}
-window.copyCashCommand = copyCashCommand;
 
 // ---- STICKY HEIGHTS ----
 function measureStickyHeights() {

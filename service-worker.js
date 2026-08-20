@@ -3,7 +3,7 @@
 // regenera mensualmente), y solo se sirve el cache cuando no hay red.
 // IMPORTANTE: sube este numero cada vez que la lista de abajo cambie —
 // un CACHE_NAME distinto fuerza a borrar el cache viejo en 'activate'.
-const CACHE_NAME = 'market-intel-cache-v4';
+const CACHE_NAME = 'market-intel-cache-v5';
 const urlsToCache = [
   './latest-report.html',
   './manifest.json',
@@ -32,10 +32,12 @@ const urlsToCache = [
   './js/auth-service.js',
   './js/cash-service.js',
   './js/config.js',
-  './js/portfolio-service.js',
+  './js/format.js',
+  './js/portfolio-model.js',
   './js/portfolio-history-service.js',
   './js/transaction-service.js',
-  './js/ui-manager.js'
+  './js/ui-manager.js',
+  './js/version.js'
 ];
 
 self.addEventListener('install', event => {
