@@ -1057,3 +1057,65 @@ Y a mano, en el navegador:
 5. Registrar una venta parcial → la cantidad baja, el costo promedio no cambia.
 6. Recargar la página → todo persiste.
 7. Abrir en el móvil → nada tapado, modales usables, sin scroll horizontal.
+
+---
+
+# Registro de ejecución — 2026-08-20
+
+Todas las fases aplicadas. Lo que sigue documenta las **desviaciones del plan**
+y los hallazgos que aparecieron al ejecutarlo, no lo que salió según lo previsto.
+
+## Desviaciones deliberadas
+
+| Plan decía | Se hizo | Por qué |
+|---|---|---|
+| `baseline.json` + `fetch` en `initialize()` | `js/baseline.js` como módulo ES | `initialize()` corre en `load`, pero el Resumen se pinta en `DOMContentLoaded`. El fetch llegaba tarde y se veía un parpadeo de ceros. Los módulos se ejecutan antes de ese evento. |
+| `assets` como objeto indexado por ticker | Lista con `ticker` dentro | Structured outputs impone dos restricciones contradictorias para un objeto: enumerar revienta la gramática, y `additionalProperties: <schema>` no está soportado. |
+| Partir `app.js` en ~10 archivos | Los renderizadores consumen `window.PORTFOLIO` | El objetivo real era eliminar el cálculo duplicado en seis sitios, y eso está hecho. Trocear más `app.js` es cosmético y añade riesgo sin beneficio medible. |
+| Buscar precio de todos los activos | Solo acciones/ETFs + 4 cripto | ~$1 por corrida, y forzaba al modelo a inventar los precios que no podía verificar. |
+
+## Bugs encontrados durante la ejecución
+
+Ninguno estaba en el informe original: aparecieron al ejecutar.
+
+1. **El sync duplicaba las cantidades.** `_syncPortfolioFromSupabase` clonaba
+   `window.EXISTING_ASSETS` —que ya tenía el journal aplicado— en vez del
+   baseline. IREN pasaba de 1,18 a 2,36 a 3,54 unidades con cada ↺. Preexistente,
+   pero la fase 0 lo hizo mucho más fácil de disparar al resincronizar en cada
+   compra.
+
+2. **El modelo inventó los precios.** La corrida del 20-ago multiplicó el
+   portafolio por 2,3. Se detectó porque IREN salía a $78,20 el mismo día que se
+   compró a $42,04, y porque VOO caía un 8% mientras QQQ subía un 12%. Causa:
+   `price` obligatorio en el schema, sin forma de abstenerse. Mitigado con
+   `sanityCheckPrices` y el recorte del universo consultado.
+
+3. **Faltaban GRANT en tres tablas.** `service_role` solo los tenía completos
+   sobre `inv_journal`. Y nadie tenía SELECT sobre `portfolio_cash`, así que el
+   cash *parecía* funcionar por el fallback al último snapshot.
+
+4. **`authenticated` sin DELETE sobre `inv_journal`** — el botón 🗑 de la
+   bitácora llevaba roto desde siempre.
+
+5. **Secret renombrado y `PORTFOLIO_USER_ID` ausente.** El análisis llevaba roto
+   nueve días sin que nadie lo notara, porque el cron no vuelve hasta el 26 y no
+   había notificación de fallos.
+
+6. **Jekyll rompía el deploy de Pages** por las llaves dobles de este mismo
+   documento. Resuelto con `.nojekyll`.
+
+## Migraciones SQL aplicadas
+
+| Archivo | Qué hace |
+|---|---|
+| `migration-add-tipo-column.sql` | `inv_journal.tipo` |
+| `migration-price-numeric.sql` | `portfolio_assets.price_num` + backfill |
+| `migration-cash-table.sql` | `portfolio_cash` con RLS + sembrado |
+| `migration-fix-grants.sql` | GRANT en las cuatro tablas |
+
+## Pendiente
+
+- **Borrar el reporte corrupto** si aún está:
+  `DELETE FROM portfolio_history WHERE report_date = '2026-08-20';`
+- **Validar el recorte de precios** en la próxima corrida (26 de cada mes).
+- Trocear `app.js` en vistas, si algún día estorba. Hoy no estorba.
