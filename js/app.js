@@ -560,11 +560,20 @@ class InvestmentApp {
       .map(r => r?.portfolio_snapshot?.macro || r?.macro_data)
       .find(m => m && Object.keys(m).length);
 
+    const grid = document.querySelector('#tab-analisis .macro-grid');
+    const nEl  = document.getElementById('macroNarrative');
+
     if (!macro) {
-      const nEl = document.getElementById('macroNarrative');
-      if (nEl) nEl.textContent = 'Sin contexto macro todavía. Se llena con el análisis mensual.';
+      // Cuatro cajas con "—" parecen un fallo. Sin dato, mejor una sola frase
+      // que explique cuándo aparecerá.
+      if (grid) grid.style.display = 'none';
+      if (nEl) {
+        nEl.textContent = 'El contexto macro aparece con el análisis mensual, que corre el día 26 ' +
+                          'o cuando lo lances a mano desde GitHub Actions.';
+      }
       return;
     }
+    if (grid) grid.style.display = '';
 
     const set = (id, text) => { const el = document.getElementById(id); if (el && text) el.textContent = text; };
 
