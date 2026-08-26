@@ -381,7 +381,14 @@ async function runAnalysis(anthropic, params) {
   let messages = params.messages;
 
   for (let turn = 0; turn < 5; turn++) {
-    const response = await callWithRetry(() => anthropic.messages.create({ ...params, messages }));
+    // Streaming, no create(): con max_tokens alto el SDK rechaza la peticion
+    // no-streaming porque podria pasar de 10 minutos de reloj. La respuesta
+    // completa se recoge con finalMessage(), asi que el resto del flujo no
+    // cambia — aqui no interesan los eventos intermedios, solo no expirar.
+    const response = await callWithRetry(async () => {
+      const stream = anthropic.messages.stream({ ...params, messages });
+      return await stream.finalMessage();
+    });
 
     switch (response.stop_reason) {
       case 'pause_turn':
