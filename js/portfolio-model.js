@@ -289,6 +289,60 @@ export function upcomingEvents(dca = [], eventosMercado = [], hoy = new Date(), 
     .slice(0, limite);
 }
 
+// ─── HISTORIAL MENSUAL ────────────────────────────────────────────────────────
+/**
+ * Convierte los reportes crudos de portfolio_history en filas listas para
+ * mostrar: un mes, su P&L de ese momento, y cuánto cambió desde el mes
+ * anterior.
+ *
+ * El dato ya se guarda en cada reporte desde siempre (`pnl`, `pnlPct` en
+ * portfolio_snapshot) — analyze.js los calcula cada mes y nunca se
+ * mostraron en ningún lado. No hay que tocar Supabase para tener esto: sólo
+ * leer lo que ya está.
+ *
+ * `pnl`/`pnlPct` aquí es SIEMPRE contra el costo base (lo mismo que muestra
+ * el card "Resultado P&L" del Resumen), no la variación del total entre
+ * meses — eso confundiría ganancia real con dinero nuevo metido por DCA.
+ *
+ * @param {Array} historicalReports - salida de loadHistoricalReports(),
+ *   se asume ordenado por report_date DESCENDENTE (más reciente primero).
+ */
+export function monthlyHistory(historicalReports = []) {
+  const filas = (historicalReports ?? [])
+    .map(r => {
+      const s = r?.portfolio_snapshot;
+      const total = Number(s?.total);
+      if (!s || !Number.isFinite(total)) return null;
+
+      const pnl    = Number(s.pnl);
+      const pnlPct = Number(s.pnlPct);
+
+      return {
+        reportDate:  r.report_date,
+        total,
+        cash:        Number(s.cash) || 0,
+        totalCrypto: Number(s.totalCrypto) || 0,
+        totalStocks: Number(s.totalStocks) || 0,
+        pnl:         Number.isFinite(pnl) ? pnl : null,
+        pnlPct:      Number.isFinite(pnlPct) ? pnlPct : null,
+      };
+    })
+    .filter(Boolean);
+
+  // Más reciente primero, sin asumir el orden de entrada.
+  filas.sort((a, b) => new Date(b.reportDate) - new Date(a.reportDate));
+
+  // Cambio de valor total respecto al mes anterior (el de la fila de abajo,
+  // que es más viejo). Aparte del P&L contra costo — sirve para ver de un
+  // vistazo si el portafolio creció o se contrajo mes a mes, con DCA incluido.
+  for (let i = 0; i < filas.length; i++) {
+    const anterior = filas[i + 1];
+    filas[i].deltaVsMesAnterior = anterior ? filas[i].total - anterior.total : null;
+  }
+
+  return filas;
+}
+
 /** Mapa clave → precio a partir de la lista de metadatos de mercado. */
 export function pricesFromAssetData(assetData = []) {
   const out = {};

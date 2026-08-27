@@ -6,7 +6,7 @@
 
 import { SUPABASE_CONFIG } from './config.js';
 import { buildHoldings, buildAssetData, buildColors } from './baseline.js';
-import { computePortfolio, pricesFromAssetData, dcaStatus, upcomingEvents, ALLOCATION_TARGETS } from './portfolio-model.js';
+import { computePortfolio, pricesFromAssetData, dcaStatus, upcomingEvents, ALLOCATION_TARGETS, monthlyHistory } from './portfolio-model.js';
 import { fmtUSD, fmtSigned, fmtPrice, fmtPct, signClass } from './format.js';
 import { AuthService } from './auth-service.js';
 import { PortfolioHistoryService } from './portfolio-history-service.js';
@@ -190,6 +190,7 @@ class InvestmentApp {
       this._updateResumenCards();
       this._updateAnalisisTab();
       this._renderPortfolioChart();
+      this._renderMonthlyHistory();
       this._renderDca();
       this._renderEvents();
       this._renderMonthFilter();
@@ -313,6 +314,64 @@ class InvestmentApp {
       }
     } catch (err) {
       console.warn('⚠️ Error cargando asset data:', err.message);
+    }
+  }
+
+  /**
+   * Historial mensual: una fila por reporte, con su P&L de ese momento y el
+   * cambio de valor total contra el mes anterior.
+   *
+   * El dato (pnl, pnlPct) se guarda en cada reporte desde que existe
+   * analyze.js — nunca se había mostrado en ningún lado. Lee de
+   * this._historicalReports, que ya está en memoria desde el login: no
+   * dispara ninguna llamada nueva a Supabase.
+   */
+  _renderMonthlyHistory() {
+    const cont = document.getElementById('monthHistory');
+    if (!cont) return;
+
+    const filas = monthlyHistory(this._historicalReports);
+    cont.innerHTML = '';
+
+    if (!filas.length) {
+      cont.innerHTML = '<div class="month-history-empty">Sin historial todavía. Se llena con el análisis mensual.</div>';
+      return;
+    }
+
+    for (const f of filas) {
+      const fecha = new Date(f.reportDate + 'T00:00:00').toLocaleDateString('es-CO', {
+        month: 'long', year: 'numeric',
+      });
+
+      const row = document.createElement('div');
+      row.className = 'month-row';
+
+      const pnlHtml = f.pnl !== null
+        ? `<span class="mono num ${signClass(f.pnl)}">${fmtSigned(f.pnl)}</span> <span class="mono num small ${signClass(f.pnl)}">${fmtPct(f.pnlPct)}</span>`
+        : '<span class="text-muted">—</span>';
+
+      const deltaHtml = f.deltaVsMesAnterior !== null
+        ? `<span class="month-row-delta ${signClass(f.deltaVsMesAnterior)}">${f.deltaVsMesAnterior >= 0 ? '▲' : '▼'} ${fmtUSD(Math.abs(f.deltaVsMesAnterior))} vs mes anterior</span>`
+        : '<span class="month-row-delta text-muted">primer reporte</span>';
+
+      row.innerHTML =
+        `<div class="month-row-dot ${signClass(f.pnl ?? 0)}"></div>` +
+        `<div class="month-row-body">` +
+          `<div class="month-row-date"></div>` +
+          `<div class="month-row-sub">${deltaHtml}</div>` +
+        `</div>` +
+        `<div class="month-row-nums">` +
+          `<div class="month-row-total mono num">${fmtUSD(f.total)}</div>` +
+          `<div class="month-row-pnl">${pnlHtml}</div>` +
+        `</div>`;
+
+      // La fecha viene de toLocaleDateString, no del modelo — pero se
+      // inserta por textContent de todas formas, por hábito y por si
+      // report_date algún día trae algo que no sea una fecha limpia.
+      const dateEl = row.querySelector('.month-row-date');
+      dateEl.textContent = fecha.charAt(0).toUpperCase() + fecha.slice(1);
+
+      cont.appendChild(row);
     }
   }
 
@@ -1316,6 +1375,7 @@ window.deleteTransaction = (id) => app.deleteTransaction(id);
 window.updateResumenCards = () => app._updateResumenCards();
 window.updateAnalisisTab       = () => app._updateAnalisisTab();
 window.renderPortfolioChart    = () => app._renderPortfolioChart();
+window.renderMonthlyHistory    = () => app._renderMonthlyHistory();
 window.renderDca               = () => app._renderDca();
 window.renderSignals           = () => app._renderSignals();
 window.renderEvents            = () => app._renderEvents();

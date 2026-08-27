@@ -175,3 +175,33 @@
   .dca-strip{grid-template-columns:1fr;gap:8px}
   .dca-tile{padding:9px 11px}
 }
+
+/* ── HISTORIAL MENSUAL ───────────────────────────────────────────────────────
+   Vive dentro de la misma tarjeta que la gráfica de evolución: la gráfica
+   da la forma, esta lista da los números concretos mes a mes — P&L contra
+   costo (la misma definición que el card "Resultado P&L" del Resumen) y el
+   cambio de valor total contra el mes anterior. */
+.month-history{margin-top:18px;padding-top:14px;border-top:1px solid var(--border-subtle);display:flex;flex-direction:column;gap:2px}
+.month-history-empty{color:var(--text-muted);font-size:11px;padding:10px 0;text-align:center}
+
+.month-row{display:grid;grid-template-columns:8px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-subtle)}
+.month-row:last-child{border-bottom:none}
+
+.month-row-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted)}
+.month-row-dot.pos{background:var(--green)}
+.month-row-dot.neg{background:var(--red)}
+
+.month-row-body{min-width:0}
+.month-row-date{font-size:13px;font-weight:600;text-transform:capitalize}
+.month-row-sub{font-size:10.5px;margin-top:2px}
+.month-row-delta.pos{color:var(--green)}
+.month-row-delta.neg{color:var(--red)}
+
+.month-row-nums{text-align:right}
+.month-row-total{font-size:14px;font-weight:700}
+.month-row-pnl{display:flex;gap:6px;justify-content:flex-end;margin-top:2px}
+
+@media(max-width:480px){
+  .month-row{grid-template-columns:6px 1fr}
+  .month-row-nums{grid-column:2;text-align:left;margin-top:4px}
+}
