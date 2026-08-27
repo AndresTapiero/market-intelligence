@@ -5,7 +5,7 @@
  */
 
 import { SUPABASE_CONFIG } from './config.js';
-import { buildHoldings, buildAssetData, buildColors } from './baseline.js';
+import { BaselineService } from './baseline-service.js';
 import { computePortfolio, pricesFromAssetData, dcaStatus, upcomingEvents, ALLOCATION_TARGETS, monthlyHistory } from './portfolio-model.js';
 import { fmtUSD, fmtSigned, fmtPrice, fmtPct, signClass } from './format.js';
 import { AuthService } from './auth-service.js';
@@ -14,14 +14,15 @@ import { TransactionService } from './transaction-service.js';
 import { CashService } from './cash-service.js';
 import { UIManager } from './ui-manager.js';
 
-// Poblar los globals desde el baseline único, en la evaluación del módulo.
-// Los módulos ES se ejecutan ANTES de DOMContentLoaded, así que esto ocurre
-// a tiempo para el primer render (tab-loader.js pinta el Resumen en ese
-// evento). Los scripts clásicos leen estos globals en tiempo de llamada,
-// nunca en tiempo de carga, así que no importa que se pueblen aquí.
-window.EXISTING_ASSETS = buildHoldings();
-window.ASSET_DATA      = buildAssetData();
-window.ASSET_COLORS    = buildColors();
+// Los globals arrancan vacíos y se pueblan en afterLogin(), cuando ya hay
+// sesión y se puede leer portfolio_baseline. Antes se poblaban aquí mismo,
+// de forma síncrona, porque el baseline era un archivo de código
+// (js/baseline.js); ahora es una lectura a Supabase, así que no puede serlo.
+// No hay problema de timing: nada lee estos globals antes de que
+// afterLogin() sincronice el portafolio, ni siquiera la pantalla de login.
+window.EXISTING_ASSETS = {};
+window.ASSET_DATA      = [];
+window.ASSET_COLORS    = {};
 
 class InvestmentApp {
   constructor() {
@@ -31,6 +32,8 @@ class InvestmentApp {
     this.transactionService = null;
     this.cashService = null;
     this.uiManager = null;
+    this.baselineService = null;
+    this._baseline = null;
   }
 
   /**
@@ -47,6 +50,7 @@ class InvestmentApp {
       this.portfolioHistoryService = new PortfolioHistoryService(this.supabase, this.authService);
       this.transactionService = new TransactionService(this.supabase, this.authService);
       this.cashService = new CashService(this.supabase, this.authService);
+      this.baselineService = new BaselineService(this.supabase, this.authService);
       this.uiManager = new UIManager(this.authService);
 
       console.log('✅ Supabase inicializado');
@@ -68,6 +72,13 @@ class InvestmentApp {
     document.getElementById('login-gate').style.display = 'none';
     this._historicalReports = await this.portfolioHistoryService.loadHistoricalReports();
     this.uiManager.updateAuthStatus();
+
+    // El baseline se carga antes del sync: éste necesita un baseline puro
+    // para clonar en cada corrida (ver _syncPortfolioFromSupabase).
+    this._baseline = await this.baselineService.load();
+    window.EXISTING_ASSETS = this._baseline.holdings;
+    window.ASSET_DATA      = this._baseline.assetData;
+    window.ASSET_COLORS    = this._baseline.colors;
 
     // El cash se carga ANTES del primer render: los totales lo incluyen.
     await this._loadCash();
@@ -125,7 +136,7 @@ class InvestmentApp {
       // anterior, así que clonarlo volvía a sumarlo encima: cada ↺, cada
       // compra y cada venta duplicaban las cantidades (IREN 1.18 → 2.36 →
       // 3.54 sin comprar nada). Partir del baseline hace el sync idempotente.
-      const computed = buildHoldings();
+      const computed = structuredClone(this._baseline.holdings);
 
       // Aplicar transacciones sobre el baseline clonado
       data.forEach(row => {

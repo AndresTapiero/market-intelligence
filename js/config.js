@@ -12,5 +12,6 @@ export const TABLES = {
   JOURNAL: 'inv_journal',
   PORTFOLIO_HISTORY: 'portfolio_history',
   PORTFOLIO_ASSETS: 'portfolio_assets',
-  CASH: 'portfolio_cash'
+  CASH: 'portfolio_cash',
+  BASELINE: 'portfolio_baseline'
 };

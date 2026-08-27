@@ -18,6 +18,34 @@
 import Anthropic            from '@anthropic-ai/sdk';
 import { createClient }     from '@supabase/supabase-js';
 import { buildHoldings, BASELINE } from './js/baseline.js';
+
+// ─── BASELINE: portfolio_baseline (Supabase) con fallback a js/baseline.js ────
+// Mismo patrón de resiliencia que el resto del proyecto: si la tabla no
+// existe o está vacía (p.ej. no se corrió scripts/migration-baseline-table.sql
+// todavía), cae al archivo local sin romper la corrida.
+async function getBaselineHoldings(supabase) {
+  const { data, error } = await supabase
+    .from('portfolio_baseline')
+    .select('ticker, qty, cost_avg, type, label')
+    .eq('user_id', USER_ID);
+
+  if (error || !data?.length) {
+    console.warn('⚠️ portfolio_baseline no disponible — usando js/baseline.js local.');
+    return buildHoldings();
+  }
+
+  const holdings = {};
+  for (const r of data) {
+    holdings[r.ticker] = {
+      qty: Number(r.qty) || 0,
+      costAvg: Number(r.cost_avg) || 0,
+      type: r.type,
+      label: r.label,
+      fundamento: '',
+    };
+  }
+  return holdings;
+}
 import { writeFileSync }    from 'fs';
 import { pathToFileURL }    from 'url';
 
@@ -463,7 +491,7 @@ async function getPositions(supabase) {
 
   if (error) throw new Error(`Error leyendo inv_journal: ${error.message}`);
 
-  const computed = buildHoldings();   // baseline compartido con la app
+  const computed = await getBaselineHoldings(supabase);
 
   (data || []).forEach(row => {
     const ticker = row.ticker.toLowerCase();
