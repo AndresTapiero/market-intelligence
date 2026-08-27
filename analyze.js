@@ -80,6 +80,37 @@ const DOMINIOS_CONFIABLES = [
  * El resto conserva el precio del reporte anterior. Un precio de hace un mes
  * en un activo que vale $2 es mejor que uno inventado en cualquiera.
  */
+/**
+ * URL de cotización directa por ticker, para usar con web_fetch en vez de
+ * web_search. Verificadas a mano con web_fetch el 2026-08-27 antes de
+ * escribir esto — cada una se abrió y devolvió un precio real de la página,
+ * no es un esquema de URL adivinado:
+ *
+ *   IREN  $39.58   VOO $704.20   QQQ $711.37   META $576.14
+ *   BTC-USD $78,822.98   ETH-USD $2,501.29   SOL-USD $101.77
+ *
+ * NVDA no se probó en vivo, pero usa el mismo patrón exacto que las otras
+ * cuatro acciones/ETFs verificadas (finance.yahoo.com/quote/{TICKER}/).
+ *
+ * web_fetch exige que la URL ya esté presente en la conversación — por eso
+ * buildPrompt las escribe literalmente en el texto del prompt, no basta con
+ * declararlas aquí.
+ *
+ * Un ticker que compres y no esté en este mapa cae al respaldo de
+ * web_search (restringido a DOMINIOS_CONFIABLES) — no se rompe nada, sólo
+ * vuelve a costar lo que costaba antes para ese activo en particular.
+ */
+const QUOTE_URLS = {
+  btc:  'https://finance.yahoo.com/quote/BTC-USD/',
+  eth:  'https://finance.yahoo.com/quote/ETH-USD/',
+  sol:  'https://finance.yahoo.com/quote/SOL-USD/',
+  voo:  'https://finance.yahoo.com/quote/VOO/',
+  qqq:  'https://finance.yahoo.com/quote/QQQ/',
+  nvda: 'https://finance.yahoo.com/quote/NVDA/',
+  meta: 'https://finance.yahoo.com/quote/META/',
+  iren: 'https://finance.yahoo.com/quote/IREN/',
+};
+
 function derivePriceKeys(positions, previousPrices) {
   const activos = Object.entries(positions).filter(([, a]) => a.qty > 0);
 
@@ -92,7 +123,13 @@ function derivePriceKeys(positions, previousPrices) {
     .filter(([, a]) => a.type === 'crypto')
     .sort((x, y) => valorDe(y) - valorDe(x))
     .slice(0, CRYPTO_A_CONSULTAR)
-    .map(([k]) => k);
+    .map(([k]) => k)
+    // TAO queda fuera de la consulta automática a pedido explícito: Yahoo
+    // devuelve 503 en TAO-USD (verificado a mano el 2026-08-27, dos intentos),
+    // y el seguimiento se hace manual por ahora en vez de depender de un
+    // respaldo con un formato de URL distinto. No se reemplaza por otra
+    // cripto — simplemente se consulta una menos este mes.
+    .filter(k => k !== 'tao');
 
   return [...equities, ...cripto].sort();
 }
@@ -503,6 +540,14 @@ function buildPrompt(positions, cash, keys) {
 
   const accionablesActivos = keys.filter(k => ACCIONABLES.includes(k)).join(', ').toUpperCase();
 
+  // Un renglón "TICKER: URL" por cada activo con cotización directa conocida.
+  // web_fetch sólo puede traer URLs que ya estén en la conversación, así que
+  // tienen que escribirse aquí literalmente — declararlas en QUOTE_URLS no
+  // basta.
+  const conUrl    = keys.filter(k => QUOTE_URLS[k]);
+  const sinUrl     = keys.filter(k => !QUOTE_URLS[k]);
+  const urlsTexto = conUrl.map(k => `${k.toUpperCase()}: ${QUOTE_URLS[k]}`).join('\n');
+
   // Orden de prioridad para la búsqueda: los accionables primero (siempre se
   // rastrean y llevan análisis narrativo), luego el resto por valor de la
   // posición. Antes esto era keys.slice(0, 6) sobre `keys`, que está ordenado
@@ -522,12 +567,14 @@ function buildPrompt(positions, cash, keys) {
   // el prompt no lleva plantilla ni instrucciones de formato: solo el encargo.
   return `Eres el analista financiero personal de Andres Tapiero. Hoy es ${today}.
 
-Busca en la web los precios ACTUALES de hoy de: ${tickersList}.
-La busqueda esta limitada a paginas de cotizacion directa (Yahoo Finance,
-CoinGecko), asi que ve directo a la pagina de cada ticker en vez de buscar
-noticias o comparativas.
-Busca tambien la TRM oficial de Colombia (USD/COP) de HOY en banrep.gov.co.
-Agrupa tickers en la misma busqueda cuando sea posible.
+Necesito los precios ACTUALES de hoy de: ${tickersList}.
+
+Para estos activos ya tienes la URL exacta de su pagina de cotizacion. Usa
+web_fetch en CADA UNA de estas URLs (una llamada por URL) y lee el precio
+directamente de la pagina, sin buscar nada mas para ellos:
+${urlsTexto}
+${sinUrl.length ? `\nPara el resto (${sinUrl.join(', ').toUpperCase()}), que no tienen URL fija, usa web_search dentro de los dominios permitidos.\n` : ''}
+Busca tambien la TRM oficial de Colombia (USD/COP) de HOY con web_search en banrep.gov.co.
 
 PORTAFOLIO ACTUAL (posiciones activas):
 ${activeAssets}
@@ -551,14 +598,14 @@ Los precios van como numero puro, sin simbolo de moneda ni separadores de miles.
 Usa solo ASCII en todos los textos.
 
 CRITICO SOBRE LOS PRECIOS:
-Cada precio debe salir de una busqueda web concreta de HOY. No estimes, no
-extrapoles y no uses lo que recuerdes: varios de estos son memecoins de baja
-capitalizacion cuyo precio no puedes saber sin buscarlo.
-Si tras buscar no encuentras el precio de un activo, pon 0 en "price". Un cero
-se interpreta como "no encontrado" y se conserva el precio del mes pasado; un
-numero inventado corrompe la valoracion del portafolio entero.
-Busca en ESTE ORDEN, y si el presupuesto de busquedas se agota, que sea en los
-ultimos de la lista, nunca en los primeros: ${prioridad.join(', ').toUpperCase()}.
+Cada precio debe salir de la pagina que fetcheaste o buscaste HOY. No estimes,
+no extrapoles y no uses lo que recuerdes de otras conversaciones.
+Si una pagina falla o no encuentras el precio de un activo, pon 0 en "price".
+Un cero se interpreta como "no encontrado" y se conserva el precio del mes
+pasado; un numero inventado corrompe la valoracion del portafolio entero.
+Si por algun motivo tienes que priorizar (una pagina no responde y toca
+buscar en su lugar), hazlo en ESTE ORDEN, dejando para el final los menos
+importantes: ${prioridad.join(', ').toUpperCase()}.
 Los primeros ${accionablesActivos ? accionablesActivos.split(', ').length : 0}
 (${accionablesActivos}) son el nucleo de la estrategia y llevan analisis
 narrativo: su precio NUNCA debe faltar.
@@ -781,14 +828,23 @@ async function main() {
       effort: 'medium',
       format: { type: 'json_schema', schema: ANALYSIS_SCHEMA },
     },
-    // Acotado a DOMINIOS_CONFIABLES: menos tokens de entrada por resultado, y
-    // menos búsquedas necesarias porque no hay que cruzar varias fuentes.
-    // max_uses baja de 12 a 9 (≈1 por activo) — con una fuente fija ya no hace
-    // falta el margen amplio que pedía la búsqueda sin restringir.
-    tools:    [{
-      type: 'web_search_20260209', name: 'web_search',
-      max_uses: 9, allowed_domains: DOMINIOS_CONFIABLES,
-    }],
+    // web_fetch trae la página exacta de cada activo con URL conocida —sin
+    // paso de búsqueda, sin resultados de comparativas ni noticias— y
+    // max_content_tokens la recorta: el precio está siempre cerca del
+    // principio de una página de cotización, así que 3000 tokens sobran.
+    // web_search se queda como respaldo, sólo para la TRM y para cualquier
+    // activo nuevo que aún no tenga URL en QUOTE_URLS.
+    tools: [
+      {
+        type: 'web_fetch_20260209', name: 'web_fetch',
+        max_uses: 9, allowed_domains: DOMINIOS_CONFIABLES,
+        max_content_tokens: 3000,
+      },
+      {
+        type: 'web_search_20260209', name: 'web_search',
+        max_uses: 4, allowed_domains: DOMINIOS_CONFIABLES,
+      },
+    ],
     messages: [{ role: 'user', content: buildPrompt(positions, cash, priceKeys) }],
   });
 
