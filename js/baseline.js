@@ -25,17 +25,24 @@
 
 export const BASELINE = {
   // ── Crypto ────────────────────────────────────────────────────────────────
-  btc:     { qty: 0.016271, costAvg: 76370.002869, type: 'crypto', label: 'Bitcoin',   icon: '₿', color: '#f7931a', seedPrice: 63736.05 },
-  eth:     { qty: 0.1736,   costAvg: 2532.66,      type: 'crypto', label: 'Ethereum',  icon: 'Ξ', color: '#627eea', seedPrice: 1868.43  },
+  // costAvg corregido el 2026-08-27 contra el tracker de cripto del usuario
+  // (fuente sincronizada con el exchange real). El baseline original venía
+  // de la migración inicial desde history.json y arrastraba estos valores
+  // desviados desde entonces — nadie los había comparado contra la fuente
+  // real hasta ahora. Diferencias verificadas antes del cambio:
+  //   btc +11.7% ($8,949) · eth +0.2% · tao -5.3% · uni -2.9%
+  //   sui +0.9% · sei -7.1% · ena -46.5% (la más grave, casi la mitad)
+  btc:     { qty: 0.016271, costAvg: 85319.32,     type: 'crypto', label: 'Bitcoin',   icon: '₿', color: '#f7931a', seedPrice: 63736.05 },
+  eth:     { qty: 0.1736,   costAvg: 2538.58,      type: 'crypto', label: 'Ethereum',  icon: 'Ξ', color: '#627eea', seedPrice: 1868.43  },
   // Sin posición todavía: sólo aporta metadatos para cuando se compre.
   xrp:     { qty: 0,        costAvg: 0,            type: 'crypto', label: 'XRP',       icon: 'X', color: '#23292f', seedPrice: 0.52     },
   sol:     { qty: 4.179,    costAvg: 173.74,       type: 'crypto', label: 'Solana',    icon: '◎', color: '#9945ff', seedPrice: 73.32    },
-  tao:     { qty: 0.7369,   costAvg: 350.93,       type: 'crypto', label: 'Bittensor', icon: 'τ', color: '#38bdf8', seedPrice: 190.52   },
-  uni:     { qty: 30.68,    costAvg: 9.191,        type: 'crypto', label: 'Uniswap',   icon: 'U', color: '#ff007a', seedPrice: 3.86     },
+  tao:     { qty: 0.7369,   costAvg: 332.38,       type: 'crypto', label: 'Bittensor', icon: 'τ', color: '#38bdf8', seedPrice: 190.52   },
+  uni:     { qty: 30.68,    costAvg: 8.92,         type: 'crypto', label: 'Uniswap',   icon: 'U', color: '#ff007a', seedPrice: 3.86     },
   bnb:     { qty: 0.1075,   costAvg: 673,          type: 'crypto', label: 'BNB',       icon: 'B', color: '#f3ba2f', seedPrice: 592.23   },
-  sui:     { qty: 60.86,    costAvg: 3.688,        type: 'crypto', label: 'SUI',       icon: 'S', color: '#6fbcf0', seedPrice: 1.85     },
-  sei:     { qty: 466.62,   costAvg: 0.2916,       type: 'crypto', label: 'SEI',       icon: 's', color: '#e84142', seedPrice: 0.19     },
-  ena:     { qty: 249.59,   costAvg: 0.2802,       type: 'crypto', label: 'Ethena',    icon: 'E', color: '#00d4ff', seedPrice: 0.28     },
+  sui:     { qty: 60.86,    costAvg: 3.723,        type: 'crypto', label: 'SUI',       icon: 'S', color: '#6fbcf0', seedPrice: 1.85     },
+  sei:     { qty: 466.62,   costAvg: 0.2709,       type: 'crypto', label: 'SEI',       icon: 's', color: '#e84142', seedPrice: 0.19     },
+  ena:     { qty: 249.59,   costAvg: 0.1499,       type: 'crypto', label: 'Ethena',    icon: 'E', color: '#00d4ff', seedPrice: 0.28     },
   avax:    { qty: 2.428,    costAvg: 18.93,        type: 'crypto', label: 'Avalanche', icon: 'A', color: '#e84142', seedPrice: 6.87     },
   giga:    { qty: 873.2,    costAvg: 0.06385,      type: 'crypto', label: 'GIGA',      icon: 'G', color: '#00d4ff', seedPrice: 0.0023   },
   trump:   { qty: 1.151,    costAvg: 36.07,        type: 'crypto', label: 'TRUMP',     icon: 'T', color: '#8250ff', seedPrice: 1.48     },
