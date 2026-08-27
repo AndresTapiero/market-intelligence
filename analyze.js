@@ -53,6 +53,18 @@ function deriveKeys(positions) {
 // Cuántas cripto reciben precio fresco cada mes, por peso en el portafolio.
 const CRYPTO_A_CONSULTAR = 4;
 
+// Dominios de cotización directa: páginas de "quote" con poco HTML alrededor
+// del precio (sin navegación, comentarios ni anuncios). La corrida del
+// 2026-08-26 costó ~$1 con 162.722 tokens de ENTRADA — casi todo contenido de
+// páginas buscadas sin restricción. Acotar a estas fuentes reduce ese peso
+// directamente, y de paso da resultados más consistentes mes a mes.
+const DOMINIOS_CONFIABLES = [
+  'finance.yahoo.com',   // acciones, ETFs y cripto en USD, una sola fuente
+  'coingecko.com',       // respaldo para cripto de baja capitalización
+  'banrep.gov.co',       // TRM oficial de Colombia
+  'dolar-colombia.com',  // respaldo de TRM si banrep no es indexable ese día
+];
+
 /**
  * Subconjunto de activos cuyo precio se busca en la web.
  *
@@ -511,7 +523,10 @@ function buildPrompt(positions, cash, keys) {
   return `Eres el analista financiero personal de Andres Tapiero. Hoy es ${today}.
 
 Busca en la web los precios ACTUALES de hoy de: ${tickersList}.
-Busca tambien la TRM oficial de Colombia (USD/COP) de HOY del Banco de la Republica o fuentes colombianas confiables.
+La busqueda esta limitada a paginas de cotizacion directa (Yahoo Finance,
+CoinGecko), asi que ve directo a la pagina de cada ticker en vez de buscar
+noticias o comparativas.
+Busca tambien la TRM oficial de Colombia (USD/COP) de HOY en banrep.gov.co.
 Agrupa tickers en la misma busqueda cuando sea posible.
 
 PORTAFOLIO ACTUAL (posiciones activas):
@@ -758,13 +773,22 @@ async function main() {
     max_tokens: 32000,
     thinking:   { type: 'adaptive' },
     output_config: {
-      effort: 'high',
+      // 'high' es el mínimo recomendado para trabajo donde importa acertar,
+      // pero esto es "traer 9 precios y resumir", no razonamiento complejo.
+      // 'medium' recorta el pensamiento (y su costo) sin tocar la parte que
+      // sí importa: el precio sigue viniendo de una búsqueda real, nunca
+      // inventado — eso lo garantiza el schema y sanityCheckPrices, no el effort.
+      effort: 'medium',
       format: { type: 'json_schema', schema: ANALYSIS_SCHEMA },
     },
-    // 7 se quedó corto: con 9 activos + TRM, un activo poco líquido (IREN)
-    // que necesita varias búsquedas agotaba el cupo antes de llegar a los
-    // últimos de la lista (ver el comentario de `prioridad` más arriba).
-    tools:    [{ type: 'web_search_20260209', name: 'web_search', max_uses: 12 }],
+    // Acotado a DOMINIOS_CONFIABLES: menos tokens de entrada por resultado, y
+    // menos búsquedas necesarias porque no hay que cruzar varias fuentes.
+    // max_uses baja de 12 a 9 (≈1 por activo) — con una fuente fija ya no hace
+    // falta el margen amplio que pedía la búsqueda sin restringir.
+    tools:    [{
+      type: 'web_search_20260209', name: 'web_search',
+      max_uses: 9, allowed_domains: DOMINIOS_CONFIABLES,
+    }],
     messages: [{ role: 'user', content: buildPrompt(positions, cash, priceKeys) }],
   });
 
