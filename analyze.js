@@ -491,6 +491,21 @@ function buildPrompt(positions, cash, keys) {
 
   const accionablesActivos = keys.filter(k => ACCIONABLES.includes(k)).join(', ').toUpperCase();
 
+  // Orden de prioridad para la búsqueda: los accionables primero (siempre se
+  // rastrean y llevan análisis narrativo), luego el resto por valor de la
+  // posición. Antes esto era keys.slice(0, 6) sobre `keys`, que está ordenado
+  // ALFABÉTICAMENTE por diseño (para que el prompt sea cacheable) — la pista
+  // de "mayor peso" en realidad no tenía nada que ver con el peso. El
+  // 2026-08-26 eso dejó a VOO fuera del "top 6" solo por orden alfabético, el
+  // modelo gastó el presupuesto de búsquedas en IREN (poco líquido) y llegó
+  // sin cupo a NVDA/QQQ/VOO, que volvieron en $0 y abortaron la corrida.
+  const prioridad = [
+    ...ACCIONABLES.filter(k => keys.includes(k)),
+    ...keys.filter(k => !ACCIONABLES.includes(k))
+      .sort((a, b) => (positions[b]?.qty * (positions[b]?.costAvg || 0))
+                     - (positions[a]?.qty * (positions[a]?.costAvg || 0))),
+  ];
+
   // La forma de la respuesta la impone ANALYSIS_SCHEMA, así que
   // el prompt no lleva plantilla ni instrucciones de formato: solo el encargo.
   return `Eres el analista financiero personal de Andres Tapiero. Hoy es ${today}.
@@ -527,7 +542,11 @@ capitalizacion cuyo precio no puedes saber sin buscarlo.
 Si tras buscar no encuentras el precio de un activo, pon 0 en "price". Un cero
 se interpreta como "no encontrado" y se conserva el precio del mes pasado; un
 numero inventado corrompe la valoracion del portafolio entero.
-Prioriza buscar los activos de mayor peso: ${keys.slice(0, 6).join(', ')}.
+Busca en ESTE ORDEN, y si el presupuesto de busquedas se agota, que sea en los
+ultimos de la lista, nunca en los primeros: ${prioridad.join(', ').toUpperCase()}.
+Los primeros ${accionablesActivos ? accionablesActivos.split(', ').length : 0}
+(${accionablesActivos}) son el nucleo de la estrategia y llevan analisis
+narrativo: su precio NUNCA debe faltar.
 
 En "upcomingEvents" incluye los eventos de mercado de los PROXIMOS 60 dias que
 afecten a este portafolio: reuniones de la FED, reportes de resultados de las
@@ -742,7 +761,10 @@ async function main() {
       effort: 'high',
       format: { type: 'json_schema', schema: ANALYSIS_SCHEMA },
     },
-    tools:    [{ type: 'web_search_20260209', name: 'web_search', max_uses: 7 }],
+    // 7 se quedó corto: con 9 activos + TRM, un activo poco líquido (IREN)
+    // que necesita varias búsquedas agotaba el cupo antes de llegar a los
+    // últimos de la lista (ver el comentario de `prioridad` más arriba).
+    tools:    [{ type: 'web_search_20260209', name: 'web_search', max_uses: 12 }],
     messages: [{ role: 'user', content: buildPrompt(positions, cash, priceKeys) }],
   });
 
