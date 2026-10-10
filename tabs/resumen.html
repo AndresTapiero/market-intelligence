@@ -11,30 +11,110 @@
 <div class="totals-bar mb">
   <div class="total-card">
     <div class="total-label">Capital Invertido</div>
-    <div class="total-value num">$4,663.92</div>
+    <div class="total-value num" id="resumeCostBase">$—</div>
     <div class="total-sub">costo base USD</div>
-    <div class="total-breakdown"><span>Crypto + Acc.</span></div>
+    <div class="total-sub" id="resumeCostBaseCop" style="opacity:.7;font-size:11px">≈ $— COP</div>
+    <div class="total-breakdown"><span>Crypto <span id="resumeCryptoCost">—</span></span><span>Acc. <span id="resumeStocksCost">—</span></span></div>
   </div>
   <div class="total-card">
     <div class="total-label">Valor de Mercado</div>
-    <div class="total-value num">$4,245.28</div>
+    <div class="total-value num" id="resumeMarket">$—</div>
     <div class="total-sub">a precios actuales</div>
-    <div class="total-breakdown"><span>Crypto $3,029.44</span><span>Acc. $1,215.84</span></div>
+    <div class="total-breakdown"><span>Crypto <span id="resumeCryptoMarket">—</span></span><span>Acc. <span id="resumeStocksMarket">—</span></span></div>
   </div>
   <div class="total-card">
-    <div class="total-label">Resultado P&amp;L</div>
-    <div class="total-value num neg">-$418.64</div>
-    <div class="total-sub neg">-9.0% sobre capital</div>
-    <div class="total-breakdown"><span class="neg">Crypto</span><span>Acc.</span></div>
+    <div class="total-label">Resultado P&L<span class="info-icon" data-tooltip-key="pnl">ⓘ</span></div>
+    <div class="total-value num" id="resumePnl">$—</div>
+    <div class="total-sub" id="resumePnlPct">—% sobre capital</div>
+    <div class="total-breakdown"><span id="resumeCryptoPnlPct">Crypto —</span><span id="resumeStocksPnlPct">Acc. —</span></div>
   </div>
   <div class="total-card highlight">
     <div class="total-label">Total Portafolio</div>
-    <div class="total-value num">$4,246.16</div>
-    <div class="total-sub">activos + cash</div>
-    <div class="total-breakdown"><span>Cash $0.88</span></div>
+    <div class="total-value num" id="resumeTotal">$—</div>
+    <div class="total-sub">activos + cash · <span id="resumeVsMes">—</span></div>
+    <div class="total-breakdown"><span>Cash <span id="resumeCash">$—</span></span></div>
   </div>
 </div>
 
+<h2 class="section-title">Evolución del portafolio</h2>
+<div class="chart-card mb" id="portfolioChartContainer">
+  <div class="chart-header">
+    <div>
+      <div class="chart-current num" id="chartCurrentVal">$—</div>
+      <div class="chart-growth" id="chartGrowth">Cargando historial...</div>
+    </div>
+  </div>
+  <div id="chartSvgWrap" style="min-height:120px;display:flex;align-items:center;justify-content:center">
+    <span style="color:var(--text-muted);font-size:12px">Cargando gráfica...</span>
+  </div>
+  <!-- Historial mensual: la pinta app._renderMonthlyHistory(). El dato (pnl,
+       pnlPct) se guarda en cada reporte desde siempre; esto es la primera
+       vez que se muestra en algún lado. -->
+  <div class="month-history" id="monthHistory">
+    <div class="month-history-empty">Cargando historial...</div>
+  </div>
+</div>
+
+<h2 class="section-title">Indicadores clave</h2>
+<div class="insights-top mb">
+  <div class="score-card">
+    <h3 class="section-title" style="margin-bottom:10px">Score de salud<span class="info-icon" data-tooltip-key="health_score">ⓘ</span></h3>
+    <div class="score-top">
+      <div><span class="score-num" style="color:var(--green)">9.5</span><span class="score-denom">/10</span></div>
+      <span class="score-label-badge" style="background:var(--green)22;color:var(--green)">Saludable</span>
+    </div>
+    <div class="score-bar-wrap"><div class="score-bar" style="width:95%;background:var(--green)"></div></div>
+    <div class="score-items" id="scoreItems">
+      <div class="score-item">📊 Balance —/— crypto/acc.</div>
+      <div class="score-item">₿ Crypto P&L —</div>
+      <div class="score-item">📈 Acciones P&L —</div>
+      <div class="score-item pos">✓ DCA activo</div>
+    </div>
+    <div class="ratio-bar">
+      <div class="ratio-crypto" id="ratioCrypto" style="width:78%"><span class="ratio-label">Crypto —%</span></div>
+      <div class="ratio-stocks" id="ratioStocks" style="width:22%"><span class="ratio-label">Acc. —%</span></div>
+    </div>
+  </div>
+  <div class="insight-card alert-orange">
+    <div class="insight-label">📍 BTC Break-even<span class="info-icon" data-tooltip-key="breakeven">ⓘ</span></div>
+    <div class="insight-value" id="btcBreakevenPct" style="color:var(--orange)">—</div>
+    <div class="insight-sub">Costo avg: <strong id="btcBreakevenCost">—</strong><br>Precio: <strong id="btcBreakevenPrice">—</strong><br><span id="btcBreakevenSub">—</span></div>
+  </div>
+  <div class="insight-card">
+    <div class="insight-label">📅 Retorno anualizado<span class="info-icon" data-tooltip-key="annualized_return">ⓘ</span></div>
+    <div class="insight-value neg">-89.5%</div>
+    <div class="insight-sub">Proyección sobre 4 reportes de historial real</div>
+  </div>
+</div>
+
+<div class="insights-mid mb">
+  <div class="insight-card good">
+    <div class="insight-label">🏆 Mejor acción</div>
+    <div class="insight-value pos" id="bestStockTicker">—</div>
+    <div class="insight-value" style="font-size:15px;color:var(--green)" id="bestStockChange">—</div>
+    <div class="insight-sub" id="bestStockSub">—</div>
+  </div>
+  <div class="insight-card alert-red">
+    <div class="insight-label" style="color:var(--red)">⚠️ Peor acción</div>
+    <div class="insight-value neg" id="worstStockTicker">—</div>
+    <div class="insight-value" style="font-size:15px;color:var(--red)" id="worstStockChange">—</div>
+    <div class="insight-sub" id="worstStockSub">—</div>
+  </div>
+  <div class="insight-card good">
+    <div class="insight-label">🏆 Mejor crypto</div>
+    <div class="insight-value pos" id="bestCryptoTicker">—</div>
+    <div class="insight-value" style="font-size:15px;color:var(--green)" id="bestCryptoChange">—</div>
+    <div class="insight-sub" id="bestCryptoSub">—</div>
+  </div>
+  <div class="insight-card alert-red">
+    <div class="insight-label" style="color:var(--red)">⚠️ Peor crypto</div>
+    <div class="insight-value neg" id="worstCryptoTicker">—</div>
+    <div class="insight-value" style="font-size:15px;color:var(--red)" id="worstCryptoChange">—</div>
+    <div class="insight-sub" id="worstCryptoSub">—</div>
+  </div>
+</div>
+
+<!--REPORT:analyst-->
 <article class="analyst-card">
   <div class="analyst-header">
     <div class="analyst-avatar">📊</div>
@@ -46,17 +126,11 @@
   </div>
   <div class="analyst-opinion">El portafolio funciona bien en el frente cripto de mediano plazo (ETH y SOL siguen en verde o cerca de el pese a la volatilidad reciente) y en mega caps de IA como META, que marco maximos historicos esta semana. Lo que mas arrastra es IREN, con una caida fuerte de doble digito en el dia por senales mixtas de analistas sobre su negocio de nube IA, y SOL que sigue lejos de su costo promedio. No se pudo confirmar el precio puntual de NVDA y QQQ en esta consulta (fuentes disponibles solo mostraban listados extranjeros o historicos desactualizados), por lo que se marcan en cero hasta la proxima revision. Recomendacion del mes: mantener el DCA disciplinado de 50 USD en BTC y 50 USD en acciones (preferencia por VOO por su maximo historico y menor concentracion tecnologica), sin tocar las posiciones en rojo y confirmando primero que no exista deuda de tarjeta pendiente antes de considerar nuevas compras.</div>
 </article>
+<!--/REPORT:analyst-->
 
-<h2 class="section-title">Contexto macroeconómico</h2>
-<div class="macro-grid mb">
-  <div class="macro-item"><div class="macro-label">TRM hoy</div><div class="macro-value">$3.262,33 COP</div></div>
-  <div class="macro-item"><div class="macro-label">Tasa FED</div><div class="macro-value">4.25%-4.50%</div></div>
-  <div class="macro-item"><div class="macro-label">Dominancia BTC<span class="info-icon" data-tooltip-key="btc_dominance">ⓘ</span></div><div class="macro-value">54.0%</div></div>
-  <div class="macro-item"><div class="macro-label">Fear &amp; Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-value">65 <span style="font-size:11px;color:var(--text-muted)">Codicia</span></div></div>
-</div>
-<div class="macro-narrative card mb" style="font-size:13px;line-height:1.6;padding:16px 20px;color:var(--text-dim)">Las expectativas de una posible subida de tasas de la Fed en octubre presionan tanto a cripto como al peso colombiano, que toco su nivel mas alto en mas de dos meses frente al dolar. Pese a ese ruido macro, el sentimiento en cripto se mantiene mayormente optimista, con ETH y SOL subiendo con fuerza en la semana.</div>
 
 <h2 class="section-title">Decisiones para este mes</h2>
+<!--REPORT:decisions-->
 <div class="decision-card mb">
   <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
   <div class="decision-body">
@@ -67,8 +141,10 @@
   <div class="decision-item"><span class="decision-num">05</span><span>Repetir la consulta de precios de NVDA, QQQ, SCHD y VTI en la proxima sesion apuntando directo a la pagina de cotizacion, ya que hoy no se pudo confirmar su valor puntual.</span></div>
   </div>
 </div>
+<!--/REPORT:decisions-->
 
 <h2 class="section-title">Oportunidades de inversión sugeridas</h2>
+<!--REPORT:opps-->
 <div class="opp-grid mb">
   <div class="opp-card">
     <div class="opp-asset">SCHD</div>
@@ -80,3 +156,4 @@
     <div class="opp-reason">Alternativa de mercado total de EE.UU. que anadiria exposicion a small y mid caps, diversificando mas alla de las 500 empresas de VOO.</div>
     <div class="opp-risk">⚠ Alta correlacion con VOO, por lo que el beneficio marginal de diversificacion es limitado si ya se tiene VOO en el portafolio.</div>
   </div></div>
+<!--/REPORT:opps-->

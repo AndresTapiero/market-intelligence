@@ -46,7 +46,7 @@ async function getBaselineHoldings(supabase) {
   }
   return holdings;
 }
-import { writeFileSync }    from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { pathToFileURL }    from 'url';
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
@@ -641,20 +641,41 @@ function computeSnapshot(positions, analysisData, cash) {
 }
 
 // ─── GENERAR tabs/resumen.html ────────────────────────────────────────────────
-function generateResumenHTML(snapshot, analysisData) {
-  const f   = n => Math.abs(n) >= 1000
-    ? Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 })
-    : Math.abs(n).toFixed(2);
-  const sgn = n => n >= 0 ? '+' : '-';
-  const cls = n => n >= 0 ? 'pos' : 'neg';
+// tabs/resumen.html es un cascarón que la app llena en el navegador (totales,
+// gráfica de evolución, historial mensual, indicadores). El script NO lo
+// regenera entero —antes lo hacía y cada corrida borraba la gráfica y todos
+// los ids que usa app.js—: sólo reemplaza lo que es del reporte, entre
+// marcadores <!--REPORT:x-->…<!--/REPORT:x-->, más la fecha del encabezado.
+const REPORT_SECTIONS = ['analyst', 'decisions', 'opps'];
 
+export function spliceResumen(shell, sections, { today, monthYear }) {
+  let out = shell;
+
+  for (const name of REPORT_SECTIONS) {
+    const re = new RegExp(`<!--REPORT:${name}-->[\\s\\S]*?<!--/REPORT:${name}-->`);
+    if (!re.test(out)) {
+      throw new Error(`tabs/resumen.html no tiene el marcador REPORT:${name} — no se toca el archivo para no romper la página.`);
+    }
+    out = out.replace(re, () => `<!--REPORT:${name}-->\n${sections[name].trim()}\n<!--/REPORT:${name}-->`);
+  }
+
+  const dateRe  = /<div class="header-sub" id="reportDateLine">[^<]*<\/div>/;
+  const badgeRe = /<div class="week-badge">[^<]*<\/div>/;
+  if (!dateRe.test(out) || !badgeRe.test(out)) {
+    throw new Error('tabs/resumen.html no tiene reportDateLine/week-badge en el encabezado.');
+  }
+  return out
+    .replace(dateRe,  () => `<div class="header-sub" id="reportDateLine">Reporte de inversiones · ${today}</div>`)
+    .replace(badgeRe, () => `<div class="week-badge">${monthYear}</div>`);
+}
+
+function generateResumenHTML(snapshot, shell) {
   const today     = new Date().toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   const monthYear = new Date().toLocaleDateString('es-CO', { month:'long', year:'numeric' });
-  const macro     = snapshot.macro || {};
 
   const actionsHTML = (snapshot.actions || []).map(a =>
     `<div class="decision-item"><span class="decision-num">${a.num}</span><span>${a.text}</span></div>`
-  ).join('\n  ');
+  ).join('\n    ');
 
   const oppsHTML = (snapshot.newOpportunities || []).map(o => `
   <div class="opp-card">
@@ -663,44 +684,8 @@ function generateResumenHTML(snapshot, analysisData) {
     <div class="opp-risk">⚠ ${o.risk}</div>
   </div>`).join('');
 
-  return `<header class="header" id="report-content">
-  <h1>Market Intelligence</h1>
-  <div class="header-sub" id="reportDateLine">Reporte de inversiones · ${today}</div>
-  <div class="header-right">
-    <div class="week-badge">${monthYear}</div>
-    <div class="analyst-badge">Analista Senior · 10 años · CFA L2</div>
-  </div>
-</header>
-
-<h2 class="section-title">Portafolio total</h2>
-<div class="totals-bar mb">
-  <div class="total-card">
-    <div class="total-label">Capital Invertido</div>
-    <div class="total-value num">$${f(snapshot.costBase)}</div>
-    <div class="total-sub">costo base USD</div>
-    <div class="total-breakdown"><span>Crypto + Acc.</span></div>
-  </div>
-  <div class="total-card">
-    <div class="total-label">Valor de Mercado</div>
-    <div class="total-value num">$${f(snapshot.totalCrypto + snapshot.totalStocks)}</div>
-    <div class="total-sub">a precios actuales</div>
-    <div class="total-breakdown"><span>Crypto $${f(snapshot.totalCrypto)}</span><span>Acc. $${f(snapshot.totalStocks)}</span></div>
-  </div>
-  <div class="total-card">
-    <div class="total-label">Resultado P&amp;L</div>
-    <div class="total-value num ${cls(snapshot.pnl)}">${sgn(snapshot.pnl)}$${f(snapshot.pnl)}</div>
-    <div class="total-sub ${cls(snapshot.pnl)}">${sgn(snapshot.pnlPct)}${Math.abs(snapshot.pnlPct).toFixed(1)}% sobre capital</div>
-    <div class="total-breakdown"><span class="${cls(snapshot.totalCrypto - snapshot.costBase * (snapshot.totalCrypto/(snapshot.totalCrypto+snapshot.totalStocks||1)))}">Crypto</span><span>Acc.</span></div>
-  </div>
-  <div class="total-card highlight">
-    <div class="total-label">Total Portafolio</div>
-    <div class="total-value num">$${f(snapshot.total)}</div>
-    <div class="total-sub">activos + cash</div>
-    <div class="total-breakdown"><span>Cash $${f(snapshot.cash)}</span></div>
-  </div>
-</div>
-
-<article class="analyst-card">
+  const sections = {
+    analyst: `<article class="analyst-card">
   <div class="analyst-header">
     <div class="analyst-avatar">📊</div>
     <div>
@@ -710,28 +695,19 @@ function generateResumenHTML(snapshot, analysisData) {
     </div>
   </div>
   <div class="analyst-opinion">${snapshot.analystOpinion || 'Sin analisis disponible.'}</div>
-</article>
-
-<h2 class="section-title">Contexto macroeconómico</h2>
-<div class="macro-grid mb">
-  <div class="macro-item"><div class="macro-label">TRM hoy</div><div class="macro-value">${fmtTRM(macro.usdcop)}</div></div>
-  <div class="macro-item"><div class="macro-label">Tasa FED</div><div class="macro-value">${macro.fedrate || '—'}</div></div>
-  <div class="macro-item"><div class="macro-label">Dominancia BTC<span class="info-icon" data-tooltip-key="btc_dominance">ⓘ</span></div><div class="macro-value">${macro.btcDominance || '—'}</div></div>
-  <div class="macro-item"><div class="macro-label">Fear &amp; Greed<span class="info-icon" data-tooltip-key="fear_greed">ⓘ</span></div><div class="macro-value">${macro.fearGreed ?? '—'} <span style="font-size:11px;color:var(--text-muted)">${macro.fearGreedLabel || ''}</span></div></div>
-</div>
-${macro.narrative ? `<div class="macro-narrative card mb" style="font-size:13px;line-height:1.6;padding:16px 20px;color:var(--text-dim)">${macro.narrative}</div>` : ''}
-
-<h2 class="section-title">Decisiones para este mes</h2>
+</article>`,
+    decisions: `<h2 class="section-title">Decisiones para este mes</h2>
 <div class="decision-card mb">
   <div class="decision-header"><div class="decision-dot"></div><div class="decision-title">Acciones recomendadas</div></div>
   <div class="decision-body">
     ${actionsHTML || '<div class="decision-empty">Continúa el plan: DCA sin cambios.</div>'}
   </div>
-</div>
+</div>`,
+    opps: `<h2 class="section-title">Oportunidades de inversión sugeridas</h2>
+<div class="opp-grid mb">${oppsHTML || '<div style="color:var(--text-muted)">Sin oportunidades identificadas este mes.</div>'}</div>`,
+  };
 
-<h2 class="section-title">Oportunidades de inversión sugeridas</h2>
-<div class="opp-grid mb">${oppsHTML || '<div style="color:var(--text-muted)">Sin oportunidades identificadas este mes.</div>'}</div>
-`;
+  return spliceResumen(shell, sections, { today, monthYear });
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
@@ -930,7 +906,7 @@ async function main() {
   console.log(`✅ portfolio_assets: ${assetRows.length} activos guardados`);
 
   // 6. Regenerar tabs/resumen.html
-  const resumenHTML = generateResumenHTML(snapshot, analysisData);
+  const resumenHTML = generateResumenHTML(snapshot, readFileSync('tabs/resumen.html', 'utf8'));
   writeFileSync('tabs/resumen.html', resumenHTML, 'utf8');
   console.log('✅ tabs/resumen.html actualizado');
 
