@@ -57,7 +57,23 @@ jobs:
           ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PORTFOLIO_USER_ID:    ${{ secrets.PORTFOLIO_USER_ID }}
-        run: node analyze.js
+        # tee: la salida queda en un archivo además del log. GitHub a veces no
+        # puede servir el log (pasó en oct-2026) y el error se perdía.
+        run: |
+          set -o pipefail
+          node analyze.js 2>&1 | tee analysis-output.log
+
+      # La respuesta del modelo ya se pagó: se conserva aunque el paso falle.
+      - name: Guardar respuesta y log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analisis-${{ github.run_id }}
+          path: |
+            analysis-raw.json
+            analysis-output.log
+          if-no-files-found: ignore
+          retention-days: 30
 
       # Publicar es responsabilidad del workflow, no del analizador.
       - name: Publicar el resumen
@@ -79,10 +95,14 @@ jobs:
         with:
           script: |
             const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const fs = require('fs');
+            const cola = fs.existsSync('analysis-output.log')
+              ? fs.readFileSync('analysis-output.log', 'utf8').trim().split('\n').slice(-25).join('\n')
+              : '(sin salida: falló antes del análisis)';
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo:  context.repo.repo,
               title: `Análisis mensual falló — ${new Date().toISOString().split('T')[0]}`,
-              body:  `El workflow **Análisis mensual** terminó en error.\n\n[Ver la corrida](${url})\n\nRevisa el paso que falló: el dry-run comprueba secrets, acceso al modelo y migraciones antes de gastar la llamada a la API.`,
+              body:  `El workflow **Análisis mensual** terminó en error.\n\n[Ver la corrida](${url})\n\nRevisa el paso que falló: el dry-run comprueba secrets, acceso al modelo y migraciones antes de gastar la llamada a la API.\n\n**Últimas líneas:**\n\n\`\`\`\n${cola}\n\`\`\`\n\nLa respuesta del modelo (si llegó) está en el artifact \`analisis-${context.runId}\` de la corrida.`,
               labels: ['automated'],
             });

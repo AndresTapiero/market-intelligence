@@ -452,6 +452,37 @@ async function runAnalysis(anthropic, params) {
   throw new Error('Demasiados pause_turn consecutivos — la búsqueda no converge');
 }
 
+/**
+ * Saca el JSON del análisis de la respuesta. Con web_search la respuesta
+ * intercala texto suelto ("voy a buscar…") con las búsquedas, y las citas
+ * pueden partir un texto en varios bloques. Antes se tomaba el PRIMER bloque
+ * de texto, que puede ser ese preámbulo y no el JSON. El JSON va al final:
+ * se unen los bloques de texto posteriores a la última búsqueda.
+ */
+export function extractAnalysisJSON(content = []) {
+  let ultimaHerramienta = -1;
+  content.forEach((b, i) => { if (b.type !== 'text' && b.type !== 'thinking' && b.type !== 'redacted_thinking') ultimaHerramienta = i; });
+
+  const texto = content.slice(ultimaHerramienta + 1)
+    .filter(b => b.type === 'text')
+    .map(b => b.text)
+    .join('')
+    .trim();
+  if (!texto) throw new Error('Respuesta sin bloque de texto después de las búsquedas');
+
+  try {
+    return JSON.parse(texto);
+  } catch {
+    // Último recurso: el objeto JSON más externo dentro del texto.
+    const ini = texto.indexOf('{');
+    const fin = texto.lastIndexOf('}');
+    if (ini !== -1 && fin > ini) {
+      try { return JSON.parse(texto.slice(ini, fin + 1)); } catch { /* cae al error de abajo */ }
+    }
+    throw new Error(`La respuesta no es JSON válido. Empieza con: ${texto.slice(0, 200)}`);
+  }
+}
+
 // ─── PARSEO DE PRECIOS ────────────────────────────────────────────────────────
 /**
  * Convierte a número lo que devuelva el modelo para un precio.
@@ -810,13 +841,12 @@ async function main() {
   console.log(`💸 tokens — entrada ${u.input_tokens} · salida ${u.output_tokens}` +
               (u.cache_read_input_tokens ? ` · cache ${u.cache_read_input_tokens}` : ''));
 
-  // El schema garantiza JSON válido: ya no hace falta el parser tolerante que
-  // normalizaba comillas y cerraba llaves a mano cuando la respuesta se cortaba.
-  const textBlock = response.content.find(b => b.type === 'text');
-  if (!textBlock?.text?.trim()) throw new Error('Respuesta sin bloque de texto');
+  // Se guarda ANTES de procesar: si algo falla después, la respuesta ya pagada
+  // queda como artifact del workflow para diagnosticar sin volver a pagar.
+  writeFileSync('analysis-raw.json', JSON.stringify(response, null, 2), 'utf8');
 
   console.log('🧠 Procesando análisis...');
-  const analysisData = JSON.parse(textBlock.text);
+  const analysisData = extractAnalysisJSON(response.content);
   const consultados  = assetsFromList(analysisData.assets);
   validateAssets(consultados, priceKeys);
 
